@@ -10,6 +10,7 @@ import type {
   ResidentialContext,
 } from "@/lib/domain/types";
 import { createSupabaseServerClient, requireAdminContext } from "@/lib/admin/auth";
+import { deleteListingAndCleanup } from "@/lib/admin/listing-delete";
 
 const FALLBACK_COVER_PHOTO =
   "https://images.unsplash.com/photo-1494526585095-c41746248156?w=1200&q=80";
@@ -132,6 +133,10 @@ interface ParsedListingInput {
 interface ValidationOptions {
   mode: "create" | "update";
   previousListingKind?: ListingKind;
+  currentAreaM2?: number | null;
+  currentRoomBathroomPrivate?: boolean | null;
+  currentKitchenAccess?: boolean | null;
+  currentCohabitantsCount?: number | null;
 }
 
 function parseSingle(formData: FormData, key: string): string {
@@ -787,8 +792,11 @@ function validateRequiredFields(input: ParsedListingInput, options: ValidationOp
     !isAreaRequiredKind(options.previousListingKind) &&
     isAreaRequiredKind(input.listingKind);
 
-  if (isAreaRequiredKind(input.listingKind) && input.areaM2 == null) {
-    if (options.mode === "create" || movingIntoAreaRequired) {
+  const effectiveAreaM2 =
+    input.areaM2 ?? (options.mode === "update" ? options.currentAreaM2 ?? null : null);
+
+  if (isAreaRequiredKind(input.listingKind) && effectiveAreaM2 == null) {
+    if (options.mode === "create" || options.mode === "update" || movingIntoAreaRequired) {
       toError("Para apartamento/casa/apartaestudio, el área en m² es obligatoria.");
     }
   }
@@ -799,21 +807,32 @@ function validateRequiredFields(input: ParsedListingInput, options: ValidationOp
     !isRoomKind(options.previousListingKind) &&
     isRoomKind(input.listingKind);
 
+  const effectiveRoomBathroomPrivate =
+    input.roomBathroomPrivate ??
+    (options.mode === "update" ? options.currentRoomBathroomPrivate ?? null : null);
+  const effectiveKitchenAccess =
+    input.kitchenAccess ??
+    (options.mode === "update" ? options.currentKitchenAccess ?? null : null);
+
   if (
     isRoomKind(input.listingKind) &&
-    (input.roomBathroomPrivate == null || input.kitchenAccess == null)
+    (effectiveRoomBathroomPrivate == null || effectiveKitchenAccess == null)
   ) {
-    if (options.mode === "create" || movingIntoRoomKind) {
+    if (options.mode === "create" || options.mode === "update" || movingIntoRoomKind) {
       toError(
         "Para habitaciones debes indicar si tiene baño privado y acceso a cocina."
       );
     }
   }
 
-  if (input.listingKind === "room_shared" && input.cohabitantsCount == null) {
+  const effectiveCohabitantsCount =
+    input.cohabitantsCount ??
+    (options.mode === "update" ? options.currentCohabitantsCount ?? null : null);
+
+  if (input.listingKind === "room_shared" && effectiveCohabitantsCount == null) {
     const movingIntoSharedRoom =
       options.mode === "update" && options.previousListingKind !== "room_shared";
-    if (options.mode === "create" || movingIntoSharedRoom) {
+    if (options.mode === "create" || options.mode === "update" || movingIntoSharedRoom) {
       toError("Para habitación compartida debes indicar número de convivientes.");
     }
   }
@@ -930,7 +949,9 @@ export async function updateListingAction(formData: FormData) {
     const client = createSupabaseServerClient(admin.accessToken);
     const { data: existingListing, error: existingError } = await client
       .from("listings")
-      .select("listing_kind")
+      .select(
+        "listing_kind, area_m2, room_bathroom_private, kitchen_access, cohabitants_count"
+      )
       .eq("id", listingId)
       .maybeSingle();
 
@@ -941,6 +962,10 @@ export async function updateListingAction(formData: FormData) {
     validateRequiredFields(input, {
       mode: "update",
       previousListingKind: existingListing.listing_kind as ListingKind,
+      currentAreaM2: existingListing.area_m2 as number | null,
+      currentRoomBathroomPrivate: existingListing.room_bathroom_private as boolean | null,
+      currentKitchenAccess: existingListing.kitchen_access as boolean | null,
+      currentCohabitantsCount: existingListing.cohabitants_count as number | null,
     });
 
     const payload = listingPayload(input);
@@ -1014,5 +1039,37 @@ export async function updateListingAction(formData: FormData) {
         ? error.message
         : "No se pudo actualizar el inmueble.";
     redirectUpdateError(listingId, message);
+  }
+}
+
+export async function deleteListingAction(formData: FormData) {
+  const listingId = parseSingle(formData, "listing_id");
+  if (!listingId) {
+    redirect("/admin/listings?error=No%20se%20recibi%C3%B3%20el%20ID%20del%20inmueble.");
+  }
+
+  try {
+    const admin = await requireAdminContext();
+    const result = await deleteListingAndCleanup(admin.accessToken, listingId);
+
+    if (result.storageCleanupError) {
+      console.error("[deleteListingAction] storage cleanup failed", {
+        listingId,
+        message: result.storageCleanupError,
+      });
+    }
+
+    revalidatePath("/");
+    revalidatePath("/admin");
+    revalidatePath("/admin/listings");
+    revalidatePath(`/listing/${listingId}`);
+    revalidatePath(`/admin/listings/${listingId}`);
+    revalidatePath("/sitemap.xml");
+    redirect("/admin/listings?deleted=1");
+  } catch (error) {
+    if (isRedirectLikeError(error)) throw error;
+    const message =
+      error instanceof Error ? error.message : "No se pudo eliminar el inmueble.";
+    redirect(`/admin/listings/${listingId}?${queryString({ error: message })}`);
   }
 }
