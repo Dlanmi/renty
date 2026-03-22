@@ -1,7 +1,6 @@
 import { formatCOP, formatBillingPeriod, whatsappLink } from "@/lib/domain/format";
 import Icon from "@/components/ui/Icon";
 import WhatsAppIcon from "@/components/ui/WhatsAppIcon";
-import { getButtonClasses } from "@/components/ui/Button";
 import ShareListingButton from "@/components/listing/ShareListingButton";
 
 interface ContactCTAProps {
