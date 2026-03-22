@@ -55,6 +55,7 @@ export default async function AdminListingsPage({ searchParams }: ListingsPagePr
   const q = getSingleParam(resolvedSearchParams?.q).trim();
   const statusRaw = getSingleParam(resolvedSearchParams?.status).trim();
   const statusFilter = statusRaw === "all" ? "all" : statusRaw;
+  const deleted = getSingleParam(resolvedSearchParams?.deleted).trim() === "1";
 
   let query = client
     .from("listings")
@@ -125,6 +126,12 @@ export default async function AdminListingsPage({ searchParams }: ListingsPagePr
             Filtrar
           </button>
         </form>
+
+        {deleted && (
+          <p className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+            El inmueble se eliminó correctamente.
+          </p>
+        )}
       </div>
 
       <section className="rounded-card border border-stone-200 bg-white p-4 shadow-card">

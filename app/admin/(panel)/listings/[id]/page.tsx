@@ -1,7 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import ListingForm from "@/components/admin/ListingForm";
-import { updateListingAction } from "@/app/admin/(panel)/listings/actions";
+import DeleteListingButton from "@/components/admin/DeleteListingButton";
+import {
+  deleteListingAction,
+  updateListingAction,
+} from "@/app/admin/(panel)/listings/actions";
 import { createSupabaseServerClient, requireAdminContext } from "@/lib/admin/auth";
 import { isValidListingId } from "@/lib/data/listings";
 import type { Listing, ListingPhoto, ListingPoi } from "@/lib/domain/types";
@@ -83,6 +87,10 @@ export default async function AdminListingDetailPage({
             >
               Ver público
             </Link>
+            <form action={deleteListingAction}>
+              <input type="hidden" name="listing_id" value={listing.id} />
+              <DeleteListingButton />
+            </form>
           </div>
         </div>
 
