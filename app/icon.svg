@@ -1,0 +1,23 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="64"
+  height="64"
+  viewBox="0 0 64 64"
+  fill="none"
+>
+  <defs>
+    <linearGradient id="rentyGradient" x1="8" y1="6" x2="56" y2="58" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fb7185" />
+      <stop offset="1" stop-color="#e11d48" />
+    </linearGradient>
+  </defs>
+
+  <rect x="4" y="4" width="56" height="56" rx="14" fill="url(#rentyGradient)" />
+
+  <g transform="translate(16 16) scale(1.3333333)">
+    <path
+      fill="#fff"
+      d="M17 11V3H7v4H3v14h18V11h-4ZM9 19H5v-2h4v2Zm0-4H5v-2h4v2Zm0-4H5V9h4v2Zm6 8h-4v-2h4v2Zm0-4h-4v-2h4v2Zm0-4h-4V9h4v2Zm0-4h-4V5h4v2Z"
+    />
+  </g>
+</svg>

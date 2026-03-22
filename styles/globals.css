@@ -1,0 +1,151 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Base ── */
+html {
+  scroll-behavior: smooth;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  background-color: #fafaf9;
+  color: #1c1917;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  overscroll-behavior-x: none;
+}
+
+@supports (overflow: clip) {
+  html,
+  body {
+    overflow-x: clip;
+  }
+}
+
+.page-reveal {
+  opacity: 1;
+}
+
+.lift-hover {
+  transition: transform 220ms ease, box-shadow 220ms ease;
+}
+
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background-color: #e7e5e4;
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    100deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.55) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  animation: skeleton-shimmer 1.35s infinite;
+}
+
+@keyframes skeleton-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .page-reveal {
+    animation: page-fade-in 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .stagger-list > * {
+    opacity: 0;
+    transform: translateY(8px);
+    animation: stagger-in 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .stagger-list > *:nth-child(1) {
+    animation-delay: 30ms;
+  }
+  .stagger-list > *:nth-child(2) {
+    animation-delay: 60ms;
+  }
+  .stagger-list > *:nth-child(3) {
+    animation-delay: 90ms;
+  }
+  .stagger-list > *:nth-child(4) {
+    animation-delay: 120ms;
+  }
+  .stagger-list > *:nth-child(5) {
+    animation-delay: 150ms;
+  }
+  .stagger-list > *:nth-child(6) {
+    animation-delay: 180ms;
+  }
+  .stagger-list > *:nth-child(7) {
+    animation-delay: 210ms;
+  }
+  .stagger-list > *:nth-child(8) {
+    animation-delay: 240ms;
+  }
+  .stagger-list > *:nth-child(9) {
+    animation-delay: 270ms;
+  }
+
+  .lift-hover:hover {
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes page-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes stagger-in {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ── Material Symbols premium config ── */
+.material-symbols-outlined {
+  font-variation-settings:
+    "FILL" 0,
+    "wght" 500,
+    "GRAD" 0,
+    "opsz" 20;
+  display: inline-block;
+  vertical-align: middle;
+  line-height: 1;
+}
+
+/* Filled variant helper */
+.icon-filled {
+  font-variation-settings:
+    "FILL" 1,
+    "wght" 500,
+    "GRAD" 0,
+    "opsz" 20;
+}
+
+/* ── Focus ring (accessibility) ── */
+*:focus-visible {
+  outline: 2px solid #f43f5e;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
