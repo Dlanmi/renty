@@ -157,7 +157,7 @@ export default function ListingForm({
   const hint = useMemo(() => statusHint(status), [status]);
 
   return (
-    <form action={action} encType="multipart/form-data" className="space-y-6">
+    <form action={action} className="space-y-6">
       {listing?.id && <input type="hidden" name="listing_id" value={listing.id} />}
 
       <section className="rounded-card border border-stone-200 bg-white p-4 shadow-card">

@@ -133,7 +133,8 @@ export interface ListingAuditLog {
     | "mark_rented"
     | "photo_add"
     | "photo_remove"
-    | "photo_reorder";
+    | "photo_reorder"
+    | "delete";
   payload: Record<string, unknown>;
   created_at: string;
 }

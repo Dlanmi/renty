@@ -3,23 +3,22 @@
 import { useState, useCallback, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-import { deleteListingAction } from "@/app/admin/(panel)/listings/actions";
+import { duplicateListingAction } from "@/app/admin/(panel)/listings/actions";
 
-interface DeleteListingButtonProps {
+interface DuplicateListingButtonProps {
   listingId: string;
   listingTitle: string;
-  /** When true, renders a compact trash-icon-only button (for list views). */
   compact?: boolean;
 }
 
-export default function DeleteListingButton({
+export default function DuplicateListingButton({
   listingId,
   listingTitle,
   compact = false,
-}: DeleteListingButtonProps) {
+}: DuplicateListingButtonProps) {
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+  const [duplicating, setDuplicating] = useState(false);
   const [toast, setToast] = useState<{
     type: "success" | "error";
     message: string;
@@ -32,32 +31,33 @@ export default function DeleteListingButton({
     return () => clearTimeout(timer);
   }, [toast]);
 
-  const handleDelete = useCallback(async () => {
-    setDeleting(true);
+  const handleDuplicate = useCallback(async () => {
+    setDuplicating(true);
     try {
-      const result = await deleteListingAction(listingId);
+      const result = await duplicateListingAction(listingId);
 
       if (result.success) {
         setShowModal(false);
         setToast({
           type: "success",
-          message: `El inmueble "${result.title}" fue eliminado correctamente.`,
+          message: `El inmueble fue duplicado exitosamente. Redirigiendo...`,
         });
-        // Small delay so the user sees the toast before redirecting
+        
+        // Small delay so the user sees the toast before redirecting to the new listing
         setTimeout(() => {
-          router.push("/admin/listings");
+          router.push(`/admin/listings/${result.newId}`);
           router.refresh();
         }, 1500);
       } else {
-        setDeleting(false);
+        setDuplicating(false);
         setToast({ type: "error", message: result.error });
         setShowModal(false);
       }
     } catch {
-      setDeleting(false);
+      setDuplicating(false);
       setToast({
         type: "error",
-        message: "Ocurrió un error inesperado al eliminar el inmueble.",
+        message: "Ocurrió un error inesperado al duplicar el inmueble.",
       });
       setShowModal(false);
     }
@@ -70,9 +70,9 @@ export default function DeleteListingButton({
         <button
           type="button"
           onClick={() => setShowModal(true)}
-          className="lift-hover inline-flex min-h-8 items-center rounded-full border border-rose-200 bg-rose-50 px-3 text-xs font-medium text-rose-600 transition-colors hover:bg-rose-100"
-          title="Eliminar inmueble"
-          aria-label={`Eliminar ${listingTitle}`}
+          className="lift-hover inline-flex min-h-8 items-center rounded-full border border-stone-200 bg-white px-3 text-xs font-medium text-stone-700 transition-colors hover:bg-stone-50"
+          title="Duplicar inmueble"
+          aria-label={`Duplicar ${listingTitle}`}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -81,18 +81,15 @@ export default function DeleteListingButton({
             className="h-3.5 w-3.5"
             aria-hidden="true"
           >
-            <path
-              fillRule="evenodd"
-              d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.519.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5z"
-              clipRule="evenodd"
-            />
+            <path d="M7 3.5A1.5 1.5 0 018.5 2h3.879a1.5 1.5 0 011.06.44l3.122 3.12A1.5 1.5 0 0117 6.622V12.5a1.5 1.5 0 01-1.5 1.5h-1v-3.379a3 3 0 00-.879-2.121L10.5 5.379A3 3 0 008.379 4.5H7v-1z" />
+            <path d="M4.5 6A1.5 1.5 0 003 7.5v9A1.5 1.5 0 004.5 18h7a1.5 1.5 0 001.5-1.5v-5.879a1.5 1.5 0 00-.44-1.06L9.44 6.439A1.5 1.5 0 008.378 6H4.5z" />
           </svg>
         </button>
       ) : (
         <button
           type="button"
           onClick={() => setShowModal(true)}
-          className="lift-hover inline-flex min-h-10 items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-4 text-sm font-medium text-rose-600 transition-colors hover:bg-rose-100"
+          className="lift-hover inline-flex min-h-10 items-center gap-2 rounded-full border border-stone-200 bg-white px-4 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-50"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -101,84 +98,77 @@ export default function DeleteListingButton({
             className="h-4 w-4"
             aria-hidden="true"
           >
-            <path
-              fillRule="evenodd"
-              d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.519.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5z"
-              clipRule="evenodd"
-            />
+            <path d="M7 3.5A1.5 1.5 0 018.5 2h3.879a1.5 1.5 0 011.06.44l3.122 3.12A1.5 1.5 0 0117 6.622V12.5a1.5 1.5 0 01-1.5 1.5h-1v-3.379a3 3 0 00-.879-2.121L10.5 5.379A3 3 0 008.379 4.5H7v-1z" />
+            <path d="M4.5 6A1.5 1.5 0 003 7.5v9A1.5 1.5 0 004.5 18h7a1.5 1.5 0 001.5-1.5v-5.879a1.5 1.5 0 00-.44-1.06L9.44 6.439A1.5 1.5 0 008.378 6H4.5z" />
           </svg>
-          Eliminar inmueble
+          Duplicar
         </button>
       )}
 
-      {/* Confirmation modal — rendered via portal to escape transform parents */}
+      {/* Confirmation modal */}
       {showModal &&
         createPortal(
           <div
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
-            onClick={() => !deleting && setShowModal(false)}
+            onClick={() => !duplicating && setShowModal(false)}
             role="dialog"
             aria-modal="true"
-            aria-labelledby="delete-modal-title"
+            aria-labelledby="duplicate-modal-title"
           >
             <div
               className="w-full max-w-md animate-[fadeScaleIn_0.2s_ease-out] rounded-2xl border border-stone-200 bg-white p-6 shadow-xl"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-rose-100">
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-accent/10">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 20 20"
                   fill="currentColor"
-                  className="h-6 w-6 text-rose-600"
+                  className="h-6 w-6 text-accent"
                   aria-hidden="true"
                 >
-                  <path
-                    fillRule="evenodd"
-                    d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z"
-                    clipRule="evenodd"
-                  />
+                  <path d="M7 3.5A1.5 1.5 0 018.5 2h3.879a1.5 1.5 0 011.06.44l3.122 3.12A1.5 1.5 0 0117 6.622V12.5a1.5 1.5 0 01-1.5 1.5h-1v-3.379a3 3 0 00-.879-2.121L10.5 5.379A3 3 0 008.379 4.5H7v-1z" />
+                  <path d="M4.5 6A1.5 1.5 0 003 7.5v9A1.5 1.5 0 004.5 18h7a1.5 1.5 0 001.5-1.5v-5.879a1.5 1.5 0 00-.44-1.06L9.44 6.439A1.5 1.5 0 008.378 6H4.5z" />
                 </svg>
               </div>
 
               <h2
-                id="delete-modal-title"
+                id="duplicate-modal-title"
                 className="text-lg font-semibold text-stone-900"
               >
-                Eliminar inmueble
+                Duplicar inmueble
               </h2>
               <p className="mt-2 text-sm text-stone-600">
-                ¿Estás seguro de eliminar{" "}
+                ¿Estás seguro de crear una copia de{" "}
                 <strong className="font-semibold text-stone-900">
                   {listingTitle}
                 </strong>
-                ? Se borrarán todas sus fotos, puntos cercanos y registros de
-                auditoría. <span className="text-rose-600 font-medium">Esta acción no se puede deshacer.</span>
+                ? Se clonarán todos los detalles, estado (como borrador), fotos y puntos de interés.
               </p>
 
               <div className="mt-6 flex items-center justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  disabled={deleting}
+                  disabled={duplicating}
                   className="inline-flex min-h-10 items-center rounded-xl border border-stone-200 px-4 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Cancelar
                 </button>
                 <button
                   type="button"
-                  onClick={handleDelete}
-                  disabled={deleting}
-                  className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-rose-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-70"
+                  onClick={handleDuplicate}
+                  disabled={duplicating}
+                  className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-accent px-4 text-sm font-semibold text-white transition-colors hover:bg-accent-dark disabled:cursor-not-allowed disabled:opacity-70"
                   aria-live="polite"
                 >
-                  {deleting && (
+                  {duplicating && (
                     <span
                       className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"
                       aria-hidden="true"
                     />
                   )}
-                  {deleting ? "Eliminando..." : "Sí, eliminar"}
+                  {duplicating ? "Duplicando..." : "Sí, duplicar"}
                 </button>
               </div>
             </div>
@@ -186,7 +176,7 @@ export default function DeleteListingButton({
           document.body
         )}
 
-      {/* Toast notification — rendered via portal to escape transform parents */}
+      {/* Toast notification */}
       {toast &&
         createPortal(
           <div className="fixed bottom-6 right-6 z-50 animate-[slideUp_0.3s_ease-out]">
@@ -202,7 +192,7 @@ export default function DeleteListingButton({
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 20 20"
                   fill="currentColor"
-                  className="h-5 w-5 text-emerald-600 flex-shrink-0"
+                  className="h-5 w-5 flex-shrink-0 text-emerald-600"
                   aria-hidden="true"
                 >
                   <path
@@ -216,7 +206,7 @@ export default function DeleteListingButton({
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 20 20"
                   fill="currentColor"
-                  className="h-5 w-5 text-rose-600 flex-shrink-0"
+                  className="h-5 w-5 flex-shrink-0 text-rose-600"
                   aria-hidden="true"
                 >
                   <path
@@ -226,7 +216,7 @@ export default function DeleteListingButton({
                   />
                 </svg>
               )}
-              <p className="text-sm font-medium max-w-xs">{toast.message}</p>
+              <p className="max-w-xs text-sm font-medium">{toast.message}</p>
               <button
                 type="button"
                 onClick={() => setToast(null)}

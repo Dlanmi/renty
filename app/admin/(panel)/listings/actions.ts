@@ -132,10 +132,6 @@ interface ParsedListingInput {
 interface ValidationOptions {
   mode: "create" | "update";
   previousListingKind?: ListingKind;
-  currentAreaM2?: number | null;
-  currentRoomBathroomPrivate?: boolean | null;
-  currentKitchenAccess?: boolean | null;
-  currentCohabitantsCount?: number | null;
 }
 
 function parseSingle(formData: FormData, key: string): string {
@@ -791,11 +787,8 @@ function validateRequiredFields(input: ParsedListingInput, options: ValidationOp
     !isAreaRequiredKind(options.previousListingKind) &&
     isAreaRequiredKind(input.listingKind);
 
-  const effectiveAreaM2 =
-    input.areaM2 ?? (options.mode === "update" ? options.currentAreaM2 ?? null : null);
-
-  if (isAreaRequiredKind(input.listingKind) && effectiveAreaM2 == null) {
-    if (options.mode === "create" || options.mode === "update" || movingIntoAreaRequired) {
+  if (isAreaRequiredKind(input.listingKind) && input.areaM2 == null) {
+    if (options.mode === "create" || movingIntoAreaRequired) {
       toError("Para apartamento/casa/apartaestudio, el área en m² es obligatoria.");
     }
   }
@@ -806,32 +799,21 @@ function validateRequiredFields(input: ParsedListingInput, options: ValidationOp
     !isRoomKind(options.previousListingKind) &&
     isRoomKind(input.listingKind);
 
-  const effectiveRoomBathroomPrivate =
-    input.roomBathroomPrivate ??
-    (options.mode === "update" ? options.currentRoomBathroomPrivate ?? null : null);
-  const effectiveKitchenAccess =
-    input.kitchenAccess ??
-    (options.mode === "update" ? options.currentKitchenAccess ?? null : null);
-
   if (
     isRoomKind(input.listingKind) &&
-    (effectiveRoomBathroomPrivate == null || effectiveKitchenAccess == null)
+    (input.roomBathroomPrivate == null || input.kitchenAccess == null)
   ) {
-    if (options.mode === "create" || options.mode === "update" || movingIntoRoomKind) {
+    if (options.mode === "create" || movingIntoRoomKind) {
       toError(
         "Para habitaciones debes indicar si tiene baño privado y acceso a cocina."
       );
     }
   }
 
-  const effectiveCohabitantsCount =
-    input.cohabitantsCount ??
-    (options.mode === "update" ? options.currentCohabitantsCount ?? null : null);
-
-  if (input.listingKind === "room_shared" && effectiveCohabitantsCount == null) {
+  if (input.listingKind === "room_shared" && input.cohabitantsCount == null) {
     const movingIntoSharedRoom =
       options.mode === "update" && options.previousListingKind !== "room_shared";
-    if (options.mode === "create" || options.mode === "update" || movingIntoSharedRoom) {
+    if (options.mode === "create" || movingIntoSharedRoom) {
       toError("Para habitación compartida debes indicar número de convivientes.");
     }
   }
@@ -948,9 +930,7 @@ export async function updateListingAction(formData: FormData) {
     const client = createSupabaseServerClient(admin.accessToken);
     const { data: existingListing, error: existingError } = await client
       .from("listings")
-      .select(
-        "listing_kind, area_m2, room_bathroom_private, kitchen_access, cohabitants_count"
-      )
+      .select("listing_kind")
       .eq("id", listingId)
       .maybeSingle();
 
@@ -961,10 +941,6 @@ export async function updateListingAction(formData: FormData) {
     validateRequiredFields(input, {
       mode: "update",
       previousListingKind: existingListing.listing_kind as ListingKind,
-      currentAreaM2: existingListing.area_m2 as number | null,
-      currentRoomBathroomPrivate: existingListing.room_bathroom_private as boolean | null,
-      currentKitchenAccess: existingListing.kitchen_access as boolean | null,
-      currentCohabitantsCount: existingListing.cohabitants_count as number | null,
     });
 
     const payload = listingPayload(input);
@@ -1041,52 +1017,245 @@ export async function updateListingAction(formData: FormData) {
   }
 }
 
-export async function deleteListingAction(formData: FormData) {
-  const listingId = parseSingle(formData, "listing_id");
-  if (!listingId) {
-    redirect("/admin/listings?error=No%20se%20recibi%C3%B3%20el%20ID%20del%20inmueble.");
-  }
-
+export async function deleteListingAction(
+  listingId: string
+): Promise<{ success: true; title: string } | { success: false; error: string }> {
   try {
+    if (!listingId || !listingId.trim()) {
+      return { success: false, error: "No se recibió el ID del inmueble." };
+    }
+
     const admin = await requireAdminContext();
     const client = createSupabaseServerClient(admin.accessToken);
 
-    const { data: photos, error: photosError } = await client
+    const { data: listing, error: fetchError } = await client
+      .from("listings")
+      .select("id, title")
+      .eq("id", listingId)
+      .maybeSingle();
+
+    if (fetchError || !listing) {
+      return {
+        success: false,
+        error: "No se encontró el inmueble para eliminar.",
+      };
+    }
+
+    const deletedTitle = listing.title;
+
+    // Fetch photos with storage paths to clean up Storage bucket
+    const { data: photos } = await client
       .from("listing_photos")
       .select("storage_path")
       .eq("listing_id", listingId);
 
-    if (photosError) toError(photosError.message);
-
     const storagePaths = (photos ?? [])
-      .map((photo) => photo.storage_path)
+      .map((p) => p.storage_path)
       .filter((path): path is string => Boolean(path));
 
     if (storagePaths.length > 0) {
-      const { error: storageDeleteError } = await client.storage
-        .from("listing-images")
-        .remove(storagePaths);
-      if (storageDeleteError) toError(storageDeleteError.message);
+      await client.storage.from("listing-images").remove(storagePaths);
     }
 
+    // Delete the listing — CASCADE handles photos, pois, audit_logs
     const { error: deleteError } = await client
       .from("listings")
       .delete()
       .eq("id", listingId);
 
-    if (deleteError) toError(deleteError.message);
+    if (deleteError) {
+      return {
+        success: false,
+        error: deleteError.message || "No se pudo eliminar el inmueble.",
+      };
+    }
 
     revalidatePath("/");
     revalidatePath("/admin");
     revalidatePath("/admin/listings");
-    revalidatePath(`/listing/${listingId}`);
-    revalidatePath(`/admin/listings/${listingId}`);
     revalidatePath("/sitemap.xml");
-    redirect("/admin/listings?deleted=1");
+
+    return { success: true, title: deletedTitle };
   } catch (error) {
     if (isRedirectLikeError(error)) throw error;
     const message =
-      error instanceof Error ? error.message : "No se pudo eliminar el inmueble.";
-    redirect(`/admin/listings/${listingId}?${queryString({ error: message })}`);
+      error instanceof Error
+        ? error.message
+        : "Ocurrió un error al eliminar el inmueble.";
+    return { success: false, error: message };
+  }
+}
+
+export async function quickStatusChangeAction(
+  listingId: string,
+  newStatus: string
+): Promise<{ success: true; title: string; status: string } | { success: false; error: string }> {
+  try {
+    if (!listingId?.trim()) {
+      return { success: false, error: "No se recibió el ID del inmueble." };
+    }
+
+    if (!ALLOWED_STATUS.has(newStatus as ListingStatus)) {
+      return { success: false, error: "Estado no válido." };
+    }
+
+    const admin = await requireAdminContext();
+    const client = createSupabaseServerClient(admin.accessToken);
+
+    const { data: listing, error: fetchError } = await client
+      .from("listings")
+      .select("id, title, status")
+      .eq("id", listingId)
+      .maybeSingle();
+
+    if (fetchError || !listing) {
+      return { success: false, error: "No se encontró el inmueble." };
+    }
+
+    const previousStatus = listing.status;
+    if (previousStatus === newStatus) {
+      return { success: true, title: listing.title, status: newStatus };
+    }
+
+    const updatePayload: Record<string, unknown> = { status: newStatus };
+
+    if (newStatus === "active" && previousStatus !== "active") {
+      updatePayload.published_at = new Date().toISOString();
+    }
+    if (newStatus === "rented") {
+      updatePayload.rented_at = new Date().toISOString();
+    }
+
+    const { error: updateError } = await client
+      .from("listings")
+      .update(updatePayload)
+      .eq("id", listingId);
+
+    if (updateError) {
+      return { success: false, error: updateError.message };
+    }
+
+    await client.from("listing_audit_logs").insert({
+      listing_id: listingId,
+      actor_user_id: admin.userId,
+      action: "status_change",
+      payload: { from: previousStatus, to: newStatus },
+    });
+
+    revalidatePath("/");
+    revalidatePath(`/listing/${listingId}`);
+    revalidatePath("/admin");
+    revalidatePath("/admin/listings");
+    revalidatePath(`/admin/listings/${listingId}`);
+    revalidatePath("/sitemap.xml");
+
+    return { success: true, title: listing.title, status: newStatus };
+  } catch (error) {
+    if (isRedirectLikeError(error)) throw error;
+    const message =
+      error instanceof Error ? error.message : "Error al cambiar el estado.";
+    return { success: false, error: message };
+  }
+}
+
+export async function duplicateListingAction(
+  listingId: string
+): Promise<{ success: true; newId: string; title: string } | { success: false; error: string }> {
+  try {
+    if (!listingId?.trim()) {
+      return { success: false, error: "No se recibió el ID del inmueble." };
+    }
+
+    const admin = await requireAdminContext();
+    const client = createSupabaseServerClient(admin.accessToken);
+
+    const { data: original, error: fetchError } = await client
+      .from("listings")
+      .select("*")
+      .eq("id", listingId)
+      .maybeSingle();
+
+    if (fetchError || !original) {
+      return { success: false, error: "No se encontró el inmueble a duplicar." };
+    }
+
+    const newId = crypto.randomUUID();
+    const now = new Date().toISOString();
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { id, created_at, updated_at, published_at, rented_at, status, ...rest } = original;
+
+    const { error: insertError } = await client.from("listings").insert({
+      id: newId,
+      ...rest,
+      title: `${original.title} (copia)`,
+      status: "draft",
+      published_at: null,
+      rented_at: null,
+      created_at: now,
+      updated_at: now,
+    });
+
+    if (insertError) {
+      return { success: false, error: insertError.message };
+    }
+
+    // Duplicate photos
+    const { data: photos } = await client
+      .from("listing_photos")
+      .select("*")
+      .eq("listing_id", listingId)
+      .order("sort_order", { ascending: true });
+
+    if (photos && photos.length > 0) {
+      const photoRows = photos.map((photo) => ({
+        listing_id: newId,
+        storage_path: photo.storage_path,
+        public_url: photo.public_url,
+        caption: photo.caption,
+        room_type: photo.room_type,
+        sort_order: photo.sort_order,
+        is_cover: photo.is_cover,
+      }));
+
+      await client.from("listing_photos").insert(photoRows);
+    }
+
+    // Duplicate POIs
+    const { data: pois } = await client
+      .from("listing_pois")
+      .select("*")
+      .eq("listing_id", listingId)
+      .order("created_at", { ascending: true });
+
+    if (pois && pois.length > 0) {
+      const poiRows = pois.map((poi) => ({
+        listing_id: newId,
+        kind: poi.kind,
+        name: poi.name,
+        distance_m: poi.distance_m,
+        walk_minutes: poi.walk_minutes,
+      }));
+
+      await client.from("listing_pois").insert(poiRows);
+    }
+
+    // Audit log
+    await client.from("listing_audit_logs").insert({
+      listing_id: newId,
+      actor_user_id: admin.userId,
+      action: "create",
+      payload: { duplicated_from: listingId },
+    });
+
+    revalidatePath("/admin");
+    revalidatePath("/admin/listings");
+
+    return { success: true, newId, title: original.title };
+  } catch (error) {
+    if (isRedirectLikeError(error)) throw error;
+    const message =
+      error instanceof Error ? error.message : "Error al duplicar el inmueble.";
+    return { success: false, error: message };
   }
 }
