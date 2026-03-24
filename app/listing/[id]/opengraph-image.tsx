@@ -14,6 +14,9 @@ export const size = {
 
 export const contentType = "image/png";
 export const revalidate = 3600;
+const DEFAULT_OG_COVER_PHOTO =
+  "https://images.unsplash.com/photo-1494526585095-c41746248156?w=1200&q=80";
+const BLOCKED_HOSTNAMES = new Set(["localhost", "127.0.0.1", "::1"]);
 
 interface ImageProps {
   params: Promise<{ id: string }>;
@@ -67,6 +70,46 @@ function buildFallbackImage() {
   );
 }
 
+function isPrivateIpv4(hostname: string): boolean {
+  const parts = hostname.split(".");
+  if (parts.length !== 4 || parts.some((part) => !/^\d+$/.test(part))) {
+    return false;
+  }
+
+  const [first, second] = parts.map((part) => Number(part));
+  if (first === 10) return true;
+  if (first === 127) return true;
+  if (first === 169 && second === 254) return true;
+  if (first === 172 && second >= 16 && second <= 31) return true;
+  if (first === 192 && second === 168) return true;
+  if (first === 0) return true;
+  return false;
+}
+
+function sanitizeCoverPhotoUrl(value: string | null | undefined): string {
+  if (!value) return DEFAULT_OG_COVER_PHOTO;
+
+  try {
+    const parsed = new URL(value);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      return DEFAULT_OG_COVER_PHOTO;
+    }
+
+    const hostname = parsed.hostname.toLowerCase();
+    if (
+      BLOCKED_HOSTNAMES.has(hostname) ||
+      hostname.endsWith(".local") ||
+      isPrivateIpv4(hostname)
+    ) {
+      return DEFAULT_OG_COVER_PHOTO;
+    }
+
+    return parsed.toString();
+  } catch {
+    return DEFAULT_OG_COVER_PHOTO;
+  }
+}
+
 export default async function OpenGraphImage({ params }: ImageProps) {
   const { id } = await params;
 
@@ -86,6 +129,7 @@ export default async function OpenGraphImage({ params }: ImageProps) {
     `${listing.property_type} • ${listing.bedrooms} hab • ${listing.neighborhood}, ${listing.city}`
   );
   const title = truncateTitle(listing.title);
+  const safeCoverPhotoUrl = sanitizeCoverPhotoUrl(listing.cover_photo_url);
 
   return new ImageResponse(
     (
@@ -100,7 +144,7 @@ export default async function OpenGraphImage({ params }: ImageProps) {
         }}
       >
         <img
-          src={listing.cover_photo_url}
+          src={safeCoverPhotoUrl}
           alt={listing.title}
           style={{
             position: "absolute",
