@@ -2,15 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import ListingForm from "@/components/admin/ListingForm";
 import DeleteListingButton from "@/components/admin/DeleteListingButton";
-<<<<<<< HEAD
-import {
-  deleteListingAction,
-  updateListingAction,
-} from "@/app/admin/(panel)/listings/actions";
-=======
 import DuplicateListingButton from "@/components/admin/DuplicateListingButton";
 import { updateListingAction } from "@/app/admin/(panel)/listings/actions";
->>>>>>> cd4c7a6 (Cambios en el panel de admin y validaciones)
 import { createSupabaseServerClient, requireAdminContext } from "@/lib/admin/auth";
 import { isValidListingId } from "@/lib/data/listings";
 import type { Listing, ListingPhoto, ListingPoi } from "@/lib/domain/types";
@@ -92,12 +85,6 @@ export default async function AdminListingDetailPage({
             >
               Ver público
             </Link>
-<<<<<<< HEAD
-            <form action={deleteListingAction}>
-              <input type="hidden" name="listing_id" value={listing.id} />
-              <DeleteListingButton />
-            </form>
-=======
             <DuplicateListingButton
               listingId={listing.id}
               listingTitle={listing.title}
@@ -106,7 +93,6 @@ export default async function AdminListingDetailPage({
               listingId={listing.id}
               listingTitle={listing.title}
             />
->>>>>>> cd4c7a6 (Cambios en el panel de admin y validaciones)
           </div>
         </div>
 
