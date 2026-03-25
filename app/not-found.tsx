@@ -6,9 +6,9 @@ export default function NotFound() {
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-4 text-center">
       <Icon name="search_off" size={48} className="text-muted" />
-      <h2 className="text-xl font-bold text-stone-900">
+      <h1 className="text-xl font-bold text-stone-900">
         Propiedad no encontrada
-      </h2>
+      </h1>
       <p className="max-w-sm text-sm text-muted">
         Este arriendo ya no está disponible o el enlace es incorrecto.
       </p>

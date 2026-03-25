@@ -66,15 +66,11 @@ Variables en Vercel:
 
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- `NEXT_PUBLIC_SITE_URL`
-- `SITE_URL`
-- `NEXT_PUBLIC_ALLOWED_IMAGE_HOSTS` (opcional, CSV)
 
 Reglas:
 
 - Preview usa Supabase `staging`.
 - Production usa Supabase `prod`.
-- `NEXT_PUBLIC_SITE_URL` en production debe ser el dominio real.
 
 ## 5) Seguridad aplicada en la app
 
@@ -112,8 +108,6 @@ Secrets requeridos en GitHub Actions para CI (staging):
 
 - `CI_NEXT_PUBLIC_SUPABASE_URL`
 - `CI_NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- `CI_NEXT_PUBLIC_SITE_URL`
-- `CI_SITE_URL`
 
 Configura branch protection para exigir `CI` antes de merge.
 

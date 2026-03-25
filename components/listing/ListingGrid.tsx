@@ -1,6 +1,7 @@
 import type { Listing } from "@/lib/domain/types";
 import ListingCard from "./ListingCard";
 import Icon from "@/components/ui/Icon";
+import { getListingPath } from "@/lib/domain/listing-paths";
 
 interface ListingGridProps {
   listings: Listing[];
@@ -33,11 +34,13 @@ export default function ListingGrid({
 
   return (
     <div className="stagger-list grid min-w-0 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {listings.map((listing) => (
+      {listings.map((listing, index) => (
         <ListingCard
           key={listing.id}
           listing={listing}
+          href={getListingPath(listing)}
           listingQueryString={listingQueryString}
+          priority={index < 3}
         />
       ))}
     </div>

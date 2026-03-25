@@ -996,7 +996,7 @@ export async function updateListingAction(formData: FormData) {
     });
 
     revalidatePath("/");
-    revalidatePath(`/listing/${listingId}`);
+    revalidatePath("/arriendos/[slug]", "page");
     revalidatePath("/admin");
     revalidatePath("/admin/listings");
     revalidatePath(`/admin/listings/${listingId}`);
@@ -1143,7 +1143,7 @@ export async function quickStatusChangeAction(
     });
 
     revalidatePath("/");
-    revalidatePath(`/listing/${listingId}`);
+    revalidatePath("/arriendos/[slug]", "page");
     revalidatePath("/admin");
     revalidatePath("/admin/listings");
     revalidatePath(`/admin/listings/${listingId}`);

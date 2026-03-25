@@ -38,14 +38,6 @@ function isValidStatus(value: string): value is ListingStatus {
   );
 }
 
-function statusChipClasses(status: ListingStatus): string {
-  if (status === "active") return "border-emerald-200 bg-emerald-50 text-emerald-700";
-  if (status === "rented") return "border-indigo-200 bg-indigo-50 text-indigo-700";
-  if (status === "pending_review") return "border-amber-200 bg-amber-50 text-amber-700";
-  if (status === "rejected") return "border-rose-200 bg-rose-50 text-rose-700";
-  return "border-stone-200 bg-white text-stone-700";
-}
-
 function visibilityLabel(status: ListingStatus): string {
   return status === "active" ? "Visible publico" : "No visible publico";
 }

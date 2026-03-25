@@ -26,6 +26,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # local env files
+.env.local
 .env*.local
 .env
 .env.*
@@ -33,6 +34,10 @@ yarn-error.log*
 
 # vercel
 .vercel
+/client.html
+/nodejs.html
+/edge.html
+/supabase/.temp
 
 # typescript
 *.tsbuildinfo

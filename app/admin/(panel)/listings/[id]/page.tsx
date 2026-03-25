@@ -5,7 +5,7 @@ import DeleteListingButton from "@/components/admin/DeleteListingButton";
 import DuplicateListingButton from "@/components/admin/DuplicateListingButton";
 import { updateListingAction } from "@/app/admin/(panel)/listings/actions";
 import { createSupabaseServerClient, requireAdminContext } from "@/lib/admin/auth";
-import { isValidListingId } from "@/lib/data/listings";
+import { getListingPath, isValidListingId } from "@/lib/domain/listing-paths";
 import type { Listing, ListingPhoto, ListingPoi } from "@/lib/domain/types";
 
 export const dynamic = "force-dynamic";
@@ -78,7 +78,7 @@ export default async function AdminListingDetailPage({
               Volver al listado
             </Link>
             <Link
-              href={`/listing/${listing.id}`}
+              href={getListingPath(listing as Listing)}
               target="_blank"
               rel="noopener noreferrer"
               className="lift-hover inline-flex min-h-10 items-center rounded-full border border-stone-200 px-4 text-sm font-medium text-stone-700 hover:bg-stone-50"

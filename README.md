@@ -22,10 +22,6 @@ Crear `.env.local`:
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=...
 NEXT_PUBLIC_SUPABASE_ANON_KEY=...
-NEXT_PUBLIC_SITE_URL=http://localhost:3000
-SITE_URL=http://localhost:3000
-# opcional: hosts adicionales para next/image (CSV)
-# NEXT_PUBLIC_ALLOWED_IMAGE_HOSTS=cdn.ejemplo.com
 ```
 
 ## Desarrollo
@@ -87,7 +83,8 @@ Incluye:
 ```txt
 app/
   page.tsx                 # Home (SSR + resultados filtrables en cliente)
-  listing/[id]/page.tsx    # Detalle de inmueble
+  arriendos/[slug]/page.tsx # Detalle público con slug canónico
+  listing/[slug]/page.tsx  # Redirect legacy hacia /arriendos/[slug]
 components/
   search/                  # Search pill + tabs + estado de filtros
   listing/                 # Card, grid, specs, gallery, CTA WhatsApp

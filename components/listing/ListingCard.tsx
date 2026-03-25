@@ -1,33 +1,30 @@
-"use client";
-
-import { useState } from "react";
-import Link from "next/link";
 import Image from "next/image";
 import type { Listing } from "@/lib/domain/types";
 import { formatCOP, formatBillingPeriod } from "@/lib/domain/format";
 import { iconForPropertyType } from "@/lib/domain/icons";
-import {
-  HOME_SCROLL_QUERY_STORAGE_KEY,
-  HOME_SCROLL_Y_STORAGE_KEY,
-} from "@/lib/domain/search";
 import Card from "@/components/ui/Card";
 import Chip from "@/components/ui/Chip";
 import Icon from "@/components/ui/Icon";
+import ListingCardLink from "@/components/listing/ListingCardLink";
 
 interface ListingCardProps {
   listing: Listing;
+  href: string;
   listingQueryString?: string;
+  priority?: boolean;
 }
 
 export default function ListingCard({
   listing,
+  href,
   listingQueryString = "",
+  priority = false,
 }: ListingCardProps) {
-  const [isImageLoading, setIsImageLoading] = useState(true);
   const {
-    id,
     title,
     approx_location,
+    city,
+    neighborhood,
     price_cop,
     billing_period,
     property_type,
@@ -45,41 +42,25 @@ export default function ListingCard({
   const showAreaChip =
     area_m2 != null && listing_kind !== "room_private" && listing_kind !== "room_shared";
   const showParkingChip = parking_car_count > 0;
-  const listingHref = `/listing/${id}${listingQueryString}`;
-
-  const handleClick = () => {
-    if (typeof window === "undefined") return;
-
-    window.sessionStorage.setItem(
-      HOME_SCROLL_Y_STORAGE_KEY,
-      String(window.scrollY)
-    );
-    window.sessionStorage.setItem(
-      HOME_SCROLL_QUERY_STORAGE_KEY,
-      listingQueryString.replace(/^\?/, "")
-    );
-  };
+  const descriptiveAlt = `${property_type} en arriendo en ${neighborhood}, ${city}: ${title}`;
 
   return (
-    <Link
-      href={listingHref}
+    <ListingCardLink
+      href={`${href}${listingQueryString}`}
       className="group block h-full min-w-0"
-      onClick={handleClick}
+      listingQueryString={listingQueryString}
     >
       <Card className="lift-hover h-full min-w-0 overflow-hidden border border-stone-200">
         {/* Image */}
         <div className="relative aspect-[4/3] overflow-hidden rounded-t-card">
-          {isImageLoading && (
-            <div className="skeleton absolute inset-0 z-10" aria-hidden="true" />
-          )}
           <Image
             src={cover_photo_url}
-            alt={title}
+            alt={descriptiveAlt}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             className="object-cover transition-transform duration-300 group-hover:scale-105"
-            onLoad={() => setIsImageLoading(false)}
-            onError={() => setIsImageLoading(false)}
+            loading={priority ? "eager" : "lazy"}
+            priority={priority}
           />
         </div>
 
@@ -129,6 +110,6 @@ export default function ListingCard({
           </div>
         </div>
       </Card>
-    </Link>
+    </ListingCardLink>
   );
 }

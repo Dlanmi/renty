@@ -2,10 +2,11 @@
 import { ImageResponse } from "next/og";
 import {
   getListingByIdAnyStatus,
-  isValidListingId,
+  getListingBySlug,
 } from "@/lib/data/listings";
 import { formatCOP, formatBillingPeriod } from "@/lib/domain/format";
 import { truncateMetaText } from "@/lib/domain/seo";
+import { isValidListingId } from "@/lib/domain/listing-paths";
 
 export const size = {
   width: 1200,
@@ -19,7 +20,7 @@ const DEFAULT_OG_COVER_PHOTO =
 const BLOCKED_HOSTNAMES = new Set(["localhost", "127.0.0.1", "::1"]);
 
 interface ImageProps {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 }
 
 function truncateTitle(title: string): string {
@@ -111,13 +112,12 @@ function sanitizeCoverPhotoUrl(value: string | null | undefined): string {
 }
 
 export default async function OpenGraphImage({ params }: ImageProps) {
-  const { id } = await params;
+  const { slug } = await params;
+  const normalizedSlug = slug.trim();
+  const listing = isValidListingId(normalizedSlug)
+    ? await getListingByIdAnyStatus(normalizedSlug)
+    : await getListingBySlug(normalizedSlug);
 
-  if (!isValidListingId(id)) {
-    return buildFallbackImage();
-  }
-
-  const listing = await getListingByIdAnyStatus(id);
   if (!listing) {
     return buildFallbackImage();
   }

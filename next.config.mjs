@@ -1,5 +1,12 @@
 /** @type {import('next').NextConfig} */
 
+const withBundleAnalyzer =
+  process.env.ANALYZE === "true"
+    ? (await import("@next/bundle-analyzer")).default({
+        enabled: true,
+      })
+    : (config) => config;
+
 const isProduction = process.env.NODE_ENV === "production";
 const contentSecurityPolicy = [
   "default-src 'self'",
@@ -8,8 +15,8 @@ const contentSecurityPolicy = [
   "frame-ancestors 'none'",
   "object-src 'none'",
   "script-src 'self' 'unsafe-inline'",
-  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-  "font-src 'self' https://fonts.gstatic.com data:",
+  "style-src 'self' 'unsafe-inline'",
+  "font-src 'self' data:",
   "img-src 'self' data: blob: https:",
   "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
   "upgrade-insecure-requests",
@@ -43,7 +50,10 @@ const securityHeaders = [
 ];
 
 const nextConfig = {
+  poweredByHeader: false,
   images: {
+    formats: ["image/avif", "image/webp"],
+    minimumCacheTTL: 60,
     // Permissive mode: allow external HTTPS/HTTP images from any hostname,
     // including local network hosts used during development.
     remotePatterns: [
@@ -61,14 +71,41 @@ const nextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: "/listing/:slug",
+        destination: "/arriendos/:slug",
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {
         source: "/(.*)",
         headers: securityHeaders,
       },
+      {
+        source: "/:path*\\.(svg|jpg|jpeg|png|webp|avif|ico|woff|woff2)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+      {
+        source: "/(robots.txt|sitemap.xml)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, s-maxage=3600, stale-while-revalidate=86400",
+          },
+        ],
+      },
     ];
   },
 };
 
-export default nextConfig;
+export default withBundleAnalyzer(nextConfig);

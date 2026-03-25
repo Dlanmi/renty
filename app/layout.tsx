@@ -1,10 +1,17 @@
 import type { Metadata } from "next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import localFont from "next/font/local";
 import "@/styles/globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import PageReveal from "@/components/ui/PageReveal";
-import { getSiteUrl } from "@/lib/domain/seo";
+import StructuredData from "@/components/seo/StructuredData";
+import {
+  DEFAULT_SITE_DESCRIPTION,
+  DEFAULT_SITE_TITLE,
+  SITE_LOCALE,
+  SITE_NAME,
+  getSiteUrl,
+} from "@/lib/domain/seo";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -12,21 +19,30 @@ const geistSans = localFont({
   variable: "--font-inter",
 });
 
+const materialSymbolsOutlined = localFont({
+  src: "./fonts/MaterialSymbolsOutlinedSubset.woff2",
+  display: "block",
+  preload: true,
+  variable: "--font-material-symbols-outlined",
+});
+
 const siteUrl = getSiteUrl();
-const defaultDescription =
-  "Encuentra apartamentos, habitaciones y casas en arriendo en Bogotá con contacto directo por WhatsApp.";
 const isPreviewDeployment = process.env.VERCEL_ENV === "preview";
 
 export const metadata: Metadata = {
-  metadataBase: siteUrl,
+  metadataBase: new URL('https://renty-seven.vercel.app'),
   title: {
-    default: "Renty",
-    template: "%s | Renty",
+    default: DEFAULT_SITE_TITLE,
+    template: `%s | ${SITE_NAME}`,
   },
-  description: defaultDescription,
-  alternates: {
-    canonical: "/",
-  },
+  description: DEFAULT_SITE_DESCRIPTION,
+  keywords: [
+    "arriendos en Bogota",
+    "apartamentos en arriendo Bogota",
+    "habitaciones en arriendo Bogota",
+    "casas en arriendo Bogota",
+    "arriendo con WhatsApp",
+  ],
   icons: {
     icon: [
       { url: "/icon.svg?v=2", type: "image/svg+xml" },
@@ -36,33 +52,43 @@ export const metadata: Metadata = {
     apple: "/favicon.ico?v=2",
   },
   openGraph: {
-    title: "Renty",
-    description: defaultDescription,
+    title: `${DEFAULT_SITE_TITLE} | ${SITE_NAME}`,
+    description: DEFAULT_SITE_DESCRIPTION,
     url: siteUrl.toString(),
-    siteName: "Renty",
-    locale: "es_CO",
+    siteName: SITE_NAME,
+    locale: SITE_LOCALE,
     type: "website",
     images: [
       {
-        url: "/favicon.ico",
-        alt: "Renty",
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: DEFAULT_SITE_TITLE,
       },
     ],
   },
   twitter: {
-    card: "summary",
-    title: "Renty",
-    description: defaultDescription,
-    images: ["/favicon.ico"],
+    card: "summary_large_image",
+    title: `${DEFAULT_SITE_TITLE} | ${SITE_NAME}`,
+    description: DEFAULT_SITE_DESCRIPTION,
+    images: ["/opengraph-image"],
   },
   robots: isPreviewDeployment
     ? {
         index: false,
         follow: false,
+        nocache: true,
       }
     : {
         index: true,
         follow: true,
+        googleBot: {
+          index: true,
+          follow: true,
+          "max-image-preview": "large",
+          "max-snippet": -1,
+          "max-video-preview": -1,
+        },
       },
 };
 
@@ -71,30 +97,42 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const websiteJsonLd = [
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      name: SITE_NAME,
+      url: siteUrl.toString(),
+      areaServed: "Bogotá",
+      sameAs: ["https://wa.me/573144436688"],
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      name: SITE_NAME,
+      url: siteUrl.toString(),
+      inLanguage: "es-CO",
+      description: DEFAULT_SITE_DESCRIPTION,
+      potentialAction: {
+        "@type": "SearchAction",
+        target: `${siteUrl.toString()}?q={search_term_string}`,
+        "query-input": "required name=search_term_string",
+      },
+    },
+  ];
+
   return (
-    <html lang="es" className={geistSans.variable}>
-      <head>
-        {/* Material Symbols Outlined */}
-        <link
-          rel="preconnect"
-          href="https://fonts.googleapis.com"
-        />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
-          rel="stylesheet"
-        />
-      </head>
+    <html
+      lang="es"
+      className={`${geistSans.variable} ${materialSymbolsOutlined.variable}`}
+    >
       <body className="min-h-screen font-sans antialiased">
+        <StructuredData id="global-structured-data" data={websiteJsonLd} />
         <Header />
-        <main className="min-h-[calc(100vh-8rem)]">
-          <PageReveal>{children}</PageReveal>
-        </main>
+        <main className="min-h-[calc(100vh-8rem)]">{children}</main>
         <Footer />
+        {/* Vercel recoge datos reales en despliegues preview/production; en local no aparecen métricas en el dashboard. */}
+        <SpeedInsights />
       </body>
     </html>
   );

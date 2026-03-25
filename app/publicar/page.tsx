@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Icon from "@/components/ui/Icon";
 import { getButtonClasses } from "@/components/ui/Button";
+import StructuredData from "@/components/seo/StructuredData";
+import { SITE_NAME, buildPageMetadata, toAbsoluteUrl } from "@/lib/domain/seo";
 
 const WHATSAPP_PUBLISH_URL = "https://wa.me/573144436688";
 
@@ -57,18 +59,52 @@ const FAQ = [
   },
 ];
 
-export const metadata: Metadata = {
-  title: "Publicar inmueble",
+export const metadata: Metadata = buildPageMetadata({
+  title: "Publicar inmueble en Bogotá",
   description:
-    "Publica tu inmueble en Renty y recibe contactos directos por WhatsApp con una publicación clara y confiable.",
-  alternates: {
-    canonical: "/publicar",
-  },
-};
+    "Publica tu apartamento, casa o habitación en arriendo en Bogotá y recibe contactos directos por WhatsApp con acompañamiento humano.",
+  path: "/publicar",
+  keywords: [
+    "publicar inmueble en Bogota",
+    "publicar apartamento en arriendo",
+    "publicar habitacion en arriendo",
+    "publicar casa en arriendo",
+    "anuncio de arriendo por WhatsApp",
+  ],
+});
 
 export default function PublishPage() {
+  const serviceJsonLd = [
+    {
+      "@context": "https://schema.org",
+      "@type": "Service",
+      name: `Publicar inmueble en ${SITE_NAME}`,
+      areaServed: "Bogotá",
+      serviceType: "Publicación de inmuebles en arriendo",
+      provider: {
+        "@type": "Organization",
+        name: SITE_NAME,
+        url: toAbsoluteUrl("/"),
+      },
+      url: toAbsoluteUrl("/publicar"),
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: FAQ.map((item) => ({
+        "@type": "Question",
+        name: item.q,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: item.a,
+        },
+      })),
+    },
+  ];
+
   return (
     <div className="mx-auto max-w-6xl space-y-8 px-4 py-8 sm:px-6 lg:space-y-10 lg:py-10">
+      <StructuredData id="publish-structured-data" data={serviceJsonLd} />
       <section className="relative overflow-hidden rounded-[28px] border border-stone-200 bg-white px-5 py-8 text-center shadow-card sm:px-8 sm:py-10">
         <div className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-rose-100/75 blur-3xl" />
         <div className="absolute -bottom-20 -left-10 h-52 w-52 rounded-full bg-orange-100/65 blur-3xl" />

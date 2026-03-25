@@ -1,9 +1,7 @@
 import type { MetadataRoute } from "next";
-import { getSiteUrl } from "@/lib/domain/seo";
+import { PRODUCTION_SITE_URL } from "@/lib/domain/seo";
 
 export default function robots(): MetadataRoute.Robots {
-  const siteUrl = getSiteUrl();
-  const origin = siteUrl.origin;
   const isPreviewDeployment = process.env.VERCEL_ENV === "preview";
 
   if (isPreviewDeployment) {
@@ -14,7 +12,7 @@ export default function robots(): MetadataRoute.Robots {
           disallow: "/",
         },
       ],
-      host: origin,
+      host: PRODUCTION_SITE_URL,
     };
   }
 
@@ -23,10 +21,10 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/api/", "/_next/"],
+        disallow: ["/admin", "/admin/", "/admin/login", "/api/", "/_next/"],
       },
     ],
-    sitemap: `${origin}/sitemap.xml`,
-    host: origin,
+    sitemap: `${PRODUCTION_SITE_URL}/sitemap.xml`,
+    host: PRODUCTION_SITE_URL,
   };
 }

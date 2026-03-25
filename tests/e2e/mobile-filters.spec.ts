@@ -48,15 +48,16 @@ test("mobile: cancel should discard draft filters", async ({ page }) => {
 test("mobile: open listing and return to home preserves filter query", async ({
   page,
 }) => {
-  await page.goto("/?q=Suba&max=800000&beds=1");
+  await page.goto("/?q=Verbenal&max=900000&beds=1");
 
-  const firstListing = page.locator('a[href^="/listing/"]').first();
+  const firstListing = page.locator('a[href^="/arriendos/"]').first();
+  await expect(firstListing).toBeVisible();
   await firstListing.click();
 
-  await expect(page).toHaveURL(/\/listing\//);
+  await expect(page).toHaveURL(/\/arriendos\//);
   await page.getByRole("link", { name: "Inicio" }).click();
 
-  await expect(page).toHaveURL(/q=Suba/);
-  await expect(page).toHaveURL(/max=800000/);
+  await expect(page).toHaveURL(/q=Verbenal/);
+  await expect(page).toHaveURL(/max=900000/);
   await expect(page).toHaveURL(/beds=1/);
 });

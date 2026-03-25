@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Icon from "@/components/ui/Icon";
 import { getButtonClasses } from "@/components/ui/Button";
+import StructuredData from "@/components/seo/StructuredData";
+import { SITE_NAME, buildPageMetadata, toAbsoluteUrl } from "@/lib/domain/seo";
 
 const HOW_IT_WORKS = [
   "Explora arriendos disponibles",
@@ -22,18 +24,39 @@ const BRAND_PHRASES = [
   "Encuentra arriendos en Bogotá de forma simple.",
 ];
 
-export const metadata: Metadata = {
-  title: "Sobre nosotros",
+export const metadata: Metadata = buildPageMetadata({
+  title: "Sobre Renty y cómo funciona",
   description:
-    "Conoce qué es Renty, cómo funciona y el objetivo de la plataforma para facilitar la búsqueda de vivienda en Bogotá.",
-  alternates: {
-    canonical: "/nosotros",
-  },
-};
+    "Conoce qué es Renty, cómo funciona la plataforma y cómo facilita encontrar vivienda en arriendo en Bogotá con información clara y contacto directo.",
+  path: "/nosotros",
+  keywords: [
+    "que es Renty",
+    "como funciona Renty",
+    "plataforma de arriendos en Bogota",
+    "buscar vivienda en Bogota",
+    "arriendos con contacto directo",
+  ],
+});
 
 export default function AboutPage() {
+  const aboutJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "AboutPage",
+    name: `Sobre ${SITE_NAME}`,
+    url: toAbsoluteUrl("/nosotros"),
+    description:
+      "Información sobre la plataforma Renty y su propuesta para encontrar arriendos en Bogotá.",
+    about: {
+      "@type": "Organization",
+      name: SITE_NAME,
+      url: toAbsoluteUrl("/"),
+      areaServed: "Bogotá, Colombia",
+    },
+  };
+
   return (
     <div className="mx-auto max-w-6xl space-y-8 px-4 py-8 sm:px-6 lg:space-y-10 lg:py-10">
+      <StructuredData id="about-structured-data" data={aboutJsonLd} />
       <section className="relative overflow-hidden rounded-[28px] border border-stone-200 bg-white px-5 py-8 text-center shadow-card sm:px-8 sm:py-10">
         <div className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-rose-100/75 blur-3xl" />
         <div className="absolute -bottom-20 -left-10 h-52 w-52 rounded-full bg-orange-100/65 blur-3xl" />

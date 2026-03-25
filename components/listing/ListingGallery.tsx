@@ -69,7 +69,8 @@ export default function ListingGallery({ title, photos }: ListingGalleryProps) {
             fill
             sizes="(max-width: 768px) 100vw, 70vw"
             className="object-cover transition-transform duration-500 hover:scale-[1.01]"
-            priority
+            loading={selectedIndex === 0 ? "eager" : "lazy"}
+            priority={selectedIndex === 0}
             onLoad={() => setIsImageLoading(false)}
             onError={() => setIsImageLoading(false)}
           />
@@ -130,6 +131,7 @@ export default function ListingGallery({ title, photos }: ListingGalleryProps) {
                   fill
                   sizes="96px"
                   className="object-cover"
+                  loading="lazy"
                 />
               </button>
             );

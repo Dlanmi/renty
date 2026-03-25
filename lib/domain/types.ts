@@ -88,6 +88,7 @@ export interface Listing {
   whatsapp_e164: string;
 
   title: string;
+  slug?: string | null;
   description: string | null;
 
   cover_photo_url: string;

@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getActiveListingSitemapEntries } from "@/lib/data/listings";
+import { getListingPath } from "@/lib/domain/listing-paths";
 import { getSiteUrl } from "@/lib/domain/seo";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -27,8 +28,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     },
     ...listings.map((listing) => ({
-      url: new URL(`/listing/${listing.id}`, siteUrl).toString(),
-      lastModified: new Date(listing.updated_at),
+      url: new URL(getListingPath(listing), siteUrl).toString(),
+      lastModified: new Date(listing.published_at ?? listing.updated_at),
       changeFrequency: "daily" as const,
       priority: 0.8,
     })),

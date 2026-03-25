@@ -1,18 +1,9 @@
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import type { Listing, ListingPhoto, ListingPoi } from "@/lib/domain/types";
+import { isValidListingId } from "@/lib/domain/listing-paths";
 
-const UUID_V4_OR_VX =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-
-export function isValidListingId(id: string): boolean {
-  return UUID_V4_OR_VX.test(id.trim());
-}
-
-/**
- * Fetch all active listings, newest first.
- */
-export async function getActiveListings(): Promise<Listing[]> {
+const getActiveListingsRaw = async (): Promise<Listing[]> => {
   const supabase = createClient();
 
   const { data, error } = await supabase
@@ -27,7 +18,12 @@ export async function getActiveListings(): Promise<Listing[]> {
   }
 
   return (data as Listing[]) ?? [];
-}
+};
+
+/**
+ * Fetch all active listings, newest first.
+ */
+export const getActiveListings = cache(getActiveListingsRaw);
 
 /**
  * Fetch a single listing by ID regardless of status.
@@ -65,7 +61,9 @@ export const getListingById = getListingByIdRaw;
 /**
  * Fetch nearby points of interest for a listing.
  */
-export async function getListingPois(listingId: string): Promise<ListingPoi[]> {
+const getListingPoisRaw = async (
+  listingId: string
+): Promise<ListingPoi[]> => {
   const supabase = createClient();
   const { data, error } = await supabase
     .from("listing_pois")
@@ -79,14 +77,16 @@ export async function getListingPois(listingId: string): Promise<ListingPoi[]> {
   }
 
   return (data as ListingPoi[]) ?? [];
-}
+};
+
+export const getListingPois = cache(getListingPoisRaw);
 
 /**
  * Fetch ordered gallery photos for a listing.
  */
-export async function getListingPhotos(
+const getListingPhotosRaw = async (
   listingId: string
-): Promise<ListingPhoto[]> {
+): Promise<ListingPhoto[]> => {
   const supabase = createClient();
   const { data, error } = await supabase
     .from("listing_photos")
@@ -100,30 +100,71 @@ export async function getListingPhotos(
   }
 
   return (data as ListingPhoto[]) ?? [];
-}
+};
 
-interface ListingSitemapEntry {
+export const getListingPhotos = cache(getListingPhotosRaw);
+
+interface ActiveListingRouteEntry {
   id: string;
+  slug?: string | null;
+  title: string;
+  neighborhood: string;
+  city: string;
+  published_at: string | null;
   updated_at: string;
 }
 
 /**
- * Fetch active listing IDs for sitemap generation.
+ * Fetch active listings for sitemap generation and static params.
  */
-export async function getActiveListingSitemapEntries(): Promise<
-  ListingSitemapEntry[]
-> {
+const getActiveListingRouteEntriesRaw = async (): Promise<
+  ActiveListingRouteEntry[]
+> => {
   const supabase = createClient();
   const { data, error } = await supabase
     .from("listings")
-    .select("id, updated_at")
+    .select("id, slug, title, neighborhood, city, published_at, updated_at")
     .eq("status", "active")
+    .order("published_at", { ascending: false, nullsFirst: false })
     .order("updated_at", { ascending: false });
 
   if (error) {
-    console.error("[getActiveListingSitemapEntries]", error.message);
+    console.error("[getActiveListingRouteEntries]", error.message);
     return [];
   }
 
-  return (data as ListingSitemapEntry[]) ?? [];
+  return (data as ActiveListingRouteEntry[]) ?? [];
+};
+
+export const getActiveListingRouteEntries = cache(getActiveListingRouteEntriesRaw);
+
+export const getActiveListingSitemapEntries = getActiveListingRouteEntries;
+
+export const getListingBySlug = cache(async (slug: string): Promise<Listing | null> => {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("listings")
+    .select("*")
+    .eq("slug", slug.trim())
+    .eq("status", "active")
+    .maybeSingle();
+
+  if (error) {
+    console.error("[getListingBySlug]", error.message);
+    return null;
+  }
+
+  return (data as Listing) ?? null;
+});
+
+export async function getListingByIdentifier(
+  identifier: string
+): Promise<Listing | null> {
+  const trimmed = identifier.trim();
+
+  if (isValidListingId(trimmed)) {
+    return getListingById(trimmed);
+  }
+
+  return getListingBySlug(trimmed);
 }

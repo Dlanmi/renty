@@ -41,7 +41,7 @@ function SectionCard({
 }) {
   return (
     <section className="lift-hover rounded-2xl border border-stone-200 bg-white p-4 sm:p-5">
-      <h3 className="text-base font-semibold text-stone-900">{title}</h3>
+      <h2 className="text-base font-semibold text-stone-900">{title}</h2>
       {description && <p className="mt-1 text-xs text-muted">{description}</p>}
       <div className="mt-3">{children}</div>
     </section>
