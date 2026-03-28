@@ -78,12 +78,39 @@ function isAdminRole(role: unknown): role is AdminRole {
   return role === "admin" || role === "editor";
 }
 
-export async function getAdminContextFromCookies(): Promise<AdminContext | null> {
-  const store = await cookies();
-  const accessToken = store.get(ACCESS_COOKIE_NAME)?.value;
-  if (!accessToken) return null;
+interface AdminContextClient {
+  auth: {
+    getUser(
+      accessToken: string
+    ): PromiseLike<{
+      data: {
+        user: {
+          id: string;
+          email?: string | null;
+        } | null;
+      };
+      error: { message?: string } | null;
+    }>;
+  };
+  from(table: "profiles"): {
+    select(columns: string): {
+      eq(column: string, value: string): {
+        maybeSingle(): PromiseLike<{
+          data: AdminProfile | null;
+          error: { message?: string } | null;
+        }>;
+      };
+    };
+  };
+}
 
-  const client = createSupabaseServerClient(accessToken);
+export async function getAdminContextFromAccessToken(
+  accessToken: string,
+  createClient?: (accessToken: string) => AdminContextClient
+): Promise<AdminContext | null> {
+  const client = (createClient
+    ? createClient(accessToken)
+    : (createSupabaseServerClient(accessToken) as unknown as AdminContextClient));
   const { data: userData, error: userError } = await client.auth.getUser(
     accessToken
   );
@@ -96,18 +123,23 @@ export async function getAdminContextFromCookies(): Promise<AdminContext | null>
     .eq("id", userData.user.id)
     .maybeSingle();
 
-  if (profileError || !profile) return null;
-
-  const parsedProfile = profile as AdminProfile;
-  if (!isAdminRole(parsedProfile.role)) return null;
+  if (profileError || !profile || !isAdminRole(profile.role)) return null;
 
   return {
     userId: userData.user.id,
     email: userData.user.email ?? null,
-    role: parsedProfile.role,
-    fullName: parsedProfile.full_name,
+    role: profile.role,
+    fullName: profile.full_name,
     accessToken,
   };
+}
+
+export async function getAdminContextFromCookies(): Promise<AdminContext | null> {
+  const store = await cookies();
+  const accessToken = store.get(ACCESS_COOKIE_NAME)?.value;
+  if (!accessToken) return null;
+
+  return getAdminContextFromAccessToken(accessToken);
 }
 
 export async function requireAdminContext(): Promise<AdminContext> {

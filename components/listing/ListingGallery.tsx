@@ -55,7 +55,7 @@ export default function ListingGallery({ title, photos }: ListingGalleryProps) {
   };
 
   return (
-    <div className="overflow-hidden rounded-[26px] border border-stone-200 bg-stone-100">
+    <div className="overflow-hidden rounded-[26px] border border-bg-border bg-bg-elevated">
       <div className="relative aspect-[4/3] md:aspect-[16/9] md:min-h-[420px]">
         {isImageLoading && (
           <div className="skeleton absolute inset-0 z-10" aria-hidden="true" />
@@ -77,7 +77,7 @@ export default function ListingGallery({ title, photos }: ListingGalleryProps) {
         )}
 
         <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 via-black/15 to-transparent p-4 md:p-5">
-          <p className="inline-flex rounded-full bg-white/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-stone-700">
+          <p className="inline-flex rounded-full bg-bg-surface/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-t-secondary">
             Renty verificado
           </p>
           <p className="mt-2 text-sm font-medium text-white md:text-base">
@@ -108,7 +108,7 @@ export default function ListingGallery({ title, photos }: ListingGalleryProps) {
       </div>
 
       {showControls && (
-        <div className="flex gap-2 overflow-x-auto border-t border-stone-200 bg-white p-3">
+        <div className="flex gap-2 overflow-x-auto border-t border-bg-border bg-bg-surface p-3">
           {gallery.map((photo, index) => {
             const isActive = index === selectedIndex;
 
@@ -119,7 +119,7 @@ export default function ListingGallery({ title, photos }: ListingGalleryProps) {
                 onClick={() => setSelectedIndex(index)}
                 className={`relative h-16 w-24 shrink-0 overflow-hidden rounded-xl border-2 transition-all ${
                   isActive
-                    ? "border-accent shadow-[0_0_0_3px_rgba(244,63,94,0.15)]"
+                    ? "border-accent shadow-[0_0_0_3px_rgba(16,185,129,0.15)]"
                     : "border-transparent opacity-80 hover:opacity-100"
                 }`}
                 aria-label={`Ver foto ${index + 1}`}

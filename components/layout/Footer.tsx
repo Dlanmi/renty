@@ -20,30 +20,30 @@ export default function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="border-t border-stone-100 bg-white">
+    <footer className="border-t border-bg-border bg-bg-surface">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
-        <div className="mb-8 rounded-card bg-amber-50 p-5">
-          <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-amber-800">
-            <Icon name="shield" size={20} className="text-amber-600" />
+        <div className="mb-8 rounded-card border border-bg-border bg-bg-elevated p-5">
+          <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-accent">
+            <Icon name="shield" size={20} />
             Tips de seguridad
           </div>
           <ul className="stagger-list grid gap-2 sm:grid-cols-2">
             {TIPS.map((tip) => (
-              <li key={tip} className="flex items-start gap-2 text-xs text-amber-700">
-                <Icon name="check" size={14} className="mt-0.5 shrink-0" />
+              <li key={tip} className="flex items-start gap-2 text-xs text-t-secondary">
+                <Icon name="check" size={14} className="mt-0.5 shrink-0 text-accent" />
                 {tip}
               </li>
             ))}
           </ul>
         </div>
 
-        <div className="mb-6 flex flex-col items-center justify-between gap-4 rounded-card border border-stone-200 bg-stone-50 px-4 py-4 sm:flex-row">
+        <div className="mb-6 flex flex-col items-center justify-between gap-4 rounded-card border border-bg-border bg-bg-elevated px-4 py-4 sm:flex-row">
           <nav className="flex flex-wrap items-center justify-center gap-3">
             {FOOTER_LINKS.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="inline-flex min-h-10 items-center rounded-full border border-stone-200 bg-white px-4 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-100"
+                className="inline-flex min-h-10 items-center rounded-full border border-bg-border bg-bg-surface px-4 text-sm font-medium text-t-secondary transition-colors hover:bg-bg-elevated hover:text-t-primary"
               >
                 {item.label}
               </Link>
@@ -54,16 +54,20 @@ export default function Footer() {
             href={WHATSAPP_CONTACT_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex min-h-10 items-center gap-1.5 rounded-full bg-accent px-4 text-sm font-semibold text-white transition-colors hover:bg-accent-dark"
+            className="inline-flex min-h-10 items-center gap-1.5 rounded-full bg-[#25D366] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#22c55e]"
           >
             <Icon name="chat" size={17} />
             Contáctanos
           </a>
         </div>
 
-        <div className="flex flex-col items-center justify-between gap-3 text-xs text-stone-400 sm:flex-row">
-          <p>© {year} Renty. Todos los derechos reservados.</p>
-          <p>Construido con amor en Bogotá.</p>
+        <div className="flex flex-col items-center justify-between gap-3 text-xs text-t-muted sm:flex-row">
+          <p>&copy; {year} Renty. Todos los derechos reservados.</p>
+          <p>
+            Construido con{" "}
+            <span className="text-accent">&#9829;</span>{" "}
+            en Bogotá.
+          </p>
         </div>
       </div>
     </footer>

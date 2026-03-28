@@ -40,9 +40,9 @@ function SectionCard({
   children: ReactNode;
 }) {
   return (
-    <section className="lift-hover rounded-2xl border border-stone-200 bg-white p-4 sm:p-5">
-      <h2 className="text-base font-semibold text-stone-900">{title}</h2>
-      {description && <p className="mt-1 text-xs text-muted">{description}</p>}
+    <section className="lift-hover rounded-2xl border border-bg-border bg-bg-surface p-4 sm:p-5">
+      <h2 className="text-base font-semibold text-t-primary">{title}</h2>
+      {description && <p className="mt-1 text-xs text-t-muted">{description}</p>}
       <div className="mt-3">{children}</div>
     </section>
   );
@@ -58,13 +58,13 @@ function SpecRow({
   value: string;
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-stone-100 bg-stone-50 px-4 py-3 min-w-0 max-w-full overflow-hidden">
+    <div className="flex items-center gap-3 rounded-xl border border-bg-border bg-bg-elevated px-4 py-3 min-w-0 max-w-full overflow-hidden">
       <Icon name={icon} size={21} className="shrink-0 text-accent" />
       <div className="min-w-0 flex-1">
-        <p className="text-[11px] font-medium uppercase tracking-wide text-stone-400">
+        <p className="text-[11px] font-medium uppercase tracking-wide text-t-muted">
           {label}
         </p>
-        <p className="truncate text-sm font-semibold text-stone-800" title={value}>
+        <p className="truncate text-sm font-semibold text-t-primary" title={value}>
           {value}
         </p>
       </div>
@@ -177,10 +177,10 @@ export default function ListingSpecs({ listing, pois = [] }: ListingSpecsProps) 
 
   return (
     <div className="space-y-5">
-      <div className="rounded-2xl border border-stone-200 bg-white p-4 lg:hidden">
-        <p className="text-2xl font-bold text-stone-900">
+      <div className="rounded-2xl border border-bg-border bg-bg-surface p-4 lg:hidden">
+        <p className="text-2xl font-bold text-accent">
           {formatCOP(listing.price_cop)}
-          <span className="text-base font-normal text-muted">
+          <span className="text-base font-normal text-t-muted">
             {formatBillingPeriod(listing.billing_period)}
           </span>
         </p>
@@ -196,7 +196,7 @@ export default function ListingSpecs({ listing, pois = [] }: ListingSpecsProps) 
 
       {hasCostBreakdown && (
         <SectionCard title="Costo mensual estimado" description="Transparencia de canon y costos adicionales.">
-          <ul className="space-y-2 text-sm text-stone-700">
+          <ul className="space-y-2 text-sm text-t-secondary">
             <li className="flex items-center justify-between gap-3">
               <span>Canon</span>
               <strong>{formatCOP(listing.price_cop)}</strong>
@@ -215,7 +215,7 @@ export default function ListingSpecs({ listing, pois = [] }: ListingSpecsProps) 
                 </strong>
               </li>
             )}
-            <li className="mt-2 flex items-center justify-between gap-3 border-t border-stone-100 pt-2 text-stone-900">
+            <li className="mt-2 flex items-center justify-between gap-3 border-t border-bg-border pt-2 text-t-primary">
               <span>Total aprox.</span>
               <strong>
                 {formatCOP(totalMin)}
@@ -228,7 +228,7 @@ export default function ListingSpecs({ listing, pois = [] }: ListingSpecsProps) 
 
       {listing.description && (
         <SectionCard title="Acerca de este lugar">
-          <p className="whitespace-pre-line text-sm leading-relaxed text-stone-600">{listing.description}</p>
+          <p className="whitespace-pre-line text-sm leading-relaxed text-t-secondary">{listing.description}</p>
         </SectionCard>
       )}
 
@@ -236,14 +236,14 @@ export default function ListingSpecs({ listing, pois = [] }: ListingSpecsProps) 
         <SectionCard title="Lo que incluye">
           <ul className="grid gap-2 sm:grid-cols-2">
             {listing.includes.map((item) => (
-              <li key={item} className="flex items-center gap-2.5 text-sm text-stone-700 min-w-0">
-                <Icon name={iconForInclude(item)} size={20} className="shrink-0 text-green-500" />
+              <li key={item} className="flex items-center gap-2.5 text-sm text-t-secondary min-w-0">
+                <Icon name={iconForInclude(item)} size={20} className="shrink-0 text-success" />
                 <span className="truncate">{humanizeTag(item)}</span>
               </li>
             ))}
           </ul>
           {listing.utilities_notes && (
-            <p className="mt-2 text-xs text-muted">{listing.utilities_notes}</p>
+            <p className="mt-2 text-xs text-t-muted">{listing.utilities_notes}</p>
           )}
         </SectionCard>
       )}
@@ -252,33 +252,33 @@ export default function ListingSpecs({ listing, pois = [] }: ListingSpecsProps) 
         <SectionCard title="Requisitos">
           <ul className="grid gap-2 sm:grid-cols-2">
             {listing.requirements.map((req) => (
-              <li key={req} className="flex items-center gap-2.5 text-sm text-stone-700 min-w-0">
-                <Icon name={iconForRequirement(req)} size={20} className="shrink-0 text-amber-500" />
+              <li key={req} className="flex items-center gap-2.5 text-sm text-t-secondary min-w-0">
+                <Icon name={iconForRequirement(req)} size={20} className="shrink-0 text-warning" />
                 <span className="truncate">{humanizeTag(req)}</span>
               </li>
             ))}
           </ul>
           {listing.requirements_notes && (
-            <p className="mt-2 text-xs text-muted">{listing.requirements_notes}</p>
+            <p className="mt-2 text-xs text-t-muted">{listing.requirements_notes}</p>
           )}
         </SectionCard>
       )}
 
       <SectionCard title="Ubicacion" description="Ubicacion aproximada para proteger privacidad.">
-        <div className="flex items-start gap-2.5 text-sm text-stone-600">
+        <div className="flex items-start gap-2.5 text-sm text-t-secondary">
           <Icon name="location_on" size={20} className="mt-0.5 text-accent" />
           <div>
-            <p className="font-medium text-stone-800">
+            <p className="font-medium text-t-primary">
               {listing.neighborhood}
               {listing.zone ? `, ${listing.zone}` : ""}
             </p>
             <p>{listing.city}</p>
             {listing.residential_name && (
-              <p className="mt-0.5 text-xs text-muted">
+              <p className="mt-0.5 text-xs text-t-muted">
                 {residentialContextLabel(listing.residential_context)}: {listing.residential_name}
               </p>
             )}
-            <p className="mt-0.5 text-xs text-muted">{listing.approx_location}</p>
+            <p className="mt-0.5 text-xs text-t-muted">{listing.approx_location}</p>
           </div>
         </div>
       </SectionCard>
@@ -293,14 +293,14 @@ export default function ListingSpecs({ listing, pois = [] }: ListingSpecsProps) 
               return (
                 <li
                   key={poi.id}
-                  className="flex items-start gap-2.5 rounded-xl border border-stone-100 bg-stone-50 px-3 py-2 text-sm text-stone-700"
+                  className="flex items-start gap-2.5 rounded-xl border border-bg-border bg-bg-elevated px-3 py-2 text-sm text-t-secondary"
                 >
                   <Icon name={meta.icon} size={18} className="mt-0.5 shrink-0 text-accent" />
                   <div>
-                    <p className="font-medium text-stone-800">
+                    <p className="font-medium text-t-primary">
                       {meta.label}: {poi.name}
                     </p>
-                    {distance && <p className="text-xs text-muted">{distance}</p>}
+                    {distance && <p className="text-xs text-t-muted">{distance}</p>}
                   </div>
                 </li>
               );

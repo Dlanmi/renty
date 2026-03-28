@@ -15,7 +15,7 @@ const TABS: Tab[] = [
 export default function SearchTabs() {
   return (
     <div className="flex justify-center px-4">
-      <div className="lift-hover inline-flex w-full max-w-md items-center gap-1 rounded-full border border-stone-200 bg-white/80 p-1 shadow-[0_1px_4px_rgba(0,0,0,0.04)] backdrop-blur-sm">
+      <div className="lift-hover inline-flex w-full max-w-md items-center gap-1 rounded-full border border-bg-border bg-bg-surface/80 p-1 shadow-[0_1px_4px_rgba(0,0,0,0.04)] backdrop-blur-sm">
         {TABS.map((tab, i) => {
           const isActive = i === 0;
           const isDisabled = !!tab.disabled;
@@ -29,10 +29,10 @@ export default function SearchTabs() {
                   "relative inline-flex w-full items-center justify-center gap-1.5 rounded-full px-4 py-2 text-[13px] font-medium",
                   "transition-all duration-200 select-none",
                   isActive
-                    ? "bg-neutral-900 text-white shadow-[0_1px_3px_rgba(0,0,0,0.2)]"
+                    ? "bg-accent text-white shadow-[0_1px_3px_rgba(0,0,0,0.2)]"
                     : isDisabled
-                    ? "cursor-not-allowed border border-transparent text-stone-400"
-                    : "border border-transparent text-stone-600 hover:bg-stone-50 hover:text-stone-800",
+                    ? "cursor-not-allowed border border-transparent text-t-muted"
+                    : "border border-transparent text-t-secondary hover:bg-bg-elevated hover:text-t-primary",
                 ].join(" ")}
                 aria-current={isActive ? "page" : undefined}
               >
@@ -43,8 +43,8 @@ export default function SearchTabs() {
                     isActive
                       ? "text-white"
                       : isDisabled
-                      ? "text-stone-300"
-                      : "text-stone-400"
+                      ? "text-t-muted"
+                      : "text-t-muted"
                   }
                 />
                 {tab.label}
@@ -56,8 +56,9 @@ export default function SearchTabs() {
                   role="tooltip"
                   className={[
                     "pointer-events-none absolute left-1/2 z-50 -translate-x-1/2 whitespace-nowrap",
-                    "rounded-lg bg-neutral-800 px-3 py-1.5 text-[11px] font-medium text-white",
-                    "opacity-0 shadow-lg transition-opacity duration-150",
+                    "rounded-lg bg-bg-elevated px-3 py-1.5 text-[11px] font-medium text-t-secondary",
+                    "border border-bg-border shadow-lg",
+                    "opacity-0 transition-opacity duration-150",
                     "group-hover/tab:opacity-100",
                     // Position below the button
                     "top-full mt-2",
@@ -65,7 +66,7 @@ export default function SearchTabs() {
                 >
                   Deshabilitado por ahora
                   {/* Arrow pointing up */}
-                  <span className="absolute -top-1 left-1/2 -translate-x-1/2 border-[5px] border-transparent border-b-neutral-800" />
+                  <span className="absolute -top-1 left-1/2 -translate-x-1/2 border-[5px] border-transparent border-b-bg-border" />
                 </span>
               )}
             </div>

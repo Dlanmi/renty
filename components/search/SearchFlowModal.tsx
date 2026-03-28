@@ -124,34 +124,34 @@ export default function SearchFlowModal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[70] overflow-hidden bg-white sm:hidden"
+      className="fixed inset-0 z-[70] overflow-hidden bg-bg-base sm:hidden"
       role="dialog"
       aria-modal="true"
       aria-labelledby="search-flow-modal-title"
     >
       <div ref={containerRef} className="flex h-full flex-col">
-        <header className="shrink-0 border-b border-stone-200 px-4 pb-3 pt-4">
+        <header className="shrink-0 border-b border-bg-border px-4 pb-3 pt-4">
           <div className="flex items-center justify-between">
-            <h2 id="search-flow-modal-title" className="text-base font-semibold text-stone-900">
+            <h2 id="search-flow-modal-title" className="text-base font-semibold text-t-primary">
               Buscar arriendo
             </h2>
             <button
               type="button"
               onClick={onClose}
-              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-stone-200 text-stone-600"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-bg-border text-t-secondary"
               aria-label="Cerrar filtros"
             >
               <Icon name="close" size={20} />
             </button>
           </div>
           <div className="mt-3">
-            <div className="mb-1 flex items-center justify-between text-xs font-medium text-stone-500">
+            <div className="mb-1 flex items-center justify-between text-xs font-medium text-t-muted">
               <span>
                 Paso {step} de {TOTAL_STEPS}
               </span>
               <span>{stepTitle(step)}</span>
             </div>
-            <div className="h-2 overflow-hidden rounded-full bg-stone-100">
+            <div className="h-2 overflow-hidden rounded-full bg-bg-elevated">
               <div
                 className="h-full rounded-full bg-accent transition-all duration-200"
                 style={{ width: `${progress}%` }}
@@ -165,7 +165,7 @@ export default function SearchFlowModal({
             <section className="space-y-3">
               <label
                 htmlFor="search-flow-location"
-                className="text-sm font-medium text-stone-700"
+                className="text-sm font-medium text-t-secondary"
               >
                 ¿En qué barrio quieres buscar?
               </label>
@@ -178,7 +178,7 @@ export default function SearchFlowModal({
                   onChange({ neighborhood: event.target.value })
                 }
                 placeholder="Ej. Suba, Verbenal, Toberín"
-                className="h-12 w-full rounded-xl border border-stone-200 px-3 text-sm text-stone-800 placeholder:text-stone-400 focus:border-accent focus:outline-none"
+                className="h-12 w-full rounded-xl border border-bg-border bg-bg-surface px-3 text-sm text-t-primary placeholder:text-t-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
               />
 
               {filteredNeighborhoods.length > 0 && (
@@ -188,9 +188,9 @@ export default function SearchFlowModal({
                       <button
                         type="button"
                         onClick={() => onChange({ neighborhood })}
-                        className="flex min-h-11 w-full items-center gap-2 rounded-xl border border-stone-200 px-3 text-left text-sm text-stone-700 transition-colors hover:bg-stone-50"
+                        className="flex min-h-11 w-full items-center gap-2 rounded-xl border border-bg-border px-3 text-left text-sm text-t-secondary transition-colors hover:bg-bg-elevated"
                       >
-                        <Icon name="location_on" size={18} className="text-muted" />
+                        <Icon name="location_on" size={18} className="text-t-muted" />
                         <span>{neighborhood}</span>
                       </button>
                     </li>
@@ -199,7 +199,7 @@ export default function SearchFlowModal({
               )}
 
               {filters.neighborhood && filteredNeighborhoods.length === 0 && (
-                <p className="text-xs text-muted">
+                <p className="text-xs text-t-muted">
                   No encontramos coincidencias para esa ubicación.
                 </p>
               )}
@@ -208,7 +208,7 @@ export default function SearchFlowModal({
 
           {step === 2 && (
             <section className="space-y-2">
-              <h3 className="text-sm font-medium text-stone-700">
+              <h3 className="text-sm font-medium text-t-secondary">
                 ¿Cuál es tu presupuesto máximo?
               </h3>
               <div className="space-y-2">
@@ -221,8 +221,8 @@ export default function SearchFlowModal({
                       onClick={() => onChange({ maxPriceCOP: option.value })}
                       className={`flex min-h-11 w-full items-center justify-between rounded-xl border px-3 text-sm transition-colors ${
                         isActive
-                          ? "border-accent bg-accent-light text-accent"
-                          : "border-stone-200 text-stone-700 hover:bg-stone-50"
+                          ? "border-accent bg-accent-dark/30 text-accent"
+                          : "border-bg-border text-t-secondary hover:bg-bg-elevated"
                       }`}
                     >
                       <span>{option.label}</span>
@@ -236,7 +236,7 @@ export default function SearchFlowModal({
 
           {step === 3 && (
             <section className="space-y-3">
-              <h3 className="text-sm font-medium text-stone-700">
+              <h3 className="text-sm font-medium text-t-secondary">
                 ¿Cuántas habitaciones mínimas necesitas?
               </h3>
               <div className="grid grid-cols-2 gap-2">
@@ -249,8 +249,8 @@ export default function SearchFlowModal({
                       onClick={() => onChange({ minBedrooms: option.value })}
                       className={`flex min-h-11 items-center justify-center rounded-xl border px-3 text-sm font-medium transition-colors ${
                         isActive
-                          ? "border-accent bg-accent-light text-accent"
-                          : "border-stone-200 text-stone-700 hover:bg-stone-50"
+                          ? "border-accent bg-accent-dark/30 text-accent"
+                          : "border-bg-border text-t-secondary hover:bg-bg-elevated"
                       }`}
                     >
                       {option.label}
@@ -262,7 +262,7 @@ export default function SearchFlowModal({
           )}
         </div>
 
-        <footer className="shrink-0 border-t border-stone-200 bg-white px-4 pb-6 pt-3">
+        <footer className="shrink-0 border-t border-bg-border bg-bg-surface px-4 pb-6 pt-3">
           <div className="mb-2 flex items-center justify-between text-xs">
             <button
               type="button"
@@ -271,7 +271,7 @@ export default function SearchFlowModal({
             >
               Limpiar todo
             </button>
-            <span className="text-muted">
+            <span className="text-t-muted">
               {filters.neighborhood ? filters.neighborhood : getPriceLabel(filters.maxPriceCOP)} ·{" "}
               {getBedroomsLabel(filters.minBedrooms)}
             </span>
@@ -287,7 +287,7 @@ export default function SearchFlowModal({
                 }
                 onStepChange((step - 1) as 1 | 2 | 3);
               }}
-              className="min-h-11 rounded-xl border border-stone-200 px-4 text-sm font-medium text-stone-700"
+              className="min-h-11 rounded-xl border border-bg-border px-4 text-sm font-medium text-t-secondary"
             >
               {isFirstStep ? "Cancelar" : "Atrás"}
             </button>
@@ -301,7 +301,7 @@ export default function SearchFlowModal({
                 }
                 onStepChange((step + 1) as 1 | 2 | 3);
               }}
-              className="min-h-11 rounded-xl bg-accent px-4 text-sm font-semibold text-white"
+              className="min-h-11 rounded-xl bg-accent px-4 text-sm font-semibold text-white hover:bg-accent-hover"
             >
               {isLastStep ? resultsLabel : "Siguiente"}
             </button>

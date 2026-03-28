@@ -55,7 +55,7 @@ test("mobile: open listing and return to home preserves filter query", async ({
   await firstListing.click();
 
   await expect(page).toHaveURL(/\/arriendos\//);
-  await page.getByRole("link", { name: "Inicio" }).click();
+  await page.locator("nav").first().getByRole("link", { name: "Inicio" }).click();
 
   await expect(page).toHaveURL(/q=Verbenal/);
   await expect(page).toHaveURL(/max=900000/);

@@ -9,8 +9,15 @@ import type {
   ListingStatus,
   ResidentialContext,
 } from "@/lib/domain/types";
+import {
+  INCLUDES_SUGGESTIONS,
+  REQUIREMENTS_SUGGESTIONS,
+} from "@/lib/domain/admin-suggestions";
 import FormSubmitButton from "@/components/admin/FormSubmitButton";
 import PhotoManager from "@/components/admin/PhotoManager";
+import PhotoUploadPreview from "@/components/admin/PhotoUploadPreview";
+import TagInput from "@/components/admin/TagInput";
+import PoiEditor from "@/components/admin/PoiEditor";
 
 type FormAction = (formData: FormData) => void | Promise<void>;
 
@@ -51,19 +58,6 @@ function optionalBooleanToValue(value: boolean | null | undefined): string {
   if (value === true) return "true";
   if (value === false) return "false";
   return "";
-}
-
-function toPoiTextareaValue(pois: ListingPoi[]): string {
-  return pois
-    .map((poi) =>
-      [
-        poi.kind,
-        poi.name,
-        poi.distance_m == null ? "" : String(poi.distance_m),
-        poi.walk_minutes == null ? "" : String(poi.walk_minutes),
-      ].join("|")
-    )
-    .join("\n");
 }
 
 function isRoomKind(kind: ListingKind): boolean {
@@ -115,6 +109,17 @@ function statusHintClasses(tone: "neutral" | "success" | "warning"): string {
   return "border-stone-200 bg-stone-50 text-stone-700";
 }
 
+/* Style constants to reduce duplication */
+const INPUT_CLASS =
+  "h-11 w-full rounded-xl border border-stone-200 px-3 text-sm text-stone-900 focus:border-accent focus:outline-none";
+const SELECT_CLASS =
+  "h-11 w-full rounded-xl border border-stone-200 bg-white px-3 text-sm text-stone-900 focus:border-accent focus:outline-none";
+const TEXTAREA_CLASS =
+  "w-full rounded-xl border border-stone-200 px-3 py-2 text-sm text-stone-900 focus:border-accent focus:outline-none";
+const LABEL_CLASS = "text-sm font-medium text-stone-700";
+const SECTION_CLASS =
+  "rounded-card border border-stone-200 bg-white p-4 shadow-card";
+
 export default function ListingForm({
   mode,
   action,
@@ -123,9 +128,6 @@ export default function ListingForm({
   pois = [],
   submitLabel,
 }: ListingFormProps) {
-  const includesCsv = listing?.includes?.join(", ") ?? "";
-  const requirementsCsv = listing?.requirements?.join(", ") ?? "";
-  const poisValue = toPoiTextareaValue(pois);
   const manualGalleryUrlsValue = photos
     .filter((photo) => !photo.storage_path.trim())
     .map((photo) => photo.public_url)
@@ -134,7 +136,8 @@ export default function ListingForm({
   const initialListingKind = listing?.listing_kind ?? "apartment";
   const initialStatus = listing?.status ?? "draft";
 
-  const [listingKind, setListingKind] = useState<ListingKind>(initialListingKind);
+  const [listingKind, setListingKind] =
+    useState<ListingKind>(initialListingKind);
   const [status, setStatus] = useState<ListingStatus>(initialStatus);
 
   const roomKind = isRoomKind(listingKind);
@@ -160,16 +163,19 @@ export default function ListingForm({
     <form action={action} className="space-y-6">
       {listing?.id && <input type="hidden" name="listing_id" value={listing.id} />}
 
-      <section className="rounded-card border border-stone-200 bg-white p-4 shadow-card">
+      {/* ── Publicación ────────────────────────────────────────────── */}
+      <section className={SECTION_CLASS}>
         <h2 className="text-lg font-semibold text-stone-900">Publicacion</h2>
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           <label className="block space-y-1">
-            <span className="text-sm font-medium text-stone-700">Estado</span>
+            <span className={LABEL_CLASS}>Estado</span>
             <select
               name="status"
               value={status}
-              onChange={(event) => setStatus(event.target.value as ListingStatus)}
-              className="h-11 w-full rounded-xl border border-stone-200 bg-white px-3 text-sm text-stone-900 focus:border-accent focus:outline-none"
+              onChange={(event) =>
+                setStatus(event.target.value as ListingStatus)
+              }
+              className={SELECT_CLASS}
             >
               {STATUS_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -180,12 +186,12 @@ export default function ListingForm({
           </label>
 
           <label className="block space-y-1">
-            <span className="text-sm font-medium text-stone-700">Disponible desde</span>
+            <span className={LABEL_CLASS}>Disponible desde</span>
             <input
               type="date"
               name="available_from"
               defaultValue={listing?.available_from ?? ""}
-              className="h-11 w-full rounded-xl border border-stone-200 px-3 text-sm text-stone-900 focus:border-accent focus:outline-none"
+              className={INPUT_CLASS}
             />
           </label>
         </div>
@@ -199,27 +205,32 @@ export default function ListingForm({
         </p>
       </section>
 
-      <section className="rounded-card border border-stone-200 bg-white p-4 shadow-card">
-        <h2 className="text-lg font-semibold text-stone-900">Datos principales</h2>
+      {/* ── Datos principales ──────────────────────────────────────── */}
+      <section className={SECTION_CLASS}>
+        <h2 className="text-lg font-semibold text-stone-900">
+          Datos principales
+        </h2>
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           <label className="block space-y-1 sm:col-span-2">
-            <span className="text-sm font-medium text-stone-700">Titulo</span>
+            <span className={LABEL_CLASS}>Titulo</span>
             <input
               type="text"
               name="title"
               required
               defaultValue={listing?.title ?? ""}
-              className="h-11 w-full rounded-xl border border-stone-200 px-3 text-sm text-stone-900 focus:border-accent focus:outline-none"
+              className={INPUT_CLASS}
             />
           </label>
 
           <label className="block space-y-1">
-            <span className="text-sm font-medium text-stone-700">Tipo de arriendo</span>
+            <span className={LABEL_CLASS}>Tipo de arriendo</span>
             <select
               name="listing_kind"
               value={listingKind}
-              onChange={(event) => setListingKind(event.target.value as ListingKind)}
-              className="h-11 w-full rounded-xl border border-stone-200 bg-white px-3 text-sm text-stone-900 focus:border-accent focus:outline-none"
+              onChange={(event) =>
+                setListingKind(event.target.value as ListingKind)
+              }
+              className={SELECT_CLASS}
             >
               {LISTING_KIND_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -233,83 +244,86 @@ export default function ListingForm({
           </label>
 
           <label className="block space-y-1">
-            <span className="text-sm font-medium text-stone-700">Etiqueta comercial</span>
+            <span className={LABEL_CLASS}>Etiqueta comercial</span>
             <input
               type="text"
               name="property_type"
               required
               defaultValue={listing?.property_type ?? ""}
               placeholder="Ej. Apartamento, Casa, Habitacion"
-              className="h-11 w-full rounded-xl border border-stone-200 px-3 text-sm text-stone-900 focus:border-accent focus:outline-none"
+              className={INPUT_CLASS}
             />
           </label>
 
           <label className="block space-y-1 sm:col-span-2">
-            <span className="text-sm font-medium text-stone-700">Descripcion</span>
+            <span className={LABEL_CLASS}>Descripcion</span>
             <textarea
               name="description"
               rows={5}
               defaultValue={listing?.description ?? ""}
-              className="w-full rounded-xl border border-stone-200 px-3 py-2 text-sm text-stone-900 focus:border-accent focus:outline-none"
+              className={TEXTAREA_CLASS}
             />
           </label>
         </div>
       </section>
 
-      <section className="rounded-card border border-stone-200 bg-white p-4 shadow-card">
-        <h2 className="text-lg font-semibold text-stone-900">Ubicacion y contexto</h2>
+      {/* ── Ubicación y contexto ───────────────────────────────────── */}
+      <section className={SECTION_CLASS}>
+        <h2 className="text-lg font-semibold text-stone-900">
+          Ubicacion y contexto
+        </h2>
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           <label className="block space-y-1">
-            <span className="text-sm font-medium text-stone-700">Ciudad</span>
+            <span className={LABEL_CLASS}>Ciudad</span>
             <input
               type="text"
               name="city"
               required
               defaultValue={listing?.city ?? "Bogota"}
-              className="h-11 w-full rounded-xl border border-stone-200 px-3 text-sm text-stone-900 focus:border-accent focus:outline-none"
+              className={INPUT_CLASS}
             />
           </label>
 
           <label className="block space-y-1">
-            <span className="text-sm font-medium text-stone-700">Zona</span>
+            <span className={LABEL_CLASS}>Zona</span>
             <input
               type="text"
               name="zone"
               defaultValue={listing?.zone ?? ""}
               placeholder="Norte, Centro, Sur..."
-              className="h-11 w-full rounded-xl border border-stone-200 px-3 text-sm text-stone-900 focus:border-accent focus:outline-none"
+              className={INPUT_CLASS}
             />
           </label>
 
           <label className="block space-y-1">
-            <span className="text-sm font-medium text-stone-700">Barrio</span>
+            <span className={LABEL_CLASS}>Barrio</span>
             <input
               type="text"
               name="neighborhood"
               required
               defaultValue={listing?.neighborhood ?? ""}
-              className="h-11 w-full rounded-xl border border-stone-200 px-3 text-sm text-stone-900 focus:border-accent focus:outline-none"
+              className={INPUT_CLASS}
             />
           </label>
 
           <label className="block space-y-1">
-            <span className="text-sm font-medium text-stone-700">Ubicacion aproximada</span>
+            <span className={LABEL_CLASS}>Ubicacion aproximada</span>
             <input
               type="text"
               name="approx_location"
               required
               defaultValue={listing?.approx_location ?? ""}
               placeholder="Cerca a..."
-              className="h-11 w-full rounded-xl border border-stone-200 px-3 text-sm text-stone-900 focus:border-accent focus:outline-none"
+              className={INPUT_CLASS}
             />
           </label>
 
           <label className="block space-y-1">
-            <span className="text-sm font-medium text-stone-700">Contexto residencial</span>
+            <span className={LABEL_CLASS}>Contexto residencial</span>
             <select
               name="residential_context"
               defaultValue={listing?.residential_context ?? "barrio"}
-              className="h-11 w-full rounded-xl border border-stone-200 bg-white px-3 text-sm text-stone-900 focus:border-accent focus:outline-none"
+              className={SELECT_CLASS}
             >
               {CONTEXT_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -320,39 +334,42 @@ export default function ListingForm({
           </label>
 
           <label className="block space-y-1">
-            <span className="text-sm font-medium text-stone-700">Nombre conjunto/edificio</span>
+            <span className={LABEL_CLASS}>Nombre conjunto/edificio</span>
             <input
               type="text"
               name="residential_name"
               defaultValue={listing?.residential_name ?? ""}
               placeholder="Opcional"
-              className="h-11 w-full rounded-xl border border-stone-200 px-3 text-sm text-stone-900 focus:border-accent focus:outline-none"
+              className={INPUT_CLASS}
             />
           </label>
         </div>
       </section>
 
-      <section className="rounded-card border border-stone-200 bg-white p-4 shadow-card">
-        <h2 className="text-lg font-semibold text-stone-900">Precio y costos</h2>
+      {/* ── Precio y costos ────────────────────────────────────────── */}
+      <section className={SECTION_CLASS}>
+        <h2 className="text-lg font-semibold text-stone-900">
+          Precio y costos
+        </h2>
         <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <label className="block space-y-1">
-            <span className="text-sm font-medium text-stone-700">Canon (COP)</span>
+            <span className={LABEL_CLASS}>Canon (COP)</span>
             <input
               type="number"
               name="price_cop"
               min={0}
               required
               defaultValue={listing?.price_cop ?? 0}
-              className="h-11 w-full rounded-xl border border-stone-200 px-3 text-sm text-stone-900 focus:border-accent focus:outline-none"
+              className={INPUT_CLASS}
             />
           </label>
 
           <label className="block space-y-1">
-            <span className="text-sm font-medium text-stone-700">Periodo</span>
+            <span className={LABEL_CLASS}>Periodo</span>
             <select
               name="billing_period"
               defaultValue={listing?.billing_period ?? "month"}
-              className="h-11 w-full rounded-xl border border-stone-200 bg-white px-3 text-sm text-stone-900 focus:border-accent focus:outline-none"
+              className={SELECT_CLASS}
             >
               <option value="month">Mensual</option>
               <option value="biweekly">Quincenal</option>
@@ -361,82 +378,85 @@ export default function ListingForm({
           </label>
 
           <label className="block space-y-1">
-            <span className="text-sm font-medium text-stone-700">Administracion (COP)</span>
+            <span className={LABEL_CLASS}>Administracion (COP)</span>
             <input
               type="number"
               name="admin_fee_cop"
               min={0}
               defaultValue={listing?.admin_fee_cop ?? 0}
-              className="h-11 w-full rounded-xl border border-stone-200 px-3 text-sm text-stone-900 focus:border-accent focus:outline-none"
+              className={INPUT_CLASS}
             />
           </label>
 
           <label className="block space-y-1">
-            <span className="text-sm font-medium text-stone-700">Estadia minima (meses)</span>
+            <span className={LABEL_CLASS}>Estadia minima (meses)</span>
             <input
               type="number"
               name="min_stay_months"
               min={0}
               defaultValue={listing?.min_stay_months ?? ""}
-              className="h-11 w-full rounded-xl border border-stone-200 px-3 text-sm text-stone-900 focus:border-accent focus:outline-none"
+              className={INPUT_CLASS}
             />
           </label>
 
           <label className="block space-y-1">
-            <span className="text-sm font-medium text-stone-700">Servicios min (COP)</span>
+            <span className={LABEL_CLASS}>Servicios min (COP)</span>
             <input
               type="number"
               name="utilities_cop_min"
               min={0}
               defaultValue={listing?.utilities_cop_min ?? ""}
-              className="h-11 w-full rounded-xl border border-stone-200 px-3 text-sm text-stone-900 focus:border-accent focus:outline-none"
+              className={INPUT_CLASS}
             />
           </label>
 
           <label className="block space-y-1">
-            <span className="text-sm font-medium text-stone-700">Servicios max (COP)</span>
+            <span className={LABEL_CLASS}>Servicios max (COP)</span>
             <input
               type="number"
               name="utilities_cop_max"
               min={0}
               defaultValue={listing?.utilities_cop_max ?? ""}
-              className="h-11 w-full rounded-xl border border-stone-200 px-3 text-sm text-stone-900 focus:border-accent focus:outline-none"
+              className={INPUT_CLASS}
             />
           </label>
         </div>
       </section>
 
-      <section className="rounded-card border border-stone-200 bg-white p-4 shadow-card">
-        <h2 className="text-lg font-semibold text-stone-900">Caracteristicas</h2>
+      {/* ── Características ────────────────────────────────────────── */}
+      <section className={SECTION_CLASS}>
+        <h2 className="text-lg font-semibold text-stone-900">
+          Caracteristicas
+        </h2>
 
         <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <label className="block space-y-1">
-            <span className="text-sm font-medium text-stone-700">Habitaciones</span>
+            <span className={LABEL_CLASS}>Habitaciones</span>
             <input
               type="number"
               name="bedrooms"
               min={0}
               required
               defaultValue={listing?.bedrooms ?? 0}
-              className="h-11 w-full rounded-xl border border-stone-200 px-3 text-sm text-stone-900 focus:border-accent focus:outline-none"
+              className={INPUT_CLASS}
             />
           </label>
 
           <label className="block space-y-1">
-            <span className="text-sm font-medium text-stone-700">Banos</span>
+            <span className={LABEL_CLASS}>Banos</span>
             <input
               type="number"
               name="bathrooms"
               min={0}
               required
               defaultValue={listing?.bathrooms ?? 0}
-              className="h-11 w-full rounded-xl border border-stone-200 px-3 text-sm text-stone-900 focus:border-accent focus:outline-none"
+              className={INPUT_CLASS}
             />
           </label>
 
           {areaKind && (
             <label className="block space-y-1">
-              <span className="text-sm font-medium text-stone-700">Area m2</span>
+              <span className={LABEL_CLASS}>Area m2</span>
               <input
                 type="number"
                 name="area_m2"
@@ -444,7 +464,7 @@ export default function ListingForm({
                 step="0.01"
                 required={areaRequiredInClient}
                 defaultValue={listing?.area_m2 ?? ""}
-                className="h-11 w-full rounded-xl border border-stone-200 px-3 text-sm text-stone-900 focus:border-accent focus:outline-none"
+                className={INPUT_CLASS}
               />
               <span className="text-xs text-muted">
                 {areaRequiredInClient
@@ -455,11 +475,11 @@ export default function ListingForm({
           )}
 
           <label className="block space-y-1">
-            <span className="text-sm font-medium text-stone-700">Independiente</span>
+            <span className={LABEL_CLASS}>Independiente</span>
             <select
               name="independent"
               defaultValue={listing?.independent ? "true" : "false"}
-              className="h-11 w-full rounded-xl border border-stone-200 bg-white px-3 text-sm text-stone-900 focus:border-accent focus:outline-none"
+              className={SELECT_CLASS}
             >
               <option value="true">Si</option>
               <option value="false">No</option>
@@ -467,11 +487,11 @@ export default function ListingForm({
           </label>
 
           <label className="block space-y-1">
-            <span className="text-sm font-medium text-stone-700">Amoblado</span>
+            <span className={LABEL_CLASS}>Amoblado</span>
             <select
               name="furnished"
               defaultValue={listing?.furnished ? "true" : "false"}
-              className="h-11 w-full rounded-xl border border-stone-200 bg-white px-3 text-sm text-stone-900 focus:border-accent focus:outline-none"
+              className={SELECT_CLASS}
             >
               <option value="true">Si</option>
               <option value="false">No</option>
@@ -479,11 +499,11 @@ export default function ListingForm({
           </label>
 
           <label className="block space-y-1">
-            <span className="text-sm font-medium text-stone-700">Mascotas</span>
+            <span className={LABEL_CLASS}>Mascotas</span>
             <select
               name="pets_allowed"
               defaultValue={optionalBooleanToValue(listing?.pets_allowed)}
-              className="h-11 w-full rounded-xl border border-stone-200 bg-white px-3 text-sm text-stone-900 focus:border-accent focus:outline-none"
+              className={SELECT_CLASS}
             >
               <option value="">No definido</option>
               <option value="true">Permitidas</option>
@@ -494,22 +514,22 @@ export default function ListingForm({
           {!roomKind && (
             <>
               <label className="block space-y-1">
-                <span className="text-sm font-medium text-stone-700">Piso</span>
+                <span className={LABEL_CLASS}>Piso</span>
                 <input
                   type="number"
                   name="floor_number"
                   min={0}
                   defaultValue={listing?.floor_number ?? ""}
-                  className="h-11 w-full rounded-xl border border-stone-200 px-3 text-sm text-stone-900 focus:border-accent focus:outline-none"
+                  className={INPUT_CLASS}
                 />
               </label>
 
               <label className="block space-y-1">
-                <span className="text-sm font-medium text-stone-700">Ascensor</span>
+                <span className={LABEL_CLASS}>Ascensor</span>
                 <select
                   name="has_elevator"
                   defaultValue={optionalBooleanToValue(listing?.has_elevator)}
-                  className="h-11 w-full rounded-xl border border-stone-200 bg-white px-3 text-sm text-stone-900 focus:border-accent focus:outline-none"
+                  className={SELECT_CLASS}
                 >
                   <option value="">No definido</option>
                   <option value="true">Si</option>
@@ -518,24 +538,24 @@ export default function ListingForm({
               </label>
 
               <label className="block space-y-1">
-                <span className="text-sm font-medium text-stone-700">Parqueadero carro</span>
+                <span className={LABEL_CLASS}>Parqueadero carro</span>
                 <input
                   type="number"
                   name="parking_car_count"
                   min={0}
                   defaultValue={listing?.parking_car_count ?? 0}
-                  className="h-11 w-full rounded-xl border border-stone-200 px-3 text-sm text-stone-900 focus:border-accent focus:outline-none"
+                  className={INPUT_CLASS}
                 />
               </label>
 
               <label className="block space-y-1">
-                <span className="text-sm font-medium text-stone-700">Parqueadero moto</span>
+                <span className={LABEL_CLASS}>Parqueadero moto</span>
                 <input
                   type="number"
                   name="parking_motorcycle_count"
                   min={0}
                   defaultValue={listing?.parking_motorcycle_count ?? 0}
-                  className="h-11 w-full rounded-xl border border-stone-200 px-3 text-sm text-stone-900 focus:border-accent focus:outline-none"
+                  className={INPUT_CLASS}
                 />
               </label>
             </>
@@ -544,12 +564,14 @@ export default function ListingForm({
           {roomKind && (
             <>
               <label className="block space-y-1">
-                <span className="text-sm font-medium text-stone-700">Bano privado</span>
+                <span className={LABEL_CLASS}>Bano privado</span>
                 <select
                   name="room_bathroom_private"
-                  defaultValue={optionalBooleanToValue(listing?.room_bathroom_private)}
+                  defaultValue={optionalBooleanToValue(
+                    listing?.room_bathroom_private
+                  )}
                   required={roomFieldsRequiredInClient}
-                  className="h-11 w-full rounded-xl border border-stone-200 bg-white px-3 text-sm text-stone-900 focus:border-accent focus:outline-none"
+                  className={SELECT_CLASS}
                 >
                   <option value="">Selecciona</option>
                   <option value="true">Si</option>
@@ -558,12 +580,14 @@ export default function ListingForm({
               </label>
 
               <label className="block space-y-1">
-                <span className="text-sm font-medium text-stone-700">Acceso cocina</span>
+                <span className={LABEL_CLASS}>Acceso cocina</span>
                 <select
                   name="kitchen_access"
-                  defaultValue={optionalBooleanToValue(listing?.kitchen_access)}
+                  defaultValue={optionalBooleanToValue(
+                    listing?.kitchen_access
+                  )}
                   required={roomFieldsRequiredInClient}
-                  className="h-11 w-full rounded-xl border border-stone-200 bg-white px-3 text-sm text-stone-900 focus:border-accent focus:outline-none"
+                  className={SELECT_CLASS}
                 >
                   <option value="">Selecciona</option>
                   <option value="true">Si</option>
@@ -573,14 +597,14 @@ export default function ListingForm({
 
               {sharedRoom && (
                 <label className="block space-y-1">
-                  <span className="text-sm font-medium text-stone-700">Convivientes</span>
+                  <span className={LABEL_CLASS}>Convivientes</span>
                   <input
                     type="number"
                     name="cohabitants_count"
                     min={0}
                     required={sharedRoomRequiredInClient}
                     defaultValue={listing?.cohabitants_count ?? ""}
-                    className="h-11 w-full rounded-xl border border-stone-200 px-3 text-sm text-stone-900 focus:border-accent focus:outline-none"
+                    className={INPUT_CLASS}
                   />
                 </label>
               )}
@@ -589,90 +613,86 @@ export default function ListingForm({
         </div>
       </section>
 
-      <section className="rounded-card border border-stone-200 bg-white p-4 shadow-card">
-        <h2 className="text-lg font-semibold text-stone-900">Servicios, requisitos y contacto</h2>
-        <div className="mt-3 grid gap-3 sm:grid-cols-2">
-          <label className="block space-y-1 sm:col-span-2">
-            <span className="text-sm font-medium text-stone-700">Incluye (coma separada)</span>
-            <input
-              type="text"
-              name="includes_csv"
-              defaultValue={includesCsv}
-              placeholder="agua, luz, wifi, parqueadero"
-              className="h-11 w-full rounded-xl border border-stone-200 px-3 text-sm text-stone-900 focus:border-accent focus:outline-none"
-            />
-          </label>
+      {/* ── Servicios, requisitos y contacto ───────────────────────── */}
+      <section className={SECTION_CLASS}>
+        <h2 className="text-lg font-semibold text-stone-900">
+          Servicios, requisitos y contacto
+        </h2>
+        <div className="mt-3 grid gap-3 sm:grid-cols-1">
+          <TagInput
+            name="includes_csv"
+            label="¿Qué incluye el arriendo?"
+            initialTags={listing?.includes ?? []}
+            suggestions={INCLUDES_SUGGESTIONS}
+            placeholder="Escribe y presiona Enter"
+          />
 
-          <label className="block space-y-1 sm:col-span-2">
-            <span className="text-sm font-medium text-stone-700">Nota de servicios</span>
+          <label className="block space-y-1">
+            <span className={LABEL_CLASS}>Nota de servicios</span>
             <textarea
               name="utilities_notes"
               rows={3}
               defaultValue={listing?.utilities_notes ?? ""}
-              className="w-full rounded-xl border border-stone-200 px-3 py-2 text-sm text-stone-900 focus:border-accent focus:outline-none"
+              className={TEXTAREA_CLASS}
             />
           </label>
 
-          <label className="block space-y-1 sm:col-span-2">
-            <span className="text-sm font-medium text-stone-700">Requisitos (coma separada)</span>
-            <input
-              type="text"
-              name="requirements_csv"
-              defaultValue={requirementsCsv}
-              placeholder="fiador, deposito, carta_laboral"
-              className="h-11 w-full rounded-xl border border-stone-200 px-3 text-sm text-stone-900 focus:border-accent focus:outline-none"
-            />
-          </label>
+          <TagInput
+            name="requirements_csv"
+            label="Requisitos para arrendar"
+            initialTags={listing?.requirements ?? []}
+            suggestions={REQUIREMENTS_SUGGESTIONS}
+            placeholder="Escribe y presiona Enter"
+          />
 
-          <label className="block space-y-1 sm:col-span-2">
-            <span className="text-sm font-medium text-stone-700">Nota de requisitos</span>
+          <label className="block space-y-1">
+            <span className={LABEL_CLASS}>Nota de requisitos</span>
             <textarea
               name="requirements_notes"
               rows={3}
               defaultValue={listing?.requirements_notes ?? ""}
-              className="w-full rounded-xl border border-stone-200 px-3 py-2 text-sm text-stone-900 focus:border-accent focus:outline-none"
+              className={TEXTAREA_CLASS}
             />
           </label>
 
           <label className="block space-y-1">
-            <span className="text-sm font-medium text-stone-700">WhatsApp (E.164)</span>
+            <span className={LABEL_CLASS}>WhatsApp (E.164)</span>
             <input
               type="text"
               name="whatsapp_e164"
               required
               defaultValue={listing?.whatsapp_e164 ?? "57"}
               placeholder="573001234567"
-              className="h-11 w-full rounded-xl border border-stone-200 px-3 text-sm text-stone-900 focus:border-accent focus:outline-none"
+              className={INPUT_CLASS}
             />
           </label>
         </div>
       </section>
 
-      <section className="rounded-card border border-stone-200 bg-white p-4 shadow-card">
-        <h2 className="text-lg font-semibold text-stone-900">Entorno y puntos cercanos</h2>
-        <p className="mt-1 text-xs text-muted">
-          Una linea por punto: <code>tipo|nombre|distancia_m|min_a_pie</code>. Tipos:
-          park, transport, supermarket, pharmacy, school, hospital, other.
-        </p>
-        <textarea
-          name="pois_text"
-          rows={6}
-          defaultValue={poisValue}
-          className="mt-3 w-full rounded-xl border border-stone-200 px-3 py-2 font-mono text-xs text-stone-900 focus:border-accent focus:outline-none"
-        />
+      {/* ── Entorno y puntos cercanos ──────────────────────────────── */}
+      <section className={SECTION_CLASS}>
+        <h2 className="text-lg font-semibold text-stone-900">
+          Entorno y puntos cercanos
+        </h2>
+        <div className="mt-3">
+          <PoiEditor pois={pois} />
+        </div>
       </section>
 
-      <section className="rounded-card border border-stone-200 bg-white p-4 shadow-card">
-        <h2 className="text-lg font-semibold text-stone-900">Fotos y portada</h2>
+      {/* ── Fotos y portada ────────────────────────────────────────── */}
+      <section className={SECTION_CLASS}>
+        <h2 className="text-lg font-semibold text-stone-900">
+          Fotos y portada
+        </h2>
 
         <label className="mt-3 block space-y-1">
-          <span className="text-sm font-medium text-stone-700">URL portada externa (opcional)</span>
+          <span className={LABEL_CLASS}>URL portada externa (opcional)</span>
           <input
             type="text"
             name="manual_cover_photo_url"
             defaultValue=""
             placeholder="https://..."
-            className="h-11 w-full rounded-xl border border-stone-200 px-3 text-sm text-stone-900 focus:border-accent focus:outline-none"
+            className={INPUT_CLASS}
           />
           <p className="text-xs text-muted">
             Si lo dejas vacio, se usara como portada una foto de la galeria.
@@ -680,7 +700,7 @@ export default function ListingForm({
         </label>
 
         <label className="mt-3 block space-y-1">
-          <span className="text-sm font-medium text-stone-700">
+          <span className={LABEL_CLASS}>
             URLs de galería externa (opcional)
           </span>
           <textarea
@@ -688,36 +708,44 @@ export default function ListingForm({
             rows={4}
             defaultValue={manualGalleryUrlsValue}
             placeholder={"https://...\nhttps://..."}
-            className="w-full rounded-xl border border-stone-200 px-3 py-2 text-sm text-stone-900 focus:border-accent focus:outline-none"
+            className={TEXTAREA_CLASS}
           />
           <p className="text-xs text-muted">
-            Una URL por línea. Ideal cuando aún no subes archivos y quieres varias
-            fotos en la galería del detalle.
+            Una URL por línea. Ideal cuando aún no subes archivos y quieres
+            varias fotos en la galería del detalle.
           </p>
         </label>
 
         <label className="mt-3 block space-y-1">
-          <span className="text-sm font-medium text-stone-700">Subir fotos nuevas</span>
+          <span className={LABEL_CLASS}>Subir fotos nuevas</span>
           <input
             type="file"
             name="new_photos"
             multiple
-            accept="image/*"
-            className="block w-full rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm text-stone-900"
+            accept="image/jpeg,image/png,image/webp,image/avif"
+            className="block w-full rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm text-stone-900 file:mr-3 file:rounded-lg file:border-0 file:bg-accent/10 file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-accent"
           />
           <p className="text-xs text-muted">
-            Recomendado para publicacion activa: minimo 8 fotos con diferentes ambientes.
+            Máximo 10 fotos por carga, 8 MB cada una. Formatos: JPG, PNG, WEBP,
+            AVIF.
           </p>
         </label>
 
-        {mode === "edit" && photos.length > 0 && <PhotoManager photos={photos} />}
+        <PhotoUploadPreview inputName="new_photos" />
+
+        {photos.length > 0 && <PhotoManager photos={photos} />}
       </section>
 
+      {/* ── Submit ─────────────────────────────────────────────────── */}
       <div className="flex flex-wrap items-center justify-between gap-3 pb-4">
         <p className="text-xs text-muted">
-          El formulario valida por tipo de inmueble y estado para evitar cargas inconsistentes.
+          El formulario valida por tipo de inmueble y estado para evitar cargas
+          inconsistentes.
         </p>
-        <FormSubmitButton idleLabel={submitLabel} pendingLabel="Guardando cambios..." />
+        <FormSubmitButton
+          idleLabel={submitLabel}
+          pendingLabel="Guardando cambios..."
+        />
       </div>
     </form>
   );

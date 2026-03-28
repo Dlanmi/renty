@@ -57,21 +57,21 @@ export default function AboutPage() {
   return (
     <div className="mx-auto max-w-6xl space-y-8 px-4 py-8 sm:px-6 lg:space-y-10 lg:py-10">
       <StructuredData id="about-structured-data" data={aboutJsonLd} />
-      <section className="relative overflow-hidden rounded-[28px] border border-stone-200 bg-white px-5 py-8 text-center shadow-card sm:px-8 sm:py-10">
-        <div className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-rose-100/75 blur-3xl" />
-        <div className="absolute -bottom-20 -left-10 h-52 w-52 rounded-full bg-orange-100/65 blur-3xl" />
+      <section className="relative overflow-hidden rounded-[28px] border border-bg-border bg-bg-surface px-5 py-8 text-center shadow-card sm:px-8 sm:py-10">
+        <div className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-accent/10 blur-3xl" />
+        <div className="absolute -bottom-20 -left-10 h-52 w-52 rounded-full bg-indigo/10 blur-3xl" />
 
         <div className="relative mx-auto max-w-3xl">
-          <p className="inline-flex items-center gap-1 rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-rose-700">
+          <p className="inline-flex items-center gap-1 rounded-full border border-accent/30 bg-accent-dark/20 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-accent">
             <Icon name="home_work" size={14} />
             Sobre Renty
           </p>
 
-          <h1 className="mt-4 text-3xl font-extrabold leading-tight tracking-tight text-stone-900 sm:text-4xl">
+          <h1 className="mt-4 text-3xl font-extrabold leading-tight tracking-tight text-t-primary sm:text-4xl">
             Encontrar vivienda debería ser más simple
           </h1>
 
-          <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-stone-600">
+          <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-t-secondary">
             Renty es una plataforma diseñada para ayudar a las personas a
             encontrar vivienda de forma más fácil y transparente.
           </p>
@@ -95,10 +95,10 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-stone-200 bg-white p-5 shadow-card sm:p-6">
+      <section className="rounded-2xl border border-bg-border bg-bg-surface p-5 shadow-card sm:p-6">
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-stone-900">Cómo funciona</h2>
-          <p className="mx-auto mt-2 max-w-2xl text-sm leading-relaxed text-stone-600">
+          <h2 className="text-xl font-semibold text-t-primary">Cómo funciona</h2>
+          <p className="mx-auto mt-2 max-w-2xl text-sm leading-relaxed text-t-secondary">
             Un flujo simple para reducir fricción y ayudarte a encontrar vivienda más rápido.
           </p>
         </div>
@@ -107,39 +107,39 @@ export default function AboutPage() {
           {HOW_IT_WORKS.map((step, index) => (
             <li
               key={step}
-              className="rounded-xl border border-stone-200 bg-stone-50 p-4"
+              className="rounded-xl border border-bg-border bg-bg-elevated p-4"
             >
               <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-accent text-xs font-bold text-white">
                 {index + 1}
               </span>
-              <p className="mt-2 text-sm font-semibold text-stone-900">{step}</p>
+              <p className="mt-2 text-sm font-semibold text-t-primary">{step}</p>
             </li>
           ))}
         </ol>
       </section>
 
-      <section className="rounded-2xl border border-stone-200 bg-white p-5 shadow-card sm:p-6">
-        <h2 className="text-xl font-semibold text-stone-900">Qué es Renty</h2>
-        <p className="mt-3 text-sm leading-relaxed text-stone-700">
+      <section className="rounded-2xl border border-bg-border bg-bg-surface p-5 shadow-card sm:p-6">
+        <h2 className="text-xl font-semibold text-t-primary">Qué es Renty</h2>
+        <p className="mt-3 text-sm leading-relaxed text-t-secondary">
           En lugar de perder tiempo caminando por barrios o revisando cientos
           de anuncios confusos, Renty reúne información clara sobre propiedades
           disponibles y facilita el contacto directo con quienes las ofrecen.
         </p>
-        <p className="mt-3 text-sm leading-relaxed text-stone-700">
+        <p className="mt-3 text-sm leading-relaxed text-t-secondary">
           Nuestro objetivo es simple: hacer que encontrar un lugar para vivir
           sea un proceso rápido, claro y confiable.
         </p>
       </section>
 
-      <section className="rounded-2xl border border-stone-200 bg-white p-5 shadow-card sm:p-6">
-        <h2 className="text-xl font-semibold text-stone-900">
+      <section className="rounded-2xl border border-bg-border bg-bg-surface p-5 shadow-card sm:p-6">
+        <h2 className="text-xl font-semibold text-t-primary">
           Qué puedes hacer en Renty
         </h2>
         <ul className="mt-4 grid gap-3 sm:grid-cols-2">
           {YOU_CAN_DO.map((item) => (
             <li
               key={item.text}
-              className="flex items-start gap-2 rounded-xl border border-stone-200 bg-stone-50 p-3 text-sm text-stone-700"
+              className="flex items-start gap-2 rounded-xl border border-bg-border bg-bg-elevated p-3 text-sm text-t-secondary"
             >
               <Icon
                 name={item.icon}
@@ -152,32 +152,32 @@ export default function AboutPage() {
         </ul>
       </section>
 
-      <section className="rounded-2xl border border-stone-200 bg-white p-5 shadow-card sm:p-6">
-        <h2 className="text-xl font-semibold text-stone-900">Nuestro objetivo</h2>
-        <p className="mt-3 text-sm leading-relaxed text-stone-700">
+      <section className="rounded-2xl border border-bg-border bg-bg-surface p-5 shadow-card sm:p-6">
+        <h2 className="text-xl font-semibold text-t-primary">Nuestro objetivo</h2>
+        <p className="mt-3 text-sm leading-relaxed text-t-secondary">
           Renty comenzó como un proyecto académico, pero rápidamente
           entendimos que el problema que queríamos resolver era mucho más
           grande.
         </p>
-        <p className="mt-3 text-sm leading-relaxed text-stone-700">
+        <p className="mt-3 text-sm leading-relaxed text-t-secondary">
           Miles de personas en Bogotá pasan días o semanas buscando vivienda.
           Nuestro objetivo es construir una plataforma que haga ese proceso más
           sencillo.
         </p>
-        <p className="mt-3 text-sm leading-relaxed text-stone-700">
+        <p className="mt-3 text-sm leading-relaxed text-t-secondary">
           Hoy Renty se enfoca en facilitar la búsqueda de arriendos. En el
           futuro, la plataforma está pensada para incluir más formas de
           encontrar vivienda, como propiedades en venta o alquileres temporales.
         </p>
       </section>
 
-      <section className="rounded-2xl border border-rose-200 bg-rose-50 p-5 text-center shadow-card sm:p-6">
-        <p className="text-xs font-semibold uppercase tracking-wide text-rose-700">
+      <section className="rounded-2xl border border-accent/30 bg-accent-dark/20 p-5 text-center shadow-card sm:p-6">
+        <p className="text-xs font-semibold uppercase tracking-wide text-accent">
           Renty
         </p>
         <div className="mt-3 space-y-2">
           {BRAND_PHRASES.map((phrase) => (
-            <p key={phrase} className="text-sm font-medium text-stone-800">
+            <p key={phrase} className="text-sm font-medium text-t-primary">
               {phrase}
             </p>
           ))}

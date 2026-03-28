@@ -50,8 +50,7 @@ export default function ListingCard({
       className="group block h-full min-w-0"
       listingQueryString={listingQueryString}
     >
-      <Card className="lift-hover h-full min-w-0 overflow-hidden border border-stone-200">
-        {/* Image */}
+      <Card className="lift-hover h-full min-w-0 overflow-hidden border border-bg-border transition-all duration-200 ease-out hover:border-accent hover:-translate-y-0.5 hover:shadow-lg">
         <div className="relative aspect-[4/3] overflow-hidden rounded-t-card">
           <Image
             src={cover_photo_url}
@@ -64,28 +63,23 @@ export default function ListingCard({
           />
         </div>
 
-        {/* Content */}
         <div className="min-w-0 space-y-2 p-4">
-          {/* Location */}
-          <div className="flex min-w-0 items-center gap-1 text-xs text-muted">
+          <div className="flex min-w-0 items-center gap-1 text-xs text-t-muted">
             <Icon name="location_on" size={14} className="shrink-0" />
             <span className="min-w-0 truncate">{approx_location}</span>
           </div>
 
-          {/* Title */}
-          <h3 className="line-clamp-2 break-words text-[14px] font-semibold leading-snug text-stone-900">
+          <h3 className="line-clamp-2 break-words text-[14px] font-semibold leading-snug text-t-primary">
             {title}
           </h3>
 
-          {/* Price */}
-          <p className="break-words text-[18px] font-bold tracking-tight text-stone-900">
+          <p className="break-words text-[18px] font-bold tracking-tight text-accent">
             {formatCOP(price_cop)}
-            <span className="ml-0.5 text-[13px] font-normal text-muted">
+            <span className="ml-0.5 text-[13px] font-normal text-t-muted">
               {formatBillingPeriod(billing_period)}
             </span>
           </p>
 
-          {/* Chips */}
           <div className="flex min-w-0 flex-wrap gap-1.5 pt-1">
             <Chip
               icon={iconForPropertyType(property_type)}

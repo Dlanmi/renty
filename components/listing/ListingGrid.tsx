@@ -17,12 +17,12 @@ export default function ListingGrid({
   if (listings.length === 0) {
     return (
       <div className="py-20 text-center">
-        <p className="text-lg text-muted">No encontramos arriendos con estos filtros.</p>
+        <p className="text-lg text-t-muted">No encontramos arriendos con estos filtros.</p>
         {onClearFilters && (
           <button
             type="button"
             onClick={onClearFilters}
-            className="mt-4 inline-flex min-h-11 items-center gap-1 rounded-full border border-stone-200 px-4 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-50"
+            className="mt-4 inline-flex min-h-11 items-center gap-1 rounded-full border border-bg-border px-4 text-sm font-medium text-t-secondary transition-colors hover:bg-bg-elevated"
           >
             <Icon name="close" size={16} />
             Quitar filtros

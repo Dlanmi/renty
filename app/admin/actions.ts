@@ -8,16 +8,15 @@ import {
   setAdminSessionCookies,
 } from "@/lib/admin/auth";
 import {
-  buildAdminLoginRateLimitKeys,
   clearAdminLoginRateLimit,
   getAdminLoginRateLimitStatus,
   recordAdminLoginFailure,
 } from "@/lib/admin/rate-limit";
-
-function withError(path: string, message: string): never {
-  const params = new URLSearchParams({ error: message });
-  redirect(`${path}?${params.toString()}`);
-}
+import {
+  executeAdminLogin,
+  executeAdminLogout,
+  type AdminLoginClient,
+} from "@/lib/admin/login";
 
 async function getRequestIp(): Promise<string> {
   const headerStore = await headers();
@@ -33,61 +32,26 @@ async function getRequestIp(): Promise<string> {
   return "unknown";
 }
 
+function createAdminLoginClient(accessToken?: string): AdminLoginClient {
+  return createSupabaseServerClient(accessToken) as unknown as AdminLoginClient;
+}
+
 export async function loginAdminAction(formData: FormData) {
-  const email = String(formData.get("email") ?? "")
-    .trim()
-    .toLowerCase();
-  const password = String(formData.get("password") ?? "");
-  const rateLimitKeys = buildAdminLoginRateLimitKeys(
-    await getRequestIp(),
-    email || "unknown"
-  );
-
-  const rateLimitStatus = getAdminLoginRateLimitStatus(rateLimitKeys);
-  if (rateLimitStatus.limited) {
-    const retryMinutes = Math.max(1, Math.ceil(rateLimitStatus.retryAfterSeconds / 60));
-    withError(
-      "/admin/login",
-      `Demasiados intentos fallidos. Intenta de nuevo en ${retryMinutes} min.`
-    );
-  }
-
-  if (!email || !password) {
-    recordAdminLoginFailure(rateLimitKeys);
-    withError("/admin/login", "Ingresa correo y contraseña.");
-  }
-
-  const client = createSupabaseServerClient();
-  const { data, error } = await client.auth.signInWithPassword({
-    email,
-    password,
+  return executeAdminLogin(formData, {
+    getRequestIp,
+    getRateLimitStatus: getAdminLoginRateLimitStatus,
+    recordLoginFailure: recordAdminLoginFailure,
+    clearLoginRateLimit: clearAdminLoginRateLimit,
+    createClient: createAdminLoginClient,
+    setAdminSessionCookies,
+    clearAdminSessionCookies,
+    redirect,
   });
-
-  if (error || !data.session || !data.user) {
-    recordAdminLoginFailure(rateLimitKeys);
-    withError("/admin/login", "Credenciales inválidas.");
-  }
-
-  const authedClient = createSupabaseServerClient(data.session.access_token);
-  const { data: profile, error: profileError } = await authedClient
-    .from("profiles")
-    .select("role")
-    .eq("id", data.user.id)
-    .maybeSingle();
-
-  const role = profile?.role;
-  if (profileError || (role !== "admin" && role !== "editor")) {
-    recordAdminLoginFailure(rateLimitKeys);
-    await clearAdminSessionCookies();
-    withError("/admin/login", "Tu usuario no tiene permisos de administración.");
-  }
-
-  clearAdminLoginRateLimit(rateLimitKeys);
-  await setAdminSessionCookies(data.session);
-  redirect("/admin");
 }
 
 export async function logoutAdminAction() {
-  await clearAdminSessionCookies();
-  redirect("/admin/login");
+  return executeAdminLogout({
+    clearAdminSessionCookies,
+    redirect,
+  });
 }

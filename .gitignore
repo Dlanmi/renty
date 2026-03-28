@@ -46,3 +46,9 @@ next-env.d.ts
 # e2e
 /playwright-report
 /test-results
+
+# local agent/editor context
+/.agents/
+/.claude/
+/AGENTS.md
+/CLAUDE.md

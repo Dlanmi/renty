@@ -2,17 +2,100 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Design System Tokens ── */
+:root {
+  /* Backgrounds — premium light */
+  --bg-base: #FAFAFA;
+  --bg-surface: #FFFFFF;
+  --bg-elevated: #F4F4F5;
+  --bg-border: #E4E4E7;
+
+  /* Text hierarchy */
+  --text-primary: #09090B;
+  --text-secondary: #52525B;
+  --text-muted: #A1A1AA;
+
+  /* Accent — emerald (trust + action) */
+  --accent-500: #10B981;
+  --accent-400: #34D399;
+  --accent-900: #064E3B;
+  --accent-100: #D1FAE5;
+
+  /* Indigo — nav, selection */
+  --indigo-500: #6366F1;
+  --indigo-400: #818CF8;
+  --indigo-900: #1E1B4B;
+
+  /* Semantic */
+  --success: #10B981;
+  --warning: #F59E0B;
+  --danger: #EF4444;
+  --info: #3B82F6;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(15,17,23,0.08), 0 1px 2px rgba(15,17,23,0.05);
+  --shadow-md: 0 4px 6px rgba(15,17,23,0.08), 0 2px 4px rgba(15,17,23,0.06);
+  --shadow-lg: 0 10px 15px rgba(15,17,23,0.12), 0 4px 6px rgba(15,17,23,0.06);
+  --shadow-glow: 0 0 20px rgba(16,185,129,0.12);
+
+  /* Theme color for browser chrome */
+  --theme-color: #FFFFFF;
+}
+
+.dark {
+  /* Backgrounds — layered dark blue-gray */
+  --bg-base: #0F1117;
+  --bg-surface: #1A1D27;
+  --bg-elevated: #222536;
+  --bg-border: #2E3148;
+
+  /* Text hierarchy — improved contrast (WCAG AA) */
+  --text-primary: #F0F2F8;
+  --text-secondary: #B0B8D1;
+  --text-muted: #7E87A8;
+
+  /* Accent — same emerald */
+  --accent-500: #10B981;
+  --accent-400: #34D399;
+  --accent-900: #064E3B;
+  --accent-100: #D1FAE5;
+
+  /* Indigo */
+  --indigo-500: #6366F1;
+  --indigo-400: #818CF8;
+  --indigo-900: #1E1B4B;
+
+  /* Semantic */
+  --success: #10B981;
+  --warning: #F59E0B;
+  --danger: #EF4444;
+  --info: #3B82F6;
+
+  /* Shadows — deeper for dark */
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.4), 0 2px 4px rgba(0,0,0,0.3);
+  --shadow-lg: 0 10px 15px rgba(0,0,0,0.5), 0 4px 6px rgba(0,0,0,0.3);
+  --shadow-glow: 0 0 20px rgba(16,185,129,0.15);
+
+  --theme-color: #0F1117;
+}
+
 /* ── Base ── */
 html {
+  color-scheme: light;
   scroll-behavior: smooth;
   width: 100%;
   max-width: 100%;
   overflow-x: hidden;
 }
 
+html.dark {
+  color-scheme: dark;
+}
+
 body {
-  background-color: #fafaf9;
-  color: #1c1917;
+  background-color: var(--bg-base);
+  color: var(--text-primary);
   width: 100%;
   max-width: 100%;
   overflow-x: hidden;
@@ -26,6 +109,52 @@ body {
   }
 }
 
+/* ── Global transitions for theme switch ── */
+*,
+*::before,
+*::after {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.15s ease;
+}
+
+/* Opt out for elements that have their own animations */
+[data-no-theme-transition],
+[data-no-theme-transition] *,
+.skeleton,
+.skeleton * {
+  transition: none !important;
+}
+
+/* ── Selection ── */
+::selection {
+  background: var(--accent-900);
+  color: var(--accent-100);
+}
+
+/* ── Custom scrollbar ── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-base);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--bg-border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-500);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--bg-border) var(--bg-base);
+}
+
+/* ── Page reveal ── */
 .page-reveal {
   opacity: 1;
 }
@@ -34,10 +163,11 @@ body {
   transition: transform 220ms ease, box-shadow 220ms ease;
 }
 
+/* ── Skeleton ── */
 .skeleton {
   position: relative;
   overflow: hidden;
-  background-color: #e7e5e4;
+  background-color: var(--bg-elevated);
 }
 
 .skeleton::after {
@@ -47,11 +177,20 @@ body {
   transform: translateX(-100%);
   background: linear-gradient(
     100deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 50%,
+    transparent 100%
+  );
+  animation: skeleton-shimmer 1.35s infinite;
+}
+
+html:not(.dark) .skeleton::after {
+  background: linear-gradient(
+    100deg,
     rgba(255, 255, 255, 0) 0%,
     rgba(255, 255, 255, 0.55) 50%,
     rgba(255, 255, 255, 0) 100%
   );
-  animation: skeleton-shimmer 1.35s infinite;
 }
 
 @keyframes skeleton-shimmer {
@@ -164,7 +303,11 @@ body {
 
 /* ── Focus ring (accessibility) ── */
 *:focus-visible {
-  outline: 2px solid #f43f5e;
-  outline-offset: 2px;
-  border-radius: 4px;
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent-500), 0 0 0 4px var(--bg-base);
+}
+
+.focus-ring:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent-500), 0 0 0 4px var(--bg-base);
 }

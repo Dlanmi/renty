@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
 import StructuredData from "@/components/seo/StructuredData";
+import BackToSearchLink from "@/components/listing/BackToSearchLink";
 import ContactCTA from "@/components/listing/ContactCTA";
 import ListingGallery from "@/components/listing/ListingGallery";
 import ListingSpecs from "@/components/listing/ListingSpecs";
@@ -15,21 +15,24 @@ import {
   getListingPois,
 } from "@/lib/data/listings";
 import {
-  formatBillingPeriod,
-  formatCOP,
   formatDateCO,
 } from "@/lib/domain/format";
 import {
   getListingPath,
   isValidListingId,
 } from "@/lib/domain/listing-paths";
-import type { Listing, ListingPhoto } from "@/lib/domain/types";
+import type { Listing } from "@/lib/domain/types";
 import {
-  SITE_LOCALE,
   SITE_NAME,
   toAbsoluteUrl,
-  truncateMetaText,
 } from "@/lib/domain/seo";
+import {
+  buildGalleryPhotoUrls,
+  buildHomeHref,
+  buildListingMetadata,
+  buildListingSeoDescription,
+  getListingSchemaType,
+} from "@/lib/domain/public-seo";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -38,51 +41,6 @@ interface PageProps {
 
 export const revalidate = 60;
 export const dynamicParams = true;
-
-function buildListingSeoDescription(listing: Listing): string {
-  const bathroomsLabel = `${listing.bathrooms} baño${
-    listing.bathrooms === 1 ? "" : "s"
-  }`;
-  const summary = `${listing.property_type} de ${listing.bedrooms} hab y ${bathroomsLabel} en ${listing.neighborhood}, ${listing.city}. ${formatCOP(
-    listing.price_cop
-  )}${formatBillingPeriod(listing.billing_period)}.`;
-
-  return truncateMetaText(`${summary} ${listing.description ?? ""}`, 158);
-}
-
-function getListingSchemaType(
-  propertyType: string
-): "Apartment" | "House" | "Room" | "Accommodation" {
-  const normalized = propertyType.toLowerCase();
-  if (normalized.includes("apart")) return "Apartment";
-  if (normalized.includes("casa")) return "House";
-  if (normalized.includes("habit")) return "Room";
-  return "Accommodation";
-}
-
-const HOME_FILTER_QUERY_KEYS = ["q", "max", "beds"] as const;
-
-function getSingleSearchParamValue(
-  value: string | string[] | undefined
-): string {
-  if (Array.isArray(value)) return value[0] ?? "";
-  return value ?? "";
-}
-
-function buildHomeHref(
-  searchParams?: Record<string, string | string[] | undefined>
-): string {
-  if (!searchParams) return "/";
-
-  const params = new URLSearchParams();
-  for (const key of HOME_FILTER_QUERY_KEYS) {
-    const value = getSingleSearchParamValue(searchParams[key]).trim();
-    if (value) params.set(key, value);
-  }
-
-  const query = params.toString();
-  return query ? `/?${query}` : "/";
-}
 
 function listingHeroChips(listing: Listing): Array<{ icon: string; label: string }> {
   const chips: Array<{ icon: string; label: string }> = [
@@ -105,27 +63,6 @@ function listingHeroChips(listing: Listing): Array<{ icon: string; label: string
   return chips;
 }
 
-function buildGalleryPhotoUrls(
-  listing: Listing,
-  photos: ListingPhoto[]
-): string[] {
-  const candidates = [
-    listing.cover_photo_url,
-    ...photos.map((photo) => photo.public_url),
-  ];
-  const seen = new Set<string>();
-  const uniqueUrls: string[] = [];
-
-  for (const candidate of candidates) {
-    const value = candidate.trim();
-    if (!value || seen.has(value)) continue;
-    seen.add(value);
-    uniqueUrls.push(value);
-  }
-
-  return uniqueUrls.length > 0 ? uniqueUrls : [listing.cover_photo_url];
-}
-
 export async function generateStaticParams() {
   const routeEntries = await getActiveListingRouteEntries();
   return routeEntries.map((listing) => ({
@@ -143,75 +80,7 @@ export async function generateMetadata({
     ? await getListingByIdAnyStatus(normalizedSlug)
     : await getListingBySlug(normalizedSlug);
 
-  if (!listing) {
-    return {
-      title: "Propiedad no encontrada",
-      robots: {
-        index: false,
-        follow: false,
-      },
-    };
-  }
-
-  const isActive = listing.status === "active";
-  const canonicalPath = getListingPath(listing);
-  const canonicalUrl = toAbsoluteUrl(canonicalPath);
-  const socialImageUrl = toAbsoluteUrl(`${canonicalPath}/opengraph-image`);
-  const title = `${listing.title} en ${listing.neighborhood}, ${listing.city}`;
-  const description = buildListingSeoDescription(listing);
-
-  return {
-    title,
-    description,
-    keywords: [
-      `${listing.property_type} en arriendo en ${listing.neighborhood}`,
-      `arriendo en ${listing.neighborhood} ${listing.city}`,
-      `${listing.bedrooms} habitaciones en arriendo`,
-      `contacto WhatsApp ${listing.neighborhood}`,
-    ],
-    alternates: isActive
-      ? {
-          canonical: canonicalPath,
-        }
-      : undefined,
-    openGraph: {
-      title: `${title} | ${SITE_NAME}`,
-      description,
-      type: "website",
-      url: canonicalUrl,
-      images: [
-        {
-          url: socialImageUrl,
-          width: 1200,
-          height: 630,
-          alt: `${listing.title} - ${SITE_NAME}`,
-        },
-      ],
-      locale: SITE_LOCALE,
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: `${title} | ${SITE_NAME}`,
-      description,
-      images: [socialImageUrl],
-    },
-    robots: isActive
-      ? {
-          index: true,
-          follow: true,
-          googleBot: {
-            index: true,
-            follow: true,
-            "max-image-preview": "large",
-            "max-snippet": -1,
-            "max-video-preview": -1,
-          },
-        }
-      : {
-          index: false,
-          follow: false,
-        },
-  };
+  return buildListingMetadata(listing);
 }
 
 export default async function ListingPage({ params, searchParams }: PageProps) {
@@ -294,24 +163,24 @@ export default async function ListingPage({ params, searchParams }: PageProps) {
     <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:py-8">
       <StructuredData id="listing-structured-data" data={jsonLd} />
 
-      <nav className="mb-4 flex min-w-0 flex-wrap items-center gap-1 text-sm text-muted">
-        <Link
-          href={homeHref}
-          className="shrink-0 transition-colors hover:text-stone-900"
+      <nav className="mb-4 flex min-w-0 flex-wrap items-center gap-1 text-sm text-t-muted">
+        <BackToSearchLink
+          fallbackHref={homeHref}
+          className="shrink-0 transition-colors hover:text-t-primary"
         >
           Inicio
-        </Link>
+        </BackToSearchLink>
         <Icon name="chevron_right" size={16} className="shrink-0" />
-        <span className="truncate text-stone-700">{listing.neighborhood}</span>
+        <span className="truncate text-t-secondary">{listing.neighborhood}</span>
       </nav>
 
-      <section className="lift-hover rounded-[28px] border border-stone-200 bg-white p-4 shadow-card sm:p-6">
+      <section className="lift-hover rounded-[28px] border border-bg-border bg-bg-surface p-4 shadow-card sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
-            <h1 className="text-2xl font-bold leading-tight text-stone-900 sm:text-3xl">
+            <h1 className="text-2xl font-bold leading-tight text-t-primary sm:text-3xl">
               {listing.title}
             </h1>
-            <div className="mt-2 flex min-w-0 flex-wrap items-center gap-1.5 text-sm text-muted">
+            <div className="mt-2 flex min-w-0 flex-wrap items-center gap-1.5 text-sm text-t-muted">
               <Icon name="location_on" size={16} className="shrink-0" />
               <span className="break-words">
                 {listing.neighborhood}
@@ -322,7 +191,7 @@ export default async function ListingPage({ params, searchParams }: PageProps) {
               {heroChips.map((chip) => (
                 <span
                   key={`${chip.icon}-${chip.label}`}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-xs font-medium text-stone-700"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-bg-border bg-bg-elevated px-3 py-1 text-xs font-medium text-t-secondary"
                 >
                   <Icon name={chip.icon} size={15} />
                   {chip.label}
@@ -331,11 +200,11 @@ export default async function ListingPage({ params, searchParams }: PageProps) {
             </div>
           </div>
 
-          <div className="shrink-0 rounded-2xl border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-600">
-            <p className="font-semibold uppercase tracking-wide text-stone-500">
+          <div className="shrink-0 rounded-2xl border border-bg-border bg-bg-elevated px-3 py-2 text-xs text-t-secondary">
+            <p className="font-semibold uppercase tracking-wide text-t-muted">
               Actualizado
             </p>
-            <p className="mt-1 text-sm font-medium text-stone-800">
+            <p className="mt-1 text-sm font-medium text-t-primary">
               {formatDateCO(listing.updated_at)}
             </p>
           </div>

@@ -48,19 +48,22 @@ export default async function HomePage() {
     <div className="mx-auto max-w-7xl px-4 pt-8 pb-14 sm:px-6">
       <StructuredData id="home-structured-data" data={collectionJsonLd} />
 
-      {/* Hero */}
       <section className="stagger-list space-y-3 text-center">
-        <h1 className="text-[28px] font-extrabold leading-tight tracking-tight text-stone-900 sm:text-4xl">
-          Encuentra tu arriendo en{" "}
-          <span className="text-accent">Bogotá</span>
+        <h1 className="text-[28px] font-extrabold leading-tight tracking-tight text-t-primary sm:text-4xl">
+          Encuentra tu{" "}
+          <span className="bg-gradient-to-r from-accent to-accent-hover bg-clip-text text-transparent">
+            arriendo en Bogotá
+          </span>
         </h1>
-        <p className="mx-auto max-w-md text-[15px] leading-relaxed text-muted">
+        <p className="mx-auto max-w-md text-[15px] leading-relaxed text-t-secondary">
           Apartamentos, habitaciones y casas con contacto directo.
           Sin intermediarios.
         </p>
+        <p className="mx-auto max-w-lg text-xs text-t-muted">
+          {listings.length} inmuebles disponibles · Contacto directo · Sin intermediarios
+        </p>
       </section>
 
-      {/* Search + filtered results (client component) */}
       <section className="mt-8" aria-labelledby="home-listings-heading">
         <h2 id="home-listings-heading" className="sr-only">
           Arriendos disponibles en Bogotá
@@ -74,7 +77,7 @@ export default async function HomePage() {
                 {Array.from({ length: 6 }).map((_, index) => (
                   <div
                     key={index}
-                    className="overflow-hidden rounded-card border border-stone-200 bg-white p-0 shadow-card"
+                    className="overflow-hidden rounded-card border border-bg-border bg-bg-surface p-0 shadow-card"
                   >
                     <Skeleton className="aspect-[4/3] w-full rounded-none" />
                     <div className="space-y-2 p-4">

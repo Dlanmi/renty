@@ -92,23 +92,22 @@ export default function SearchPill({
 
   return (
     <div className="relative mx-auto max-w-2xl">
-      {/* Mobile: compact entry bar + active chips */}
       <div className="sticky top-16 z-[60] pb-2 sm:hidden">
-        <div className="rounded-[28px] border border-stone-200/80 bg-[#fafaf9]/90 p-2 shadow-[0_14px_28px_rgba(28,25,23,0.08)] backdrop-blur">
-          <div className="lift-hover flex items-center gap-2 rounded-2xl border border-stone-200 bg-white p-2 shadow-card">
+        <div className="rounded-[28px] border border-bg-border bg-bg-base/90 p-2 shadow-md backdrop-blur">
+          <div className="lift-hover flex items-center gap-2 rounded-2xl border border-bg-border bg-bg-surface p-2 shadow-card">
             <button
               type="button"
               onClick={onOpenMobileFlow}
-              className="flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-xl px-3 text-left text-sm text-stone-700 transition-colors hover:bg-stone-50"
+              className="flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-xl px-3 text-left text-sm text-t-secondary transition-colors hover:bg-bg-elevated"
             >
-              <Icon name="location_on" size={18} className="shrink-0 text-muted" />
+              <Icon name="location_on" size={18} className="shrink-0 text-t-muted" />
               <span className="line-clamp-1 min-w-0">{locationLabel}</span>
             </button>
 
             <button
               type="button"
               onClick={onOpenMobileFlow}
-              className="inline-flex min-h-11 shrink-0 items-center gap-1 rounded-xl border border-stone-200 px-3 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-50"
+              className="inline-flex min-h-11 shrink-0 items-center gap-1 rounded-xl border border-bg-border px-3 text-sm font-medium text-t-secondary transition-colors hover:bg-bg-elevated"
             >
               <Icon name="tune" size={18} />
               Filtros
@@ -121,12 +120,12 @@ export default function SearchPill({
           </div>
 
           {activeFilterCount > 0 && (
-            <div className="mt-2 flex flex-wrap items-center gap-2 rounded-2xl border border-stone-200/80 bg-white/90 p-2">
+            <div className="mt-2 flex flex-wrap items-center gap-2 rounded-2xl border border-bg-border bg-bg-surface/90 p-2">
               {filters.neighborhood && (
                 <button
                   type="button"
                   onClick={() => onChange({ neighborhood: "" })}
-                  className="inline-flex min-h-9 max-w-full items-center gap-1 rounded-full border border-stone-200 bg-white px-3 text-xs text-stone-700"
+                  className="inline-flex min-h-9 max-w-full items-center gap-1 rounded-full border border-bg-border bg-bg-surface px-3 text-xs text-t-secondary"
                 >
                   <span className="truncate">{filters.neighborhood}</span>
                   <Icon name="close" size={14} />
@@ -136,7 +135,7 @@ export default function SearchPill({
                 <button
                   type="button"
                   onClick={() => onChange({ maxPriceCOP: 0 })}
-                  className="inline-flex min-h-9 items-center gap-1 rounded-full border border-stone-200 bg-white px-3 text-xs text-stone-700"
+                  className="inline-flex min-h-9 items-center gap-1 rounded-full border border-bg-border bg-bg-surface px-3 text-xs text-t-secondary"
                 >
                   {priceLabel}
                   <Icon name="close" size={14} />
@@ -146,7 +145,7 @@ export default function SearchPill({
                 <button
                   type="button"
                   onClick={() => onChange({ minBedrooms: 0 })}
-                  className="inline-flex min-h-9 items-center gap-1 rounded-full border border-stone-200 bg-white px-3 text-xs text-stone-700"
+                  className="inline-flex min-h-9 items-center gap-1 rounded-full border border-bg-border bg-bg-surface px-3 text-xs text-t-secondary"
                 >
                   {bedroomLabel}
                   <Icon name="close" size={14} />
@@ -164,11 +163,10 @@ export default function SearchPill({
         </div>
       </div>
 
-      {/* Desktop: direct search pill */}
       <div className="relative z-[70] hidden px-4 sm:block">
         <div
           ref={containerRef}
-          className="lift-hover relative flex items-center divide-x divide-stone-200 rounded-full border border-stone-200 bg-white shadow-card transition-shadow hover:shadow-card-hover"
+          className="lift-hover relative flex items-center divide-x divide-bg-border rounded-full border border-bg-border bg-bg-surface shadow-card transition-shadow hover:shadow-card-hover"
         >
           <button
             type="button"
@@ -178,13 +176,13 @@ export default function SearchPill({
             aria-haspopup="dialog"
             className="flex flex-1 flex-col px-5 py-3 text-left"
           >
-            <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-stone-500">
+            <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-t-muted">
               <Icon name="location_on" size={13} />
               Dónde
             </span>
             <span
               className={`text-[13px] leading-snug ${
-                filters.neighborhood ? "text-stone-800" : "text-stone-400"
+                filters.neighborhood ? "text-t-primary" : "text-t-muted"
               }`}
             >
               {filters.neighborhood || "Verbenal, Toberín..."}
@@ -199,13 +197,13 @@ export default function SearchPill({
             aria-haspopup="dialog"
             className="flex flex-1 flex-col px-5 py-3 text-left"
           >
-            <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-stone-500">
+            <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-t-muted">
               <Icon name="payments" size={13} />
               Presupuesto
             </span>
             <span
               className={`text-[13px] leading-snug ${
-                filters.maxPriceCOP > 0 ? "text-stone-800" : "text-stone-400"
+                filters.maxPriceCOP > 0 ? "text-t-primary" : "text-t-muted"
               }`}
             >
               {priceLabel}
@@ -220,13 +218,13 @@ export default function SearchPill({
             aria-haspopup="dialog"
             className="flex flex-1 flex-col px-5 py-3 text-left"
           >
-            <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-stone-500">
+            <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-t-muted">
               <Icon name="bed" size={13} />
               Habitaciones
             </span>
             <span
               className={`text-[13px] leading-snug ${
-                filters.minBedrooms > 0 ? "text-stone-800" : "text-stone-400"
+                filters.minBedrooms > 0 ? "text-t-primary" : "text-t-muted"
               }`}
             >
               {bedroomLabel}
@@ -237,7 +235,7 @@ export default function SearchPill({
             <button
               type="button"
               onClick={() => setOpen(null)}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-accent text-white transition-colors hover:bg-accent-dark"
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-accent text-white transition-colors hover:bg-accent-hover hover:shadow-glow"
               aria-label="Cerrar paneles"
             >
               <Icon name="search" size={20} />
@@ -249,7 +247,7 @@ export default function SearchPill({
               id={PANEL_IDS.location}
               role="dialog"
               aria-label="Filtrar por barrio"
-              className="absolute left-0 top-full z-[90] mt-2 w-72 rounded-2xl border border-stone-200 bg-white p-3 shadow-lg"
+              className="absolute left-0 top-full z-[90] mt-2 w-72 rounded-2xl border border-bg-border bg-bg-elevated p-3 shadow-lg"
             >
               <input
                 ref={locationInputRef}
@@ -257,7 +255,7 @@ export default function SearchPill({
                 placeholder="Buscar barrio..."
                 value={filters.neighborhood}
                 onChange={(event) => onChange({ neighborhood: event.target.value })}
-                className="h-11 w-full rounded-lg border border-stone-200 px-3 text-sm text-stone-800 placeholder:text-stone-400 focus:border-accent focus:outline-none"
+                className="h-11 w-full rounded-lg border border-bg-border bg-bg-surface px-3 text-sm text-t-primary placeholder:text-t-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
               />
               {filteredNeighborhoods.length > 0 && (
                 <ul className="mt-2 max-h-40 space-y-1 overflow-y-auto">
@@ -269,9 +267,9 @@ export default function SearchPill({
                           onChange({ neighborhood });
                           setOpen(null);
                         }}
-                        className="flex min-h-11 w-full items-center gap-2 rounded-lg px-3 text-sm text-stone-700 transition-colors hover:bg-stone-50"
+                        className="flex min-h-11 w-full items-center gap-2 rounded-lg px-3 text-sm text-t-secondary transition-colors hover:bg-bg-surface"
                       >
-                        <Icon name="location_on" size={16} className="text-muted" />
+                        <Icon name="location_on" size={16} className="text-t-muted" />
                         {neighborhood}
                       </button>
                     </li>
@@ -279,7 +277,7 @@ export default function SearchPill({
                 </ul>
               )}
               {filters.neighborhood && filteredNeighborhoods.length === 0 && (
-                <p className="mt-2 px-1 text-xs text-muted">
+                <p className="mt-2 px-1 text-xs text-t-muted">
                   No encontramos barrios con ese nombre.
                 </p>
               )}
@@ -291,7 +289,7 @@ export default function SearchPill({
               id={PANEL_IDS.price}
               role="dialog"
               aria-label="Filtrar por precio"
-              className="absolute left-1/2 top-full z-[90] mt-2 w-56 -translate-x-1/2 rounded-2xl border border-stone-200 bg-white p-2 shadow-lg"
+              className="absolute left-1/2 top-full z-[90] mt-2 w-56 -translate-x-1/2 rounded-2xl border border-bg-border bg-bg-elevated p-2 shadow-lg"
             >
               {priceOptions.map((option) => {
                 const isActive = filters.maxPriceCOP === option.value;
@@ -305,14 +303,14 @@ export default function SearchPill({
                     }}
                     className={`flex min-h-11 w-full items-center gap-2 rounded-lg px-3 text-sm transition-colors ${
                       isActive
-                        ? "bg-accent-light font-medium text-accent"
-                        : "text-stone-700 hover:bg-stone-50"
+                        ? "bg-accent-dark/30 font-medium text-accent"
+                        : "text-t-secondary hover:bg-bg-surface"
                     }`}
                   >
                     <Icon
                       name="payments"
                       size={16}
-                      className={isActive ? "text-accent" : "text-muted"}
+                      className={isActive ? "text-accent" : "text-t-muted"}
                     />
                     {option.label}
                   </button>
@@ -326,7 +324,7 @@ export default function SearchPill({
               id={PANEL_IDS.bedrooms}
               role="dialog"
               aria-label="Filtrar por habitaciones"
-              className="absolute right-0 top-full z-[90] mt-2 w-44 rounded-2xl border border-stone-200 bg-white p-2 shadow-lg"
+              className="absolute right-0 top-full z-[90] mt-2 w-44 rounded-2xl border border-bg-border bg-bg-elevated p-2 shadow-lg"
             >
               {bedroomOptions.map((option) => {
                 const isActive = filters.minBedrooms === option.value;
@@ -340,14 +338,14 @@ export default function SearchPill({
                     }}
                     className={`flex min-h-11 w-full items-center gap-2 rounded-lg px-3 text-sm transition-colors ${
                       isActive
-                        ? "bg-accent-light font-medium text-accent"
-                        : "text-stone-700 hover:bg-stone-50"
+                        ? "bg-accent-dark/30 font-medium text-accent"
+                        : "text-t-secondary hover:bg-bg-surface"
                     }`}
                   >
                     <Icon
                       name="bed"
                       size={16}
-                      className={isActive ? "text-accent" : "text-muted"}
+                      className={isActive ? "text-accent" : "text-t-muted"}
                     />
                     {option.label}
                   </button>

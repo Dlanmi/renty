@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import localFont from "next/font/local";
 import "@/styles/globals.css";
+import Providers from "@/app/providers";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import StructuredData from "@/components/seo/StructuredData";
@@ -28,6 +29,23 @@ const materialSymbolsOutlined = localFont({
 
 const siteUrl = getSiteUrl();
 const isPreviewDeployment = process.env.VERCEL_ENV === "preview";
+const themeInitScript = `
+  (function() {
+    try {
+      var stored = localStorage.getItem('theme');
+      var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var theme = stored || 'system';
+      var isDark = theme === 'dark' || (theme === 'system' && prefersDark);
+      if (isDark) {
+        document.documentElement.classList.add('dark');
+        document.documentElement.style.colorScheme = 'dark';
+      } else {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.style.colorScheme = 'light';
+      }
+    } catch (e) {}
+  })();
+`;
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://renty-seven.vercel.app'),
@@ -125,12 +143,31 @@ export default function RootLayout({
     <html
       lang="es"
       className={`${geistSans.variable} ${materialSymbolsOutlined.variable}`}
+      suppressHydrationWarning
     >
-      <body className="min-h-screen font-sans antialiased">
-        <StructuredData id="global-structured-data" data={websiteJsonLd} />
-        <Header />
-        <main className="min-h-[calc(100vh-8rem)]">{children}</main>
-        <Footer />
+      <head>
+        <script
+          id="renty-theme-init"
+          dangerouslySetInnerHTML={{ __html: themeInitScript }}
+        />
+        <meta
+          name="theme-color"
+          media="(prefers-color-scheme: light)"
+          content="#FFFFFF"
+        />
+        <meta
+          name="theme-color"
+          media="(prefers-color-scheme: dark)"
+          content="#0F1117"
+        />
+      </head>
+      <body className="min-h-screen bg-bg-base font-sans text-t-primary antialiased">
+        <Providers>
+          <StructuredData id="global-structured-data" data={websiteJsonLd} />
+          <Header />
+          <main className="min-h-[calc(100vh-8rem)]">{children}</main>
+          <Footer />
+        </Providers>
         {/* Vercel recoge datos reales en despliegues preview/production; en local no aparecen métricas en el dashboard. */}
         <SpeedInsights />
       </body>

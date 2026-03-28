@@ -1,6 +1,7 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
+  darkMode: "class",
   content: [
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -13,23 +14,40 @@ const config: Config = {
         sans: ["var(--font-inter)", "system-ui", "sans-serif"],
       },
       colors: {
+        bg: {
+          base: "var(--bg-base)",
+          surface: "var(--bg-surface)",
+          elevated: "var(--bg-elevated)",
+          border: "var(--bg-border)",
+        },
+        "t-primary": "var(--text-primary)",
+        "t-secondary": "var(--text-secondary)",
+        "t-muted": "var(--text-muted)",
         accent: {
-          DEFAULT: "#f43f5e", // rose-500
-          light: "#fff1f2",   // rose-50
-          dark: "#e11d48",    // rose-600
+          DEFAULT: "var(--accent-500)",
+          hover: "var(--accent-400)",
+          dark: "var(--accent-900)",
+          light: "var(--accent-100)",
         },
-        surface: {
-          DEFAULT: "#ffffff",
-          warm: "#fafaf9",    // stone-50
+        indigo: {
+          DEFAULT: "var(--indigo-500)",
+          hover: "var(--indigo-400)",
+          dark: "var(--indigo-900)",
         },
-        muted: "#78716c",     // stone-500
+        success: "var(--success)",
+        warning: "var(--warning)",
+        danger: "var(--danger)",
+        info: "var(--info)",
       },
       borderRadius: {
         card: "16px",
       },
       boxShadow: {
-        card: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)",
-        "card-hover": "0 8px 25px rgba(0,0,0,0.08)",
+        card: "var(--shadow-sm)",
+        "card-hover": "var(--shadow-md)",
+        md: "var(--shadow-md)",
+        lg: "var(--shadow-lg)",
+        glow: "var(--shadow-glow)",
       },
     },
   },

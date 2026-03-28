@@ -87,7 +87,7 @@ export default function ShareListingButton({
       <button
         type="button"
         onClick={handleShare}
-        className={`lift-hover inline-flex h-11 min-w-11 items-center justify-center rounded-xl border border-stone-200 bg-white text-stone-700 transition-colors hover:bg-stone-50 ${className}`}
+        className={`lift-hover inline-flex h-11 min-w-11 items-center justify-center rounded-xl border border-bg-border bg-bg-surface text-t-secondary transition-colors hover:bg-bg-elevated ${className}`}
         aria-label={statusLabel}
         title={statusLabel}
       >

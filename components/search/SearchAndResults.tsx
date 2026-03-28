@@ -169,11 +169,11 @@ export default function SearchAndResults({ listings }: Props) {
 
       {activeFilterCount === 0 && <SearchTabs />}
 
-      <div className="mt-4 flex flex-col gap-3 text-sm text-muted sm:flex-row sm:items-center sm:justify-between">
+      <div className="mt-4 flex flex-col gap-3 text-sm text-t-muted sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 items-center gap-1.5">
           <Icon name="home_work" size={18} />
           <span>
-            <strong className="font-semibold text-stone-800">
+            <strong className="font-semibold text-t-primary">
               {filteredListings.length}
             </strong>{" "}
             {filteredListings.length === 1
@@ -186,7 +186,7 @@ export default function SearchAndResults({ listings }: Props) {
           <button
             type="button"
             onClick={clearAllFilters}
-            className="lift-hover inline-flex min-h-11 w-full items-center justify-center gap-1 rounded-full px-3 py-1 text-xs font-medium text-accent transition-colors hover:bg-accent-light sm:w-auto"
+            className="lift-hover inline-flex min-h-11 w-full items-center justify-center gap-1 rounded-full px-3 py-1 text-xs font-medium text-accent transition-colors hover:bg-accent-dark/20 sm:w-auto"
           >
             <Icon name="close" size={14} />
             Limpiar filtros
