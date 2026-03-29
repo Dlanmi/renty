@@ -19,8 +19,14 @@ export {
 export {
   MAX_NEW_PHOTOS_PER_REQUEST,
   MAX_PHOTO_SIZE_BYTES,
+  MAX_PHOTOS_PER_LISTING,
+  type UploadedPhotoReference,
+} from "./photo-rules";
+
+export {
   preparePhotoUploads,
   uploadPhotos,
+  insertUploadedPhotoRefs,
   insertExternalPhotoUrls,
   deletePhotos,
   filterExclusiveStoragePaths,
@@ -28,6 +34,7 @@ export {
   reorderExistingPhotos,
   applyCover,
   getListingPhotos,
+  validateListingPhotoLimit,
   type StoragePathReferenceRow,
   type PreparedPhotoUpload,
 } from "./storage";

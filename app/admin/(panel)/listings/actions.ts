@@ -10,9 +10,11 @@ import {
   type DuplicateableListing,
   validateRequiredFields,
   validateCreateListingMedia,
+  validateListingPhotoLimit,
   ALLOWED_STATUS,
   preparePhotoUploads,
   uploadPhotos,
+  insertUploadedPhotoRefs,
   insertExternalPhotoUrls,
   deletePhotos,
   reorderExistingPhotos,
@@ -47,8 +49,16 @@ function queryString(params: Record<string, string>): string {
   return qs.toString();
 }
 
-function redirectCreateError(errorMessage: string): never {
-  redirect(`/admin/listings/new?${queryString({ error: errorMessage })}`);
+function redirectCreateError(
+  errorMessage: string,
+  listingId?: string | null
+): never {
+  redirect(
+    `/admin/listings/new?${queryString({
+      error: errorMessage,
+      ...(listingId ? { listingId } : {}),
+    })}`
+  );
 }
 
 function redirectUpdateError(listingId: string, errorMessage: string): never {
@@ -129,11 +139,17 @@ async function orchestratePhotos(
   );
 
   await uploadPhotos(accessToken, listingId, preparedNewPhotos, maxSortOrder);
+  await insertUploadedPhotoRefs(
+    accessToken,
+    listingId,
+    input.preUploadedPhotos,
+    maxSortOrder + preparedNewPhotos.length
+  );
   await insertExternalPhotoUrls(
     accessToken,
     listingId,
     input.manualGalleryUrls,
-    maxSortOrder + preparedNewPhotos.length
+    maxSortOrder + preparedNewPhotos.length + input.preUploadedPhotos.length
   );
   await applyCover(accessToken, listingId, input.coverPhotoId, input.coverPhotoUrl);
 }
@@ -142,19 +158,23 @@ async function orchestratePhotos(
 
 export async function createListingAction(formData: FormData) {
   let listingId = "";
+  let draftListingId: string | null = null;
+  let listingCreated = false;
 
   try {
     const admin = await requireAdminContext();
     const input = parseListingInput(formData);
+    draftListingId = input.listingId;
     const preparedNewPhotos = await preparePhotoUploads(input.newPhotos);
     validateRequiredFields(input, { mode: "create" });
     validateCreateListingMedia(
       input.coverPhotoUrl,
       input.manualGalleryUrls,
-      preparedNewPhotos.length
+      preparedNewPhotos.length + input.preUploadedPhotos.length
     );
+    validateListingPhotoLimit([], input, preparedNewPhotos.length + input.preUploadedPhotos.length);
 
-    listingId = crypto.randomUUID();
+    listingId = input.listingId ?? crypto.randomUUID();
     const client = createSupabaseServerClient(admin.accessToken);
     const payload = listingPayload(input);
 
@@ -164,6 +184,7 @@ export async function createListingAction(formData: FormData) {
       cover_photo_url: input.coverPhotoUrl ?? FALLBACK_COVER_PHOTO,
     });
     if (createError) toError(createError.message);
+    listingCreated = true;
 
     await replacePois(admin.accessToken, listingId, input.pois);
     await orchestratePhotos(admin.accessToken, listingId, input, preparedNewPhotos);
@@ -189,10 +210,10 @@ export async function createListingAction(formData: FormData) {
     if (isRedirectLikeError(error)) throw error;
     const message =
       error instanceof Error ? error.message : "No se pudo crear el inmueble.";
-    if (listingId) {
+    if (listingCreated && listingId) {
       redirectUpdateError(listingId, message);
     }
-    redirectCreateError(message);
+    redirectCreateError(message, draftListingId);
   }
 }
 
@@ -209,11 +230,11 @@ export async function updateListingAction(formData: FormData) {
     const admin = await requireAdminContext();
     const preparedNewPhotos = await preparePhotoUploads(input.newPhotos);
     const client = createSupabaseServerClient(admin.accessToken);
-    const { data: existingListing, error: existingError } = await client
-      .from("listings")
-      .select("listing_kind")
-      .eq("id", listingId)
-      .maybeSingle();
+    const [existingListingResult, existingPhotos] = await Promise.all([
+      client.from("listings").select("listing_kind").eq("id", listingId).maybeSingle(),
+      getListingPhotos(admin.accessToken, listingId),
+    ]);
+    const { data: existingListing, error: existingError } = existingListingResult;
 
     if (existingError || !existingListing) {
       toError("No encontramos el inmueble para actualizar.");
@@ -223,6 +244,11 @@ export async function updateListingAction(formData: FormData) {
       mode: "update",
       previousListingKind: existingListing.listing_kind as ListingKind,
     });
+    validateListingPhotoLimit(
+      existingPhotos,
+      input,
+      preparedNewPhotos.length + input.preUploadedPhotos.length
+    );
 
     const payload = listingPayload(input);
 

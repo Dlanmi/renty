@@ -1,27 +1,20 @@
 import type { ListingPhoto } from "@/lib/domain/types";
 import { createSupabaseServerClient } from "@/lib/admin/auth";
+import type { ParsedListingInput } from "./parsing";
+import {
+  detectImageMimeType,
+  fileExtension,
+  isAllowedImageMime,
+  MAX_NEW_PHOTOS_PER_REQUEST,
+  MAX_PHOTO_SIZE_BYTES,
+  MAX_PHOTOS_PER_LISTING,
+  MIME_BY_EXTENSION,
+  normalizeImageMimeType,
+  type AllowedImageMime,
+  type UploadedPhotoReference,
+} from "./photo-rules";
 
 // ─── Constants ───────────────────────────────────────────────────────
-
-export const MAX_NEW_PHOTOS_PER_REQUEST = 10;
-export const MAX_PHOTO_SIZE_BYTES = 8 * 1024 * 1024;
-
-type AllowedImageMime = "image/jpeg" | "image/png" | "image/webp" | "image/avif";
-
-const ALLOWED_IMAGE_MIME_TYPES = new Set<AllowedImageMime>([
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "image/avif",
-]);
-
-const MIME_BY_EXTENSION: Record<string, AllowedImageMime> = {
-  jpg: "image/jpeg",
-  jpeg: "image/jpeg",
-  png: "image/png",
-  webp: "image/webp",
-  avif: "image/avif",
-};
 
 // ─── Interfaces ──────────────────────────────────────────────────────
 
@@ -40,57 +33,6 @@ export interface StoragePathReferenceRow {
 
 function toError(message: string): never {
   throw new Error(message);
-}
-
-function fileExtension(filename: string): string {
-  const pieces = filename.split(".");
-  const ext = pieces.length > 1 ? pieces[pieces.length - 1] : "jpg";
-  const normalized = ext.toLowerCase().replace(/[^a-z0-9]/g, "");
-  return normalized || "jpg";
-}
-
-function isAllowedImageMime(value: string): value is AllowedImageMime {
-  return ALLOWED_IMAGE_MIME_TYPES.has(value as AllowedImageMime);
-}
-
-function detectImageMimeType(bytes: Buffer): AllowedImageMime | null {
-  if (
-    bytes.length >= 3 &&
-    bytes[0] === 0xff &&
-    bytes[1] === 0xd8 &&
-    bytes[2] === 0xff
-  ) {
-    return "image/jpeg";
-  }
-
-  if (
-    bytes.length >= 8 &&
-    bytes[0] === 0x89 &&
-    bytes[1] === 0x50 &&
-    bytes[2] === 0x4e &&
-    bytes[3] === 0x47 &&
-    bytes[4] === 0x0d &&
-    bytes[5] === 0x0a &&
-    bytes[6] === 0x1a &&
-    bytes[7] === 0x0a
-  ) {
-    return "image/png";
-  }
-
-  if (
-    bytes.length >= 12 &&
-    bytes.toString("ascii", 0, 4) === "RIFF" &&
-    bytes.toString("ascii", 8, 12) === "WEBP"
-  ) {
-    return "image/webp";
-  }
-
-  if (bytes.length >= 16 && bytes.toString("ascii", 4, 8) === "ftyp") {
-    const ftypChunk = bytes.toString("ascii", 8, 16).toLowerCase();
-    if (ftypChunk.includes("avif")) return "image/avif";
-  }
-
-  return null;
 }
 
 // ─── Photo queries ───────────────────────────────────────────────────
@@ -140,9 +82,7 @@ export async function preparePhotoUploads(
       );
     }
 
-    const rawMimeType = file.type.toLowerCase().trim();
-    const normalizedMimeType =
-      rawMimeType === "image/jpg" ? "image/jpeg" : rawMimeType;
+    const normalizedMimeType = normalizeImageMimeType(file.type);
     if (!isAllowedImageMime(normalizedMimeType)) {
       toError(
         "Tipo de archivo no permitido. Usa solo JPG, PNG, WEBP o AVIF (SVG no permitido)."
@@ -224,6 +164,27 @@ export async function uploadPhotos(
   if (insertError) toError(insertError.message);
 }
 
+export async function insertUploadedPhotoRefs(
+  accessToken: string,
+  listingId: string,
+  uploads: UploadedPhotoReference[],
+  startSortOrder: number
+) {
+  if (uploads.length === 0) return;
+
+  const client = createSupabaseServerClient(accessToken);
+  const rows = uploads.map((upload, index) => ({
+    listing_id: listingId,
+    storage_path: upload.storagePath,
+    public_url: upload.publicUrl,
+    sort_order: startSortOrder + index + 1,
+    is_cover: false,
+  }));
+
+  const { error } = await client.from("listing_photos").insert(rows);
+  if (error) toError(error.message);
+}
+
 // ─── External URLs ───────────────────────────────────────────────────
 
 export async function insertExternalPhotoUrls(
@@ -267,6 +228,37 @@ export async function insertExternalPhotoUrls(
   if (rows.length === 0) return;
   const { error } = await client.from("listing_photos").insert(rows);
   if (error) toError(error.message);
+}
+
+export function validateListingPhotoLimit(
+  existingPhotos: ListingPhoto[],
+  input: Pick<ParsedListingInput, "deletePhotoIds" | "manualGalleryUrls">,
+  incomingUploadCount: number
+) {
+  const deleteSet = new Set(input.deletePhotoIds);
+  const remainingPhotos = existingPhotos.filter((photo) => !deleteSet.has(photo.id));
+  const remainingExternalUrls = new Set(
+    remainingPhotos
+      .filter((photo) => !photo.storage_path.trim())
+      .map((photo) => photo.public_url.trim())
+      .filter(Boolean)
+  );
+
+  const additionalExternalUrlCount = input.manualGalleryUrls.filter(
+    (url) => !remainingExternalUrls.has(url.trim())
+  ).length;
+
+  const currentCount = existingPhotos.length;
+  const nextCount =
+    remainingPhotos.length + incomingUploadCount + additionalExternalUrlCount;
+
+  if (nextCount > MAX_PHOTOS_PER_LISTING && nextCount > currentCount) {
+    toError(
+      `Cada inmueble admite máximo ${MAX_PHOTOS_PER_LISTING} fotos. Borra ${
+        nextCount - MAX_PHOTOS_PER_LISTING
+      } antes de guardar.`
+    );
+  }
 }
 
 // ─── Cross-reference safety ─────────────────────────────────────────

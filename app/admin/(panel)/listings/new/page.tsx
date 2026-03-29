@@ -18,6 +18,8 @@ export default async function NewListingPage({ searchParams }: NewListingPagePro
   await requireAdminContext();
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const error = getSingleParam(resolvedSearchParams?.error).trim();
+  const draftListingId =
+    getSingleParam(resolvedSearchParams?.listingId).trim() || crypto.randomUUID();
 
   return (
     <div className="space-y-4">
@@ -44,7 +46,12 @@ export default async function NewListingPage({ searchParams }: NewListingPagePro
         )}
       </div>
 
-      <ListingForm mode="create" action={createListingAction} submitLabel="Crear inmueble" />
+      <ListingForm
+        mode="create"
+        action={createListingAction}
+        draftListingId={draftListingId}
+        submitLabel="Crear inmueble"
+      />
     </div>
   );
 }

@@ -51,6 +51,14 @@ const securityHeaders = [
 
 const nextConfig = {
   poweredByHeader: false,
+  experimental: {
+    // The main upload path now goes browser -> Supabase Storage directly.
+    // This fallback limit keeps admin forms from exploding locally when a
+    // request still contains file data.
+    serverActions: {
+      bodySizeLimit: "8mb",
+    },
+  },
   images: {
     formats: ["image/avif", "image/webp"],
     minimumCacheTTL: 60,

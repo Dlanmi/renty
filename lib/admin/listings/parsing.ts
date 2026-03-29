@@ -4,6 +4,7 @@ import type {
   ListingStatus,
   ResidentialContext,
 } from "@/lib/domain/types";
+import type { UploadedPhotoReference } from "./photo-rules";
 import {
   ALLOWED_STATUS,
   ALLOWED_LISTING_KIND,
@@ -65,6 +66,7 @@ export interface ParsedListingInput {
   deletePhotoIds: string[];
   photoOrderIds: string[];
   newPhotos: File[];
+  preUploadedPhotos: UploadedPhotoReference[];
 }
 
 // ─── Primitive parsers ───────────────────────────────────────────────
@@ -208,6 +210,36 @@ export function parsePhotoOrderIds(formData: FormData): string[] {
     .filter(Boolean);
 }
 
+export function parseUploadedPhotoRefs(
+  formData: FormData,
+  key: string
+): UploadedPhotoReference[] {
+  const parsed: UploadedPhotoReference[] = [];
+  const seenStoragePaths = new Set<string>();
+
+  for (const rawValue of formData.getAll(key)) {
+    const value = String(rawValue ?? "").trim();
+    if (!value) continue;
+
+    try {
+      const parsedValue = JSON.parse(value) as UploadedPhotoReference;
+      const storagePath = String(parsedValue.storagePath ?? "").trim();
+      const publicUrl = String(parsedValue.publicUrl ?? "").trim();
+
+      if (!storagePath || !publicUrl || seenStoragePaths.has(storagePath)) {
+        continue;
+      }
+
+      seenStoragePaths.add(storagePath);
+      parsed.push({ storagePath, publicUrl });
+    } catch {
+      continue;
+    }
+  }
+
+  return parsed;
+}
+
 // ─── Main composite parser ──────────────────────────────────────────
 
 export function parseListingInput(formData: FormData): ParsedListingInput {
@@ -284,5 +316,6 @@ export function parseListingInput(formData: FormData): ParsedListingInput {
       .filter(Boolean),
     photoOrderIds: parsePhotoOrderIds(formData),
     newPhotos: parseUploads(formData, "new_photos"),
+    preUploadedPhotos: parseUploadedPhotoRefs(formData, "uploaded_photo_refs"),
   };
 }
