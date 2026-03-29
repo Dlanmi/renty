@@ -125,6 +125,7 @@ export default function SearchPill({
                 <button
                   type="button"
                   onClick={() => onChange({ neighborhood: "" })}
+                  aria-label={`Eliminar filtro: ${filters.neighborhood}`}
                   className="inline-flex min-h-9 max-w-full items-center gap-1 rounded-full border border-bg-border bg-bg-surface px-3 text-xs text-t-secondary"
                 >
                   <span className="truncate">{filters.neighborhood}</span>
@@ -135,6 +136,7 @@ export default function SearchPill({
                 <button
                   type="button"
                   onClick={() => onChange({ maxPriceCOP: 0 })}
+                  aria-label={`Eliminar filtro de precio: ${priceLabel}`}
                   className="inline-flex min-h-9 items-center gap-1 rounded-full border border-bg-border bg-bg-surface px-3 text-xs text-t-secondary"
                 >
                   {priceLabel}
@@ -145,6 +147,7 @@ export default function SearchPill({
                 <button
                   type="button"
                   onClick={() => onChange({ minBedrooms: 0 })}
+                  aria-label={`Eliminar filtro de habitaciones: ${bedroomLabel}`}
                   className="inline-flex min-h-9 items-center gap-1 rounded-full border border-bg-border bg-bg-surface px-3 text-xs text-t-secondary"
                 >
                   {bedroomLabel}
@@ -252,6 +255,7 @@ export default function SearchPill({
               <input
                 ref={locationInputRef}
                 type="text"
+                aria-label="Buscar por barrio"
                 placeholder="Buscar barrio..."
                 value={filters.neighborhood}
                 onChange={(event) => onChange({ neighborhood: event.target.value })}

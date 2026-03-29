@@ -163,9 +163,12 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen bg-bg-base font-sans text-t-primary antialiased">
         <Providers>
+          <a href="#main-content" className="skip-link">
+            Saltar al contenido principal
+          </a>
           <StructuredData id="global-structured-data" data={websiteJsonLd} />
           <Header />
-          <main className="min-h-[calc(100vh-8rem)]">{children}</main>
+          <main id="main-content" className="min-h-[calc(100vh-8rem)]">{children}</main>
           <Footer />
         </Providers>
         {/* Vercel recoge datos reales en despliegues preview/production; en local no aparecen métricas en el dashboard. */}

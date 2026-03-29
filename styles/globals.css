@@ -16,8 +16,8 @@
   --text-muted: #A1A1AA;
 
   /* Accent — emerald (trust + action) */
-  --accent-500: #10B981;
-  --accent-400: #34D399;
+  --accent-500: #059669; /* emerald-600: passes 4.5:1 with white (WCAG AA) */
+  --accent-400: #10B981; /* emerald-500: used for hover states */
   --accent-900: #064E3B;
   --accent-100: #D1FAE5;
 
@@ -27,7 +27,7 @@
   --indigo-900: #1E1B4B;
 
   /* Semantic */
-  --success: #10B981;
+  --success: #059669;
   --warning: #F59E0B;
   --danger: #EF4444;
   --info: #3B82F6;
@@ -51,8 +51,8 @@
 
   /* Text hierarchy — improved contrast (WCAG AA) */
   --text-primary: #F0F2F8;
-  --text-secondary: #B0B8D1;
-  --text-muted: #7E87A8;
+  --text-secondary: #C8D0E4; /* was #B0B8D1, lightened for 4.5:1 ratio on dark bg */
+  --text-muted: #8B94B2;    /* was #7E87A8, lightened slightly */
 
   /* Accent — same emerald */
   --accent-500: #10B981;
@@ -310,4 +310,33 @@ html:not(.dark) .skeleton::after {
 .focus-ring:focus-visible {
   outline: none;
   box-shadow: 0 0 0 2px var(--accent-500), 0 0 0 4px var(--bg-base);
+}
+
+/* Dark mode: use accent-400 (#10B981) for focus ring — higher contrast on dark backgrounds */
+.dark *:focus-visible,
+.dark .focus-ring:focus-visible {
+  box-shadow: 0 0 0 2px var(--accent-400), 0 0 0 4px var(--bg-base);
+}
+
+/* ── Skip link (accessibility) ── */
+.skip-link {
+  position: fixed;
+  top: -100%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  padding: 0.75rem 1.5rem;
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: 0 0 12px 12px;
+  border: 2px solid var(--accent-500);
+  border-top: none;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.skip-link:focus {
+  top: 0;
 }

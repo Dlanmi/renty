@@ -153,6 +153,11 @@ export default function SearchFlowModal({
             </div>
             <div className="h-2 overflow-hidden rounded-full bg-bg-elevated">
               <div
+                role="progressbar"
+                aria-valuenow={progress}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-label={`Paso ${step} de ${TOTAL_STEPS}: ${stepTitle(step)}`}
                 className="h-full rounded-full bg-accent transition-all duration-200"
                 style={{ width: `${progress}%` }}
               />

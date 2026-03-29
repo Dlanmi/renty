@@ -56,7 +56,7 @@ export default function ContactCTA({
               href={href}
               target="_blank"
               rel="noopener noreferrer"
-              className="lift-hover flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[#1da851] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#25D366] focus-visible:ring-offset-2 focus-visible:ring-offset-bg-base"
+              className="lift-hover flex w-full items-center justify-center gap-2 rounded-xl bg-[#16a34a] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[#15803d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#16a34a] focus-visible:ring-offset-2 focus-visible:ring-offset-bg-base"
             >
               <WhatsAppIcon className="h-5 w-5" />
               Contactar por WhatsApp
@@ -101,7 +101,7 @@ export default function ContactCTA({
               href={href}
               target="_blank"
               rel="noopener noreferrer"
-              className="lift-hover inline-flex items-center gap-2 rounded-xl bg-[#25D366] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#1da851] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#25D366] focus-visible:ring-offset-2 focus-visible:ring-offset-bg-base"
+              className="lift-hover inline-flex items-center gap-2 rounded-xl bg-[#16a34a] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#15803d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#16a34a] focus-visible:ring-offset-2 focus-visible:ring-offset-bg-base"
             >
               <WhatsAppIcon className="h-[18px] w-[18px]" />
               WhatsApp
@@ -116,7 +116,7 @@ export default function ContactCTA({
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Contactar por WhatsApp"
-        className="fixed bottom-6 right-6 z-[90] hidden h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#25D366] focus-visible:ring-offset-2 focus-visible:ring-offset-bg-base lg:flex"
+        className="fixed bottom-6 right-6 z-[90] hidden h-14 w-14 items-center justify-center rounded-full bg-[#16a34a] text-white shadow-lg transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#16a34a] focus-visible:ring-offset-2 focus-visible:ring-offset-bg-base lg:flex"
       >
         <WhatsAppIcon className="h-8 w-8" />
       </a>

@@ -55,7 +55,14 @@ export default function ListingGallery({ title, photos }: ListingGalleryProps) {
   };
 
   return (
-    <div className="overflow-hidden rounded-[26px] border border-bg-border bg-bg-elevated">
+    <div
+      className="overflow-hidden rounded-[26px] border border-bg-border bg-bg-elevated"
+      role="region"
+      aria-label={`Galería de fotos de ${title}`}
+    >
+      <span className="sr-only" aria-live="polite" aria-atomic="true">
+        {gallery.length > 1 ? `Foto ${selectedIndex + 1} de ${gallery.length}` : ""}
+      </span>
       <div className="relative aspect-[4/3] md:aspect-[16/9] md:min-h-[420px]">
         {isImageLoading && (
           <div className="skeleton absolute inset-0 z-10" aria-hidden="true" />
