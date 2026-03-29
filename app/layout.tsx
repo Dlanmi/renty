@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/next";
 import localFont from "next/font/local";
 import "@/styles/globals.css";
 import Providers from "@/app/providers";
@@ -173,6 +174,7 @@ export default function RootLayout({
         </Providers>
         {/* Vercel recoge datos reales en despliegues preview/production; en local no aparecen métricas en el dashboard. */}
         <SpeedInsights />
+        <Analytics />
       </body>
     </html>
   );
