@@ -18,7 +18,7 @@ const contentSecurityPolicy = [
   "style-src 'self' 'unsafe-inline'",
   "font-src 'self' data:",
   "img-src 'self' data: blob: https:",
-  "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
+  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://482c0dfe5e63ae2b9b1ea83e79924a63.r2.cloudflarestorage.com",
   "upgrade-insecure-requests",
 ].join("; ");
 
@@ -68,6 +68,10 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "**.supabase.co",
+      },
+      {
+        protocol: "https",
+        hostname: "**.r2.dev",
       },
       {
         protocol: "https",

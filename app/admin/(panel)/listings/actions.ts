@@ -5,6 +5,12 @@ import { redirect } from "next/navigation";
 import type { ListingKind } from "@/lib/domain/types";
 import { createSupabaseServerClient, requireAdminContext } from "@/lib/admin/auth";
 import {
+  deleteFromR2,
+  downloadFromR2,
+  uploadToR2,
+  getR2PublicUrl,
+} from "@/lib/storage/r2";
+import {
   parseListingInput,
   type ParsedListingInput,
   type DuplicateableListing,
@@ -340,7 +346,7 @@ export async function deleteListingAction(
     );
 
     if (exclusivePaths.length > 0) {
-      await client.storage.from("listing-images").remove(exclusivePaths);
+      await deleteFromR2(exclusivePaths);
     }
 
     const { error: deleteError } = await client
@@ -488,33 +494,16 @@ export async function duplicateListingAction(
     if (photos && photos.length > 0) {
       const photoRows = await duplicateListingPhotoRows(photos, newId, {
         now: () => Date.now(),
-        download: async (storagePath) => {
-          const { data: downloadData, error: downloadError } = await client.storage
-            .from("listing-images")
-            .download(storagePath);
-
-          if (downloadError || !downloadData) {
-            return null;
-          }
-
-          return {
-            bytes: Buffer.from(await downloadData.arrayBuffer()),
-            contentType: downloadData.type || "image/jpeg",
-          };
-        },
+        download: async (storagePath) => downloadFromR2(storagePath),
         upload: async (storagePath, bytes, contentType) => {
-          const { error: uploadError } = await client.storage
-            .from("listing-images")
-            .upload(storagePath, bytes, {
-              contentType,
-              upsert: false,
-            });
-
-          return !uploadError;
+          try {
+            await uploadToR2(storagePath, bytes, contentType);
+            return true;
+          } catch {
+            return false;
+          }
         },
-        getPublicUrl: (storagePath) =>
-          client.storage.from("listing-images").getPublicUrl(storagePath).data
-            .publicUrl,
+        getPublicUrl: (storagePath) => getR2PublicUrl(storagePath),
       });
 
       if (photoRows.length > 0) {

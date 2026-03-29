@@ -13,6 +13,11 @@ import {
   type AllowedImageMime,
   type UploadedPhotoReference,
 } from "./photo-rules";
+import {
+  uploadToR2,
+  deleteFromR2,
+  getR2PublicUrl,
+} from "@/lib/storage/r2";
 
 // ─── Constants ───────────────────────────────────────────────────────
 
@@ -136,18 +141,9 @@ export async function uploadPhotos(
     const file = files[index];
     const storagePath = `${listingId}/${Date.now()}-${index}.${file.extension}`;
 
-    const { error: uploadError } = await client.storage
-      .from("listing-images")
-      .upload(storagePath, file.bytes, {
-        contentType: file.contentType,
-        upsert: false,
-      });
+    await uploadToR2(storagePath, file.bytes, file.contentType);
 
-    if (uploadError) toError(uploadError.message);
-
-    const publicUrl = client.storage
-      .from("listing-images")
-      .getPublicUrl(storagePath).data.publicUrl;
+    const publicUrl = getR2PublicUrl(storagePath);
 
     photoRows.push({
       listing_id: listingId,
@@ -349,10 +345,7 @@ export async function deletePhotos(
   );
 
   if (exclusivePaths.length > 0) {
-    const { error: storageError } = await client.storage
-      .from("listing-images")
-      .remove(exclusivePaths);
-    if (storageError) toError(storageError.message);
+    await deleteFromR2(exclusivePaths);
   }
 }
 

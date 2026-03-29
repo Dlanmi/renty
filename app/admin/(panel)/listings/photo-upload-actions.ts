@@ -9,8 +9,13 @@ import {
   MIME_BY_EXTENSION,
   normalizeImageMimeType,
 } from "@/lib/admin/listings/photo-rules";
-import { createSupabaseServerClient, requireAdminContext } from "@/lib/admin/auth";
+import { requireAdminContext } from "@/lib/admin/auth";
 import { isValidListingId } from "@/lib/domain/listing-paths";
+import {
+  createPresignedUploadUrl,
+  deleteFromR2,
+  getR2PublicUrl,
+} from "@/lib/storage/r2";
 
 interface RequestedPhotoUpload {
   name: string;
@@ -26,7 +31,7 @@ interface CreatePhotoUploadPlanInput {
 export interface PhotoUploadTarget {
   storagePath: string;
   publicUrl: string;
-  token: string;
+  uploadUrl: string;
   contentType: string;
 }
 
@@ -81,8 +86,7 @@ export async function createPhotoUploadPlanAction(
 
   files.forEach(validateRequestedPhoto);
 
-  const admin = await requireAdminContext();
-  const client = createSupabaseServerClient(admin.accessToken);
+  await requireAdminContext();
   const batchId = Date.now();
   const uploads: PhotoUploadTarget[] = [];
 
@@ -96,24 +100,13 @@ export async function createPhotoUploadPlanAction(
     }
 
     const storagePath = buildPhotoStoragePath(listingId, file.name, index, batchId);
-    const { data, error } = await client.storage
-      .from("listing-images")
-      .createSignedUploadUrl(storagePath);
-
-    if (error || !data) {
-      toError(
-        `No pudimos preparar la subida de "${file.name}". Intenta de nuevo.`
-      );
-    }
-
-    const publicUrl = client.storage
-      .from("listing-images")
-      .getPublicUrl(storagePath).data.publicUrl;
+    const uploadUrl = await createPresignedUploadUrl(storagePath, contentType);
+    const publicUrl = getR2PublicUrl(storagePath);
 
     uploads.push({
       storagePath,
       publicUrl,
-      token: data.token,
+      uploadUrl,
       contentType,
     });
   }
@@ -128,11 +121,6 @@ export async function cleanupUploadedPhotosAction(storagePaths: string[]) {
 
   if (uniquePaths.length === 0) return;
 
-  const admin = await requireAdminContext();
-  const client = createSupabaseServerClient(admin.accessToken);
-  const { error } = await client.storage.from("listing-images").remove(uniquePaths);
-
-  if (error) {
-    throw new Error("No pudimos limpiar las fotos temporales del borrador.");
-  }
+  await requireAdminContext();
+  await deleteFromR2(uniquePaths);
 }

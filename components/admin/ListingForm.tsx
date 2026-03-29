@@ -36,7 +36,6 @@ import {
   normalizeImageMimeType,
   type UploadedPhotoReference,
 } from "@/lib/admin/listings/photo-rules";
-import { createBrowserClient } from "@/lib/supabase/browser";
 
 type FormAction = (formData: FormData) => void | Promise<void>;
 
@@ -398,20 +397,17 @@ export default function ListingForm({
         throw new Error("No pudimos preparar todas las fotos para la subida.");
       }
 
-      const supabase = createBrowserClient();
-
       for (let index = 0; index < uploads.length; index += 1) {
         const target = uploads[index];
         const file = selectedFiles[index];
 
-        const { error } = await supabase.storage
-          .from("listing-images")
-          .uploadToSignedUrl(target.storagePath, target.token, file, {
-            contentType: target.contentType,
-            upsert: false,
-          });
+        const response = await fetch(target.uploadUrl, {
+          method: "PUT",
+          body: file,
+          headers: { "Content-Type": target.contentType },
+        });
 
-        if (error) {
+        if (!response.ok) {
           throw new Error(
             `No pudimos subir "${file.name}". Revisa tu conexión e intenta de nuevo.`
           );
