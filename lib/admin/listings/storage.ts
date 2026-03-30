@@ -18,6 +18,10 @@ import {
   deleteFromR2,
   getR2PublicUrl,
 } from "@/lib/storage/r2";
+import {
+  deriveThumbStoragePath,
+  isVariantPath,
+} from "@/lib/client/image-variants";
 
 // ─── Constants ───────────────────────────────────────────────────────
 
@@ -173,6 +177,7 @@ export async function insertUploadedPhotoRefs(
     listing_id: listingId,
     storage_path: upload.storagePath,
     public_url: upload.publicUrl,
+    public_url_thumb: upload.thumbPublicUrl || null,
     sort_order: startSortOrder + index + 1,
     is_cover: false,
   }));
@@ -345,7 +350,15 @@ export async function deletePhotos(
   );
 
   if (exclusivePaths.length > 0) {
-    await deleteFromR2(exclusivePaths);
+    // For variant-named paths, also delete the companion thumb variant
+    const pathsToDelete = exclusivePaths.flatMap((path) => {
+      if (isVariantPath(path)) {
+        const thumbPath = deriveThumbStoragePath(path);
+        return thumbPath !== path ? [path, thumbPath] : [path];
+      }
+      return [path];
+    });
+    await deleteFromR2(pathsToDelete);
   }
 }
 

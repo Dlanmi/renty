@@ -7,6 +7,8 @@ export type AllowedImageMime =
 export interface UploadedPhotoReference {
   storagePath: string;
   publicUrl: string;
+  thumbStoragePath?: string;
+  thumbPublicUrl?: string;
 }
 
 export interface PhotoLike {
@@ -126,4 +128,18 @@ export function buildPhotoStoragePath(
   const extension = fileExtension(filename);
   const uniqueSuffix = crypto.randomUUID().slice(0, 8);
   return `${listingId}/${batchId}-${index}-${uniqueSuffix}.${extension}`;
+}
+
+/**
+ * Build a base path (without variant suffix or extension) for processed
+ * variants. The caller appends `-lg.webp` / `-th.webp` via
+ * `buildVariantPath`.
+ */
+export function buildVariantBasePath(
+  listingId: string,
+  index: number,
+  batchId = Date.now()
+): string {
+  const uniqueSuffix = crypto.randomUUID().slice(0, 8);
+  return `${listingId}/${batchId}-${index}-${uniqueSuffix}`;
 }

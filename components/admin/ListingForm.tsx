@@ -36,6 +36,13 @@ import {
   normalizeImageMimeType,
   type UploadedPhotoReference,
 } from "@/lib/admin/listings/photo-rules";
+import {
+  processImages,
+  isImageProcessingEnabled,
+  type ProcessedImage,
+  type ProcessingController,
+} from "@/lib/client/image-processor";
+import { UPLOAD_CONCURRENCY } from "@/lib/client/image-variants";
 
 type FormAction = (formData: FormData) => void | Promise<void>;
 
@@ -52,6 +59,13 @@ interface ListingFormProps {
 interface UploadDialogState {
   title: string;
   message: string;
+}
+
+interface UploadProgressState {
+  phase: "processing" | "uploading";
+  current: number;
+  total: number;
+  currentFileName: string;
 }
 
 const UPLOAD_DRAFT_STORAGE_PREFIX = "renty:uploaded-photos:";
@@ -258,8 +272,10 @@ export default function ListingForm({
     null
   );
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<UploadProgressState | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const submitBypassRef = useRef(false);
+  const cancelControllerRef = useRef<ProcessingController | null>(null);
 
   const roomKind = isRoomKind(listingKind);
   const sharedRoom = listingKind === "room_shared";
@@ -317,6 +333,10 @@ export default function ListingForm({
       JSON.stringify(uploadedPhotoRefs)
     );
   }, [uploadedPhotoRefs, uploadedPhotosDraftStorageKey]);
+
+  function handleCancelUpload() {
+    cancelControllerRef.current?.cancel();
+  }
 
   async function handleFormSubmitCapture(event: FormEvent<HTMLFormElement>) {
     if (submitBypassRef.current) {
@@ -380,44 +400,188 @@ export default function ListingForm({
     event.preventDefault();
     setUploadDialog(null);
     setUploadingPhotos(true);
+    setUploadProgress(null);
 
     const uploadedInThisAttempt: UploadedPhotoReference[] = [];
+    const allStoragePathsToCleanup: string[] = [];
 
     try {
-      const { uploads } = await createPhotoUploadPlanAction({
-        listingId: effectiveListingId,
-        files: selectedFiles.map((file) => ({
+      // ── 1. Process images client-side (if enabled) ─────────────
+      let processedImages: ProcessedImage[] | null = null;
+
+      if (isImageProcessingEnabled()) {
+        const controller: ProcessingController = { cancel: () => {} };
+        cancelControllerRef.current = controller;
+
+        try {
+          processedImages = await processImages(
+            selectedFiles,
+            (progress) => {
+              setUploadProgress({
+                phase: "processing",
+                current: progress.current,
+                total: progress.total,
+                currentFileName: progress.currentFileName,
+              });
+            },
+            controller
+          );
+        } catch (processingError) {
+          // If cancelled, re-throw
+          if (
+            processingError instanceof DOMException &&
+            processingError.name === "AbortError"
+          ) {
+            throw processingError;
+          }
+          // Otherwise fall through — upload originals
+          processedImages = null;
+        } finally {
+          cancelControllerRef.current = null;
+        }
+      }
+
+      // ── 2. Get presigned URLs ──────────────────────────────────
+      const filesForPlan = selectedFiles.map((file, index) => {
+        const processed = processedImages?.[index];
+
+        if (processed && processed.variants.size > 0) {
+          const variants: Array<{
+            name: "lg" | "th";
+            size: number;
+            type: string;
+          }> = [];
+
+          for (const [name, variant] of processed.variants) {
+            variants.push({
+              name,
+              size: variant.size,
+              type: variant.format,
+            });
+          }
+
+          return {
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            variants,
+          };
+        }
+
+        // Fallback: original file
+        return {
           name: file.name,
           size: file.size,
           type: file.type,
-        })),
+        };
+      });
+
+      const { uploads } = await createPhotoUploadPlanAction({
+        listingId: effectiveListingId,
+        files: filesForPlan,
       });
 
       if (uploads.length !== selectedFiles.length) {
         throw new Error("No pudimos preparar todas las fotos para la subida.");
       }
 
-      for (let index = 0; index < uploads.length; index += 1) {
+      // ── 3. Upload with concurrency ─────────────────────────────
+      let uploadedCount = 0;
+
+      const uploadFile = async (index: number) => {
         const target = uploads[index];
         const file = selectedFiles[index];
+        const processed = processedImages?.[index];
 
-        const response = await fetch(target.uploadUrl, {
-          method: "PUT",
-          body: file,
-          headers: { "Content-Type": target.contentType },
+        setUploadProgress({
+          phase: "uploading",
+          current: uploadedCount + 1,
+          total: uploads.length,
+          currentFileName: file.name,
         });
 
-        if (!response.ok) {
-          throw new Error(
-            `No pudimos subir "${file.name}". Revisa tu conexión e intenta de nuevo.`
-          );
+        if (processed && processed.variants.size > 0 && target.thumb) {
+          // Upload processed variants
+          const lgVariant = processed.variants.get("lg");
+          const thVariant = processed.variants.get("th");
+
+          if (lgVariant) {
+            const lgResponse = await fetch(target.uploadUrl, {
+              method: "PUT",
+              body: lgVariant.blob,
+              headers: { "Content-Type": target.contentType },
+            });
+            if (!lgResponse.ok) {
+              throw new Error(
+                `No pudimos subir "${file.name}" (large). Revisa tu conexión.`
+              );
+            }
+            allStoragePathsToCleanup.push(target.storagePath);
+          }
+
+          if (thVariant && target.thumb) {
+            const thResponse = await fetch(target.thumb.uploadUrl, {
+              method: "PUT",
+              body: thVariant.blob,
+              headers: { "Content-Type": target.thumb.contentType },
+            });
+            if (!thResponse.ok) {
+              throw new Error(
+                `No pudimos subir "${file.name}" (thumb). Revisa tu conexión.`
+              );
+            }
+            allStoragePathsToCleanup.push(target.thumb.storagePath);
+          }
+
+          uploadedInThisAttempt.push({
+            storagePath: target.storagePath,
+            publicUrl: target.publicUrl,
+            thumbStoragePath: target.thumb?.storagePath,
+            thumbPublicUrl: target.thumb?.publicUrl,
+          });
+        } else {
+          // Upload original file (fallback or processing disabled)
+          const response = await fetch(target.uploadUrl, {
+            method: "PUT",
+            body: file,
+            headers: { "Content-Type": target.contentType },
+          });
+          if (!response.ok) {
+            throw new Error(
+              `No pudimos subir "${file.name}". Revisa tu conexión e intenta de nuevo.`
+            );
+          }
+          allStoragePathsToCleanup.push(target.storagePath);
+
+          uploadedInThisAttempt.push({
+            storagePath: target.storagePath,
+            publicUrl: target.publicUrl,
+          });
         }
 
-        uploadedInThisAttempt.push({
-          storagePath: target.storagePath,
-          publicUrl: target.publicUrl,
+        uploadedCount++;
+        setUploadProgress({
+          phase: "uploading",
+          current: uploadedCount,
+          total: uploads.length,
+          currentFileName: uploadedCount < uploads.length ? selectedFiles[uploadedCount]?.name ?? "" : "",
         });
-      }
+      };
+
+      // Run uploads with concurrency control
+      let nextUploadIndex = 0;
+      const runNextUpload = async (): Promise<void> => {
+        while (nextUploadIndex < uploads.length) {
+          const currentIndex = nextUploadIndex++;
+          await uploadFile(currentIndex);
+        }
+      };
+
+      const uploadWorkers = Array.from(
+        { length: Math.min(UPLOAD_CONCURRENCY, uploads.length) },
+        () => runNextUpload()
+      );
+      await Promise.all(uploadWorkers);
 
       setUploadedPhotoRefs((prev) =>
         dedupeUploadedPhotos([...prev, ...uploadedInThisAttempt])
@@ -431,26 +595,43 @@ export default function ListingForm({
       submitBypassRef.current = true;
       requestAnimationFrame(() => event.currentTarget.requestSubmit());
     } catch (error) {
-      if (uploadedInThisAttempt.length > 0) {
-        try {
-          await cleanupUploadedPhotosAction(
-            uploadedInThisAttempt.map((photo) => photo.storagePath)
-          );
-        } catch {
-          // Best effort cleanup. If this fails, the next save or manual retry
-          // should still be able to continue without blocking the user.
+      if (
+        error instanceof DOMException &&
+        error.name === "AbortError"
+      ) {
+        // User cancelled — clean up any uploads that already went through
+        if (allStoragePathsToCleanup.length > 0) {
+          try {
+            await cleanupUploadedPhotosAction(allStoragePathsToCleanup);
+          } catch {
+            // Best effort
+          }
         }
-      }
+        setUploadDialog({
+          title: "Subida cancelada",
+          message: "Se canceló la subida. Las fotos que ya se habían subido se limpiaron.",
+        });
+      } else {
+        if (allStoragePathsToCleanup.length > 0) {
+          try {
+            await cleanupUploadedPhotosAction(allStoragePathsToCleanup);
+          } catch {
+            // Best effort cleanup
+          }
+        }
 
-      setUploadDialog({
-        title: "No pudimos preparar la galería",
-        message:
-          error instanceof Error
-            ? error.message
-            : "Ocurrió un error inesperado mientras subíamos las fotos.",
-      });
+        setUploadDialog({
+          title: "No pudimos preparar la galería",
+          message:
+            error instanceof Error
+              ? error.message
+              : "Ocurrió un error inesperado mientras subíamos las fotos.",
+        });
+      }
     } finally {
       setUploadingPhotos(false);
+      setUploadProgress(null);
+      cancelControllerRef.current = null;
     }
   }
 
@@ -1114,6 +1295,42 @@ export default function ListingForm({
           </div>
         )}
 
+        {/* Progress bar during processing/uploading */}
+        {uploadProgress && (
+          <div className="mt-3 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3">
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-blue-800">
+                  {uploadProgress.phase === "processing"
+                    ? "Procesando fotos..."
+                    : "Subiendo fotos..."}
+                </p>
+                <p className="mt-0.5 truncate text-xs text-blue-600">
+                  {uploadProgress.current} de {uploadProgress.total}
+                  {uploadProgress.currentFileName
+                    ? ` — ${uploadProgress.currentFileName}`
+                    : ""}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleCancelUpload}
+                className="shrink-0 rounded-lg border border-blue-300 bg-white px-3 py-1.5 text-xs font-medium text-blue-700 transition-colors hover:bg-blue-100"
+              >
+                Cancelar
+              </button>
+            </div>
+            <div className="mt-2 h-2 overflow-hidden rounded-full bg-blue-200">
+              <div
+                className="h-full rounded-full bg-blue-600 transition-all duration-300"
+                style={{
+                  width: `${Math.round((uploadProgress.current / uploadProgress.total) * 100)}%`,
+                }}
+              />
+            </div>
+          </div>
+        )}
+
         <div
           className={`mt-3 rounded-xl border px-3 py-2 text-xs ${
             uploadedPhotoRefs.length > 0
@@ -1123,7 +1340,7 @@ export default function ListingForm({
         >
           {uploadedPhotoRefs.length > 0
             ? "Las fotos ya quedaron subidas al storage y el siguiente paso es guardar el inmueble."
-            : "Cuando des guardar, las fotos nuevas se validan primero y luego se suben antes de enviar el formulario."}
+            : "Cuando des guardar, las fotos nuevas se optimizan automaticamente (WebP) y luego se suben antes de enviar el formulario."}
         </div>
 
         {uploadDialog && (
@@ -1145,7 +1362,11 @@ export default function ListingForm({
         <FormSubmitButton
           idleLabel={submitLabel}
           busy={uploadingPhotos}
-          busyLabel="Subiendo fotos..."
+          busyLabel={
+            uploadProgress?.phase === "processing"
+              ? "Procesando fotos..."
+              : "Subiendo fotos..."
+          }
           pendingLabel="Guardando cambios..."
         />
       </div>

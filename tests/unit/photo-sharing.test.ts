@@ -148,6 +148,7 @@ test("duplicateListingPhotoRows hace fallback a URL existente cuando falla la co
       listing_id: LISTING_B,
       storage_path: "",
       public_url: `https://storage.example.com/${PATH_1}`,
+      public_url_thumb: null,
       caption: null,
       room_type: null,
       sort_order: 0,

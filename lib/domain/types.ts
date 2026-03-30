@@ -100,6 +100,7 @@ export interface ListingPhoto {
   listing_id: string;
   storage_path: string;
   public_url: string;
+  public_url_thumb: string | null;
   caption: string | null;
   room_type: ListingPhotoRoomType | null;
   sort_order: number;

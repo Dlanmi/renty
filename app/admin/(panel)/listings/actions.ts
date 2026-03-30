@@ -11,6 +11,10 @@ import {
   getR2PublicUrl,
 } from "@/lib/storage/r2";
 import {
+  deriveThumbStoragePath,
+  isVariantPath,
+} from "@/lib/client/image-variants";
+import {
   parseListingInput,
   type ParsedListingInput,
   type DuplicateableListing,
@@ -346,7 +350,15 @@ export async function deleteListingAction(
     );
 
     if (exclusivePaths.length > 0) {
-      await deleteFromR2(exclusivePaths);
+      // Also delete companion thumb variants for new-format paths
+      const pathsToDelete = exclusivePaths.flatMap((path) => {
+        if (isVariantPath(path)) {
+          const thumbPath = deriveThumbStoragePath(path);
+          return thumbPath !== path ? [path, thumbPath] : [path];
+        }
+        return [path];
+      });
+      await deleteFromR2(pathsToDelete);
     }
 
     const { error: deleteError } = await client

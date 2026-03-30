@@ -1,4 +1,8 @@
 import type { ListingStatus } from "@/lib/domain/types";
+import {
+  deriveThumbStoragePath,
+  isVariantPath,
+} from "@/lib/client/image-variants";
 
 export interface DuplicateableListing {
   id: string;
@@ -24,6 +28,7 @@ export interface DuplicatedPhotoRow {
   listing_id: string;
   storage_path: string;
   public_url: string;
+  public_url_thumb: string | null;
   caption: string | null;
   room_type: string | null;
   sort_order: number;
@@ -97,31 +102,26 @@ export async function duplicateListingPhotoRows(
     const photo = photos[index];
     const storagePath = photo.storage_path.trim();
 
+    const fallbackRow: DuplicatedPhotoRow = {
+      listing_id: newListingId,
+      storage_path: "",
+      public_url: photo.public_url,
+      public_url_thumb: null,
+      caption: photo.caption,
+      room_type: photo.room_type,
+      sort_order: photo.sort_order,
+      is_cover: photo.is_cover,
+    };
+
     if (!storagePath) {
-      rows.push({
-        listing_id: newListingId,
-        storage_path: "",
-        public_url: photo.public_url,
-        caption: photo.caption,
-        room_type: photo.room_type,
-        sort_order: photo.sort_order,
-        is_cover: photo.is_cover,
-      });
+      rows.push(fallbackRow);
       continue;
     }
 
     try {
       const download = await storage.download(storagePath);
       if (!download) {
-        rows.push({
-          listing_id: newListingId,
-          storage_path: "",
-          public_url: photo.public_url,
-          caption: photo.caption,
-          room_type: photo.room_type,
-          sort_order: photo.sort_order,
-          is_cover: photo.is_cover,
-        });
+        rows.push(fallbackRow);
         continue;
       }
 
@@ -139,37 +139,47 @@ export async function duplicateListingPhotoRows(
       );
 
       if (!uploaded) {
-        rows.push({
-          listing_id: newListingId,
-          storage_path: "",
-          public_url: photo.public_url,
-          caption: photo.caption,
-          room_type: photo.room_type,
-          sort_order: photo.sort_order,
-          is_cover: photo.is_cover,
-        });
+        rows.push(fallbackRow);
         continue;
+      }
+
+      // Best-effort copy of thumb variant if the original uses the
+      // new naming convention (-lg.webp / -lg.jpg).
+      let thumbPublicUrl: string | null = null;
+
+      if (isVariantPath(storagePath)) {
+        const originalThumbPath = deriveThumbStoragePath(storagePath);
+        const newThumbPath = deriveThumbStoragePath(newStoragePath);
+
+        try {
+          const thumbDownload = await storage.download(originalThumbPath);
+          if (thumbDownload) {
+            const thumbUploaded = await storage.upload(
+              newThumbPath,
+              thumbDownload.bytes,
+              thumbDownload.contentType
+            );
+            if (thumbUploaded) {
+              thumbPublicUrl = storage.getPublicUrl(newThumbPath);
+            }
+          }
+        } catch {
+          // Thumb copy is best-effort — continue without it
+        }
       }
 
       rows.push({
         listing_id: newListingId,
         storage_path: newStoragePath,
         public_url: storage.getPublicUrl(newStoragePath),
+        public_url_thumb: thumbPublicUrl,
         caption: photo.caption,
         room_type: photo.room_type,
         sort_order: photo.sort_order,
         is_cover: photo.is_cover,
       });
     } catch {
-      rows.push({
-        listing_id: newListingId,
-        storage_path: "",
-        public_url: photo.public_url,
-        caption: photo.caption,
-        room_type: photo.room_type,
-        sort_order: photo.sort_order,
-        is_cover: photo.is_cover,
-      });
+      rows.push(fallbackRow);
     }
   }
 

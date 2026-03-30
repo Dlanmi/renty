@@ -20,6 +20,7 @@ export {
   MAX_NEW_PHOTOS_PER_REQUEST,
   MAX_PHOTO_SIZE_BYTES,
   MAX_PHOTOS_PER_LISTING,
+  buildVariantBasePath,
   type UploadedPhotoReference,
 } from "./photo-rules";
 

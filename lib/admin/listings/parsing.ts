@@ -231,7 +231,14 @@ export function parseUploadedPhotoRefs(
       }
 
       seenStoragePaths.add(storagePath);
-      parsed.push({ storagePath, publicUrl });
+
+      const ref: UploadedPhotoReference = { storagePath, publicUrl };
+      const thumbStoragePath = String(parsedValue.thumbStoragePath ?? "").trim();
+      const thumbPublicUrl = String(parsedValue.thumbPublicUrl ?? "").trim();
+      if (thumbStoragePath) ref.thumbStoragePath = thumbStoragePath;
+      if (thumbPublicUrl) ref.thumbPublicUrl = thumbPublicUrl;
+
+      parsed.push(ref);
     } catch {
       continue;
     }
