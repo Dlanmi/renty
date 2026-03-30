@@ -201,13 +201,13 @@ html:not(.dark) .skeleton::after {
 
 @media (prefers-reduced-motion: no-preference) {
   .page-reveal {
-    animation: page-fade-in 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation: page-fade-in 320ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
   }
 
   .stagger-list > * {
     opacity: 0;
     transform: translateY(8px);
-    animation: stagger-in 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation: stagger-in 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 
   .stagger-list > *:nth-child(1) {
@@ -236,6 +236,15 @@ html:not(.dark) .skeleton::after {
   }
   .stagger-list > *:nth-child(9) {
     animation-delay: 270ms;
+  }
+  .stagger-list > *:nth-child(10) {
+    animation-delay: 300ms;
+  }
+  .stagger-list > *:nth-child(11) {
+    animation-delay: 330ms;
+  }
+  .stagger-list > *:nth-child(12) {
+    animation-delay: 360ms;
   }
 
   .lift-hover:hover {
@@ -281,6 +290,16 @@ html:not(.dark) .skeleton::after {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* ── Hide scrollbar utility ── */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
 
 /* ── Local Material Symbols config ── */

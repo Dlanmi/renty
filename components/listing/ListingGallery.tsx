@@ -116,6 +116,13 @@ export default function ListingGallery({ title, photos }: ListingGalleryProps) {
             </button>
           )}
 
+          {/* Photo counter — mobile only */}
+          {gallery.length > 1 && (
+            <span className="absolute bottom-4 right-4 z-[7] inline-flex items-center gap-1 rounded-full bg-bg-surface/80 px-2.5 py-1 text-xs font-semibold text-t-primary backdrop-blur-sm md:hidden">
+              {selectedIndex + 1} / {gallery.length}
+            </span>
+          )}
+
           {/* Overlay bottom */}
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[6] bg-gradient-to-t from-black/60 via-black/15 to-transparent p-4 md:p-5">
             <p className="inline-flex rounded-full bg-bg-surface/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-t-secondary">

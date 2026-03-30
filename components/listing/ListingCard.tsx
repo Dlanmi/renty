@@ -80,27 +80,34 @@ export default function ListingCard({
             </span>
           </p>
 
-          <div className="flex min-w-0 flex-wrap gap-1.5 pt-1">
-            <Chip
-              icon={iconForPropertyType(property_type)}
-              label={property_type}
-              className="max-w-full"
+          <div className="relative min-w-0 pt-1">
+            <div className="scrollbar-hide flex min-w-0 gap-1.5 overflow-x-auto pr-6 sm:flex-wrap sm:overflow-x-visible sm:pr-0">
+              <Chip
+                icon={iconForPropertyType(property_type)}
+                label={property_type}
+                className="shrink-0"
+              />
+              <Chip icon="bed" label={`${bedrooms} hab`} className="shrink-0" />
+              <Chip
+                icon="shower"
+                label={`${bathrooms} baño${bathrooms > 1 ? "s" : ""}`}
+                className="shrink-0"
+              />
+              {showAreaChip && (
+                <Chip icon="square_foot" label={`${area_m2} m2`} className="shrink-0" />
+              )}
+              {showParkingChip && (
+                <Chip icon="local_parking" label="Parqueadero" className="shrink-0" />
+              )}
+              {!showAreaChip && !showParkingChip && firstInclude && (
+                <Chip icon="check_circle" label={firstInclude} className="shrink-0" />
+              )}
+            </div>
+            {/* Fade hint — indicates scrollable content on mobile */}
+            <div
+              className="pointer-events-none absolute right-0 top-1 bottom-0 w-8 bg-gradient-to-l from-bg-surface to-transparent sm:hidden"
+              aria-hidden="true"
             />
-            <Chip icon="bed" label={`${bedrooms} hab`} className="max-w-full" />
-            <Chip
-              icon="shower"
-              label={`${bathrooms} baño${bathrooms > 1 ? "s" : ""}`}
-              className="max-w-full"
-            />
-            {showAreaChip && (
-              <Chip icon="square_foot" label={`${area_m2} m2`} className="max-w-full" />
-            )}
-            {showParkingChip && (
-              <Chip icon="local_parking" label="Parqueadero" className="max-w-full" />
-            )}
-            {!showAreaChip && !showParkingChip && firstInclude && (
-              <Chip icon="check_circle" label={firstInclude} className="max-w-full" />
-            )}
           </div>
         </div>
       </Card>

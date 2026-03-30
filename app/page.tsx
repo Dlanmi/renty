@@ -4,6 +4,7 @@ import { getActiveListings } from "@/lib/data/listings";
 import SearchAndResults from "@/components/search/SearchAndResults";
 import StructuredData from "@/components/seo/StructuredData";
 import Skeleton from "@/components/ui/Skeleton";
+import ListingCardSkeleton from "@/components/listing/ListingCardSkeleton";
 import { getListingPath } from "@/lib/domain/listing-paths";
 import { SITE_NAME, buildPageMetadata, toAbsoluteUrl } from "@/lib/domain/seo";
 
@@ -73,29 +74,7 @@ export default async function HomePage() {
             <div className="space-y-5">
               <Skeleton className="mx-auto h-16 w-full max-w-2xl rounded-full" />
               <Skeleton className="mx-auto h-11 w-full max-w-md rounded-full" />
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {Array.from({ length: 6 }).map((_, index) => (
-                  <div
-                    key={index}
-                    className="overflow-hidden rounded-card border border-bg-border bg-bg-surface shadow-card"
-                  >
-                    <Skeleton className="aspect-[4/3] w-full rounded-none" />
-                    <div className="space-y-2 p-4">
-                      <div className="flex items-center gap-1">
-                        <Skeleton className="h-3.5 w-3.5 rounded-full" />
-                        <Skeleton className="h-3 w-32 rounded-full" />
-                      </div>
-                      <Skeleton className="h-4 w-52 rounded-lg" />
-                      <Skeleton className="h-5 w-28 rounded-lg" />
-                      <div className="flex flex-wrap gap-1.5 pt-1">
-                        <Skeleton className="h-6 w-24 rounded-full" />
-                        <Skeleton className="h-6 w-16 rounded-full" />
-                        <Skeleton className="h-6 w-20 rounded-full" />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <ListingCardSkeleton count={6} />
             </div>
           }
         >

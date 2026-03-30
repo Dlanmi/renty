@@ -76,37 +76,33 @@ export default function ContactCTA({
         </div>
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-[80] border-t border-bg-border bg-bg-surface/95 px-4 py-3 backdrop-blur-md lg:hidden">
-        <div className="flex items-center justify-between gap-3">
+      <div
+        className="fixed inset-x-0 bottom-0 z-[80] border-t border-bg-border bg-bg-surface shadow-[0_-4px_12px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_16px_rgba(0,0,0,0.3)] lg:hidden"
+        style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+      >
+        <div className="flex items-center justify-between gap-4 px-4 py-3">
           <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-t-muted">
-              Desde
-            </p>
-            <p className="text-lg font-bold text-t-primary">
+            <p className="text-[22px] font-extrabold leading-tight tracking-tight text-t-primary">
               {formatCOP(price)}
-              <span className="text-sm font-normal text-t-muted">
+              <span className="text-[13px] font-normal text-t-muted">
                 {formatBillingPeriod(billingPeriod)}
               </span>
             </p>
+            <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-[#25D366]/15 px-2 py-0.5 text-[11px] font-semibold text-[#25D366]">
+              <Icon name="check_circle" size={12} />
+              Sin intermediarios
+            </span>
           </div>
 
-          <div className="flex items-center gap-2">
-            <ShareListingButton
-              url={shareUrl}
-              title={shareTitle}
-              description={shareDescription}
-              compact
-            />
-            <a
-              href={href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="lift-hover inline-flex items-center gap-2 rounded-xl bg-[#16a34a] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#15803d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#16a34a] focus-visible:ring-offset-2 focus-visible:ring-offset-bg-base"
-            >
-              <WhatsAppIcon className="h-[18px] w-[18px]" />
-              WhatsApp
-            </a>
-          </div>
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex shrink-0 items-center gap-2 rounded-2xl bg-[#25D366] px-6 py-3.5 text-[15px] font-bold text-white transition-all hover:bg-[#20bd5a] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#25D366] focus-visible:ring-offset-2 focus-visible:ring-offset-bg-surface"
+          >
+            <WhatsAppIcon className="h-5 w-5" />
+            WhatsApp
+          </a>
         </div>
       </div>
 
