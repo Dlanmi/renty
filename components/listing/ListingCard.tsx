@@ -49,8 +49,9 @@ export default function ListingCard({
       href={`${href}${listingQueryString}`}
       className="group block h-full min-w-0"
       listingQueryString={listingQueryString}
+      aria-label={`${title} — ${formatCOP(price_cop)}${formatBillingPeriod(billing_period)} en ${neighborhood}`}
     >
-      <Card className="lift-hover h-full min-w-0 overflow-hidden border border-bg-border transition-all duration-200 ease-out hover:border-accent hover:-translate-y-0.5 hover:shadow-lg">
+      <Card className="lift-hover h-full min-w-0 overflow-hidden border border-bg-border transition-all duration-200 ease-out hover:border-accent hover:-translate-y-0.5 hover:shadow-lg group-focus-visible:border-accent group-focus-visible:-translate-y-0.5 group-focus-visible:shadow-lg">
         <div className="relative aspect-[4/3] overflow-hidden rounded-t-card">
           <Image
             src={cover_photo_url}

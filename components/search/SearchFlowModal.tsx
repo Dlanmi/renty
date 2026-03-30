@@ -108,8 +108,17 @@ export default function SearchFlowModal({
 
   useEffect(() => {
     if (!isOpen) return;
-    if (step !== 1) return;
-    requestAnimationFrame(() => locationInputRef.current?.focus());
+    requestAnimationFrame(() => {
+      if (step === 1) {
+        locationInputRef.current?.focus();
+      } else {
+        // Focus first focusable element in the current step
+        const firstFocusable = containerRef.current?.querySelector<HTMLElement>(
+          '.min-h-0 button, .min-h-0 input'
+        );
+        firstFocusable?.focus();
+      }
+    });
   }, [isOpen, step]);
 
   if (!isOpen) return null;
@@ -277,8 +286,11 @@ export default function SearchFlowModal({
               Limpiar todo
             </button>
             <span className="text-t-muted">
-              {filters.neighborhood ? filters.neighborhood : getPriceLabel(filters.maxPriceCOP)} ·{" "}
-              {getBedroomsLabel(filters.minBedrooms)}
+              {[
+                filters.neighborhood || null,
+                filters.maxPriceCOP > 0 ? getPriceLabel(filters.maxPriceCOP) : null,
+                filters.minBedrooms > 0 ? getBedroomsLabel(filters.minBedrooms) : null,
+              ].filter(Boolean).join(" · ") || "Sin filtros"}
             </span>
           </div>
 

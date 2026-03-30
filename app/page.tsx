@@ -61,7 +61,7 @@ export default async function HomePage() {
           Sin intermediarios.
         </p>
         <p className="mx-auto max-w-lg text-xs text-t-muted">
-          {listings.length} inmuebles disponibles · Contacto directo · Sin intermediarios
+          {listings.length} propiedades activas en Bogotá
         </p>
       </section>
 
@@ -72,8 +72,16 @@ export default async function HomePage() {
         <Suspense
           fallback={
             <div className="space-y-5">
-              <Skeleton className="mx-auto h-16 w-full max-w-2xl rounded-full" />
-              <Skeleton className="mx-auto h-11 w-full max-w-md rounded-full" />
+              {/* SearchTabs skeleton */}
+              <Skeleton className="mx-auto h-10 w-36 rounded-full" />
+              {/* SearchPill skeleton — mobile */}
+              <div className="sm:hidden">
+                <Skeleton className="mx-auto h-[60px] w-full rounded-card-lg" />
+              </div>
+              {/* SearchPill skeleton — desktop */}
+              <div className="hidden sm:block">
+                <Skeleton className="mx-auto h-14 w-full max-w-2xl rounded-full" />
+              </div>
               <ListingCardSkeleton count={6} />
             </div>
           }

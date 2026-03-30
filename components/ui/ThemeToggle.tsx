@@ -76,11 +76,15 @@ export default function ThemeToggle() {
 
   useEffect(() => setMounted(true), []);
 
-  /* ── Close on outside click or Escape ── */
+  /* ── Close on outside click or Escape, arrow‑key nav ── */
   const handleClose = useCallback(() => setOpen(false), []);
 
   useEffect(() => {
     if (!open) return;
+
+    // Focus first menu item when opened
+    const items = containerRef.current?.querySelectorAll<HTMLElement>('[role="menuitem"]');
+    items?.[0]?.focus();
 
     function onClickOutside(e: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
@@ -88,7 +92,18 @@ export default function ThemeToggle() {
       }
     }
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") handleClose();
+      if (e.key === "Escape") { handleClose(); return; }
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        e.preventDefault();
+        const menuItems = containerRef.current?.querySelectorAll<HTMLElement>('[role="menuitem"]');
+        if (!menuItems) return;
+        const arr = Array.from(menuItems);
+        const idx = arr.indexOf(document.activeElement as HTMLElement);
+        const next = e.key === "ArrowDown"
+          ? arr[(idx + 1) % arr.length]
+          : arr[(idx - 1 + arr.length) % arr.length];
+        next?.focus();
+      }
     }
 
     document.addEventListener("mousedown", onClickOutside);
@@ -161,7 +176,11 @@ export default function ThemeToggle() {
               type="button"
               role="menuitem"
               onClick={() => {
-                if (mounted) setTheme(option.value);
+                if (mounted) {
+                  document.documentElement.classList.add("theme-transitioning");
+                  setTheme(option.value);
+                  setTimeout(() => document.documentElement.classList.remove("theme-transitioning"), 300);
+                }
                 setOpen(false);
               }}
               className={[

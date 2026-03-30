@@ -105,9 +105,9 @@ export default function PublishPage() {
   return (
     <div className="mx-auto max-w-6xl space-y-8 px-4 py-8 sm:px-6 lg:space-y-10 lg:py-10">
       <StructuredData id="publish-structured-data" data={serviceJsonLd} />
-      <section className="relative overflow-hidden rounded-[28px] border border-bg-border bg-bg-surface px-5 py-8 text-center shadow-card sm:px-8 sm:py-10">
+      <section className="relative overflow-hidden rounded-card-lg border border-bg-border bg-bg-surface px-5 py-8 text-center shadow-card sm:px-8 sm:py-10">
         <div className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-accent/10 blur-3xl" />
-        <div className="absolute -bottom-20 -left-10 h-52 w-52 rounded-full bg-indigo/10 blur-3xl" />
+        <div className="absolute -bottom-20 -left-10 h-52 w-52 rounded-full bg-[#6366f1]/10 blur-3xl" />
 
         <div className="relative mx-auto max-w-3xl">
           <p className="inline-flex items-center gap-1 rounded-full border border-accent/30 bg-accent-dark/20 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-accent">
@@ -137,6 +137,7 @@ export default function PublishPage() {
             >
               <Icon name="chat" size={18} />
               Quiero publicar mi inmueble
+              <span className="sr-only">(abre en nueva pestaña)</span>
             </a>
 
             <Link
@@ -191,20 +192,15 @@ export default function PublishPage() {
               key={item.title}
               className="h-full rounded-2xl border border-bg-border bg-bg-elevated p-5"
             >
-              <div className="flex items-start gap-3">
-                <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-bold text-white shadow-sm">
+              <div className="flex items-center gap-3">
+                <div className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-bold text-white shadow-sm">
                   {index + 1}
                 </div>
-                <div className="flex min-w-0 items-center gap-3">
-                  <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-bg-surface text-accent shadow-sm">
-                    <Icon name={item.icon} size={18} className="text-accent" />
-                  </div>
-                  <h3 className="text-sm font-semibold leading-snug text-t-primary sm:text-base">
-                    {item.title}
-                  </h3>
-                </div>
+                <h3 className="text-sm font-semibold leading-snug text-t-primary sm:text-base">
+                  {item.title}
+                </h3>
               </div>
-              <p className="mt-4 text-sm leading-relaxed text-t-secondary">
+              <p className="mt-3 text-sm leading-relaxed text-t-secondary">
                 {item.description}
               </p>
             </article>
@@ -275,6 +271,7 @@ export default function PublishPage() {
           >
             <Icon name="chat" size={18} />
             Hablar por WhatsApp
+            <span className="sr-only">(abre en nueva pestaña)</span>
           </a>
           <Link
             href="/"

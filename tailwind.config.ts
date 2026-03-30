@@ -41,6 +41,7 @@ const config: Config = {
       },
       borderRadius: {
         card: "16px",
+        "card-lg": "24px",
       },
       boxShadow: {
         card: "var(--shadow-sm)",

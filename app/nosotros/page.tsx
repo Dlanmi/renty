@@ -18,11 +18,6 @@ const YOU_CAN_DO = [
   { icon: "shield", text: "Acceder a información clara y recomendaciones de seguridad" },
 ];
 
-const BRAND_PHRASES = [
-  "Renty — encontrar vivienda no debería ser complicado.",
-  "Menos tiempo buscando. Más tiempo viviendo.",
-  "Encuentra arriendos en Bogotá de forma simple.",
-];
 
 export const metadata: Metadata = buildPageMetadata({
   title: "Sobre Renty y cómo funciona",
@@ -57,9 +52,9 @@ export default function AboutPage() {
   return (
     <div className="mx-auto max-w-6xl space-y-8 px-4 py-8 sm:px-6 lg:space-y-10 lg:py-10">
       <StructuredData id="about-structured-data" data={aboutJsonLd} />
-      <section className="relative overflow-hidden rounded-[28px] border border-bg-border bg-bg-surface px-5 py-8 text-center shadow-card sm:px-8 sm:py-10">
+      <section className="relative overflow-hidden rounded-card-lg border border-bg-border bg-bg-surface px-5 py-8 text-center shadow-card sm:px-8 sm:py-10">
         <div className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-accent/10 blur-3xl" />
-        <div className="absolute -bottom-20 -left-10 h-52 w-52 rounded-full bg-indigo/10 blur-3xl" />
+        <div className="absolute -bottom-20 -left-10 h-52 w-52 rounded-full bg-[#6366f1]/10 blur-3xl" />
 
         <div className="relative mx-auto max-w-3xl">
           <p className="inline-flex items-center gap-1 rounded-full border border-accent/30 bg-accent-dark/20 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-accent">
@@ -175,12 +170,20 @@ export default function AboutPage() {
         <p className="text-xs font-semibold uppercase tracking-wide text-accent">
           Renty
         </p>
-        <div className="mt-3 space-y-2">
-          {BRAND_PHRASES.map((phrase) => (
-            <p key={phrase} className="text-sm font-medium text-t-primary">
-              {phrase}
-            </p>
-          ))}
+        <p className="mx-auto mt-3 max-w-md text-lg font-semibold text-t-primary">
+          ¿Listo para encontrar tu arriendo?
+        </p>
+        <p className="mx-auto mt-1 max-w-md text-sm text-t-secondary">
+          Menos tiempo buscando. Más tiempo viviendo.
+        </p>
+        <div className="mt-4">
+          <Link
+            href="/"
+            className={getButtonClasses("primary", "lift-hover rounded-xl px-5")}
+          >
+            <Icon name="search" size={18} />
+            Explorar arriendos
+          </Link>
         </div>
       </section>
     </div>

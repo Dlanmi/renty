@@ -2,7 +2,6 @@ import type { ReactNode } from "react";
 import type { Listing, ListingPoi, ListingPoiKind } from "@/lib/domain/types";
 import {
   formatCOP,
-  formatBillingPeriod,
   formatDateCO,
   humanizeTag,
 } from "@/lib/domain/format";
@@ -41,7 +40,7 @@ function SectionCard({
 }) {
   return (
     <section className="lift-hover rounded-2xl border border-bg-border bg-bg-surface p-4 sm:p-5">
-      <h2 className="text-base font-semibold text-t-primary">{title}</h2>
+      <h3 className="text-base font-semibold text-t-primary">{title}</h3>
       {description && <p className="mt-1 text-xs text-t-muted">{description}</p>}
       <div className="mt-3">{children}</div>
     </section>
@@ -110,11 +109,11 @@ export default function ListingSpecs({ listing, pois = [] }: ListingSpecsProps) 
   }
 
   if (listing.bathrooms > 0) {
-    specItems.push({ icon: SPEC_ICON.bathrooms, label: "Banos", value: String(listing.bathrooms) });
+    specItems.push({ icon: SPEC_ICON.bathrooms, label: "Baños", value: String(listing.bathrooms) });
   }
 
   if (listing.area_m2 != null) {
-    specItems.push({ icon: "square_foot", label: "Area", value: formatSquareMeters(listing.area_m2) });
+    specItems.push({ icon: "square_foot", label: "Área", value: formatSquareMeters(listing.area_m2) });
   }
 
   if (!roomKind && listing.floor_number != null) {
@@ -122,7 +121,7 @@ export default function ListingSpecs({ listing, pois = [] }: ListingSpecsProps) 
   }
 
   if (!roomKind && listing.has_elevator != null) {
-    specItems.push({ icon: "elevator", label: "Ascensor", value: listing.has_elevator ? "Si" : "No" });
+    specItems.push({ icon: "elevator", label: "Ascensor", value: listing.has_elevator ? "Sí" : "No" });
   }
 
   if (!roomKind && listing.parking_car_count > 0) {
@@ -134,19 +133,19 @@ export default function ListingSpecs({ listing, pois = [] }: ListingSpecsProps) 
   }
 
   if (roomKind && listing.room_bathroom_private != null) {
-    specItems.push({ icon: "bathtub", label: "Bano privado", value: listing.room_bathroom_private ? "Si" : "No" });
+    specItems.push({ icon: "bathtub", label: "Baño privado", value: listing.room_bathroom_private ? "Sí" : "No" });
   }
 
   if (roomKind && listing.kitchen_access != null) {
-    specItems.push({ icon: "countertops", label: "Acceso cocina", value: listing.kitchen_access ? "Si" : "No" });
+    specItems.push({ icon: "countertops", label: "Acceso a cocina", value: listing.kitchen_access ? "Sí" : "No" });
   }
 
   if (listing.listing_kind === "room_shared" && listing.cohabitants_count != null) {
     specItems.push({ icon: "groups", label: "Convivientes", value: String(listing.cohabitants_count) });
   }
 
-  specItems.push({ icon: SPEC_ICON.independent, label: "Independiente", value: listing.independent ? "Si" : "No" });
-  specItems.push({ icon: SPEC_ICON.furnished, label: "Amoblado", value: listing.furnished ? "Si" : "No" });
+  specItems.push({ icon: SPEC_ICON.independent, label: "Independiente", value: listing.independent ? "Sí" : "No" });
+  specItems.push({ icon: SPEC_ICON.furnished, label: "Amoblado", value: listing.furnished ? "Sí" : "No" });
 
   if (listing.pets_allowed != null) {
     specItems.push({
@@ -161,7 +160,7 @@ export default function ListingSpecs({ listing, pois = [] }: ListingSpecsProps) 
   if (listing.min_stay_months != null) {
     specItems.push({
       icon: SPEC_ICON.minStay,
-      label: "Estadia min.",
+      label: "Estadía mín.",
       value: `${listing.min_stay_months} mes${listing.min_stay_months > 1 ? "es" : ""}`,
     });
   }
@@ -177,16 +176,7 @@ export default function ListingSpecs({ listing, pois = [] }: ListingSpecsProps) 
 
   return (
     <div className="space-y-5">
-      <div className="rounded-2xl border border-bg-border bg-bg-surface p-4 lg:hidden">
-        <p className="text-2xl font-bold text-accent">
-          {formatCOP(listing.price_cop)}
-          <span className="text-base font-normal text-t-muted">
-            {formatBillingPeriod(listing.billing_period)}
-          </span>
-        </p>
-      </div>
-
-      <SectionCard title="Resumen del inmueble" description="Datos clave para decidir rapido.">
+      <SectionCard title="Resumen del inmueble" description="Datos clave para decidir rápido.">
         <div className="stagger-list grid grid-cols-2 gap-3 sm:grid-cols-3">
           {specItems.map((item) => (
             <SpecRow key={`${item.label}-${item.value}`} icon={item.icon} label={item.label} value={item.value} />
@@ -203,7 +193,7 @@ export default function ListingSpecs({ listing, pois = [] }: ListingSpecsProps) 
             </li>
             {hasAdminFee && (
               <li className="flex items-center justify-between gap-3">
-                <span>Administracion</span>
+                <span>Administración</span>
                 <strong>{formatCOP(listing.admin_fee_cop)}</strong>
               </li>
             )}
@@ -264,7 +254,7 @@ export default function ListingSpecs({ listing, pois = [] }: ListingSpecsProps) 
         </SectionCard>
       )}
 
-      <SectionCard title="Ubicacion" description="Ubicacion aproximada para proteger privacidad.">
+      <SectionCard title="Ubicación" description="Ubicación aproximada para proteger privacidad.">
         <div className="flex items-start gap-2.5 text-sm text-t-secondary">
           <Icon name="location_on" size={20} className="mt-0.5 text-accent" />
           <div>
@@ -284,7 +274,7 @@ export default function ListingSpecs({ listing, pois = [] }: ListingSpecsProps) 
       </SectionCard>
 
       {pois.length > 0 && (
-        <SectionCard title="Cerca de" description="Puntos de interes para vida diaria y movilidad.">
+        <SectionCard title="Cerca de" description="Puntos de interés para la vida diaria y movilidad.">
           <ul className="grid gap-2 sm:grid-cols-2">
             {pois.map((poi) => {
               const meta = POI_META[poi.kind] ?? POI_META.other;

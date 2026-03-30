@@ -11,27 +11,25 @@ export default function ListingDetailLoading() {
       </div>
 
       {/* Hero card */}
-      <section className="rounded-[28px] border border-bg-border bg-bg-surface p-4 shadow-card sm:p-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div className="min-w-0 space-y-3">
-            <Skeleton className="h-9 w-72 rounded-2xl sm:w-96" />
-            <div className="flex items-center gap-1.5">
-              <Skeleton className="h-4 w-4 rounded-full" />
-              <Skeleton className="h-4 w-48 rounded-full" />
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Skeleton className="h-7 w-24 rounded-full" />
-              <Skeleton className="h-7 w-20 rounded-full" />
-              <Skeleton className="h-7 w-20 rounded-full" />
-              <Skeleton className="h-7 w-24 rounded-full" />
-            </div>
+      <section className="rounded-card-lg border border-bg-border bg-bg-surface p-4 shadow-card sm:p-6">
+        <div className="min-w-0 space-y-3">
+          <Skeleton className="h-9 w-72 rounded-2xl sm:w-96" />
+          <div className="flex items-center gap-1.5">
+            <Skeleton className="h-4 w-4 rounded-full" />
+            <Skeleton className="h-4 w-48 rounded-full" />
+            <Skeleton className="h-4 w-32 rounded-full" />
           </div>
-          <Skeleton className="h-16 w-36 shrink-0 rounded-2xl" />
+          <div className="flex flex-wrap gap-2">
+            <Skeleton className="h-7 w-24 rounded-full" />
+            <Skeleton className="h-7 w-20 rounded-full" />
+            <Skeleton className="h-7 w-20 rounded-full" />
+            <Skeleton className="h-7 w-24 rounded-full" />
+          </div>
         </div>
 
         {/* Gallery skeleton — main image + thumbnail strip */}
         <div className="mt-5">
-          <div className="overflow-hidden rounded-[26px] border border-bg-border bg-bg-elevated">
+          <div className="overflow-hidden rounded-card-lg border border-bg-border bg-bg-elevated">
             <Skeleton className="aspect-[4/3] w-full rounded-none md:aspect-[16/9] md:min-h-[420px]" />
             <div className="flex gap-2 border-t border-bg-border bg-bg-surface p-3">
               {Array.from({ length: 5 }).map((_, i) => (
@@ -46,11 +44,6 @@ export default function ListingDetailLoading() {
       <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_340px]">
         {/* Specs column */}
         <div className="space-y-5">
-          {/* Mobile price */}
-          <div className="rounded-2xl border border-bg-border bg-bg-surface p-4 lg:hidden">
-            <Skeleton className="h-8 w-44 rounded-lg" />
-          </div>
-
           {/* Summary section */}
           <div className="rounded-2xl border border-bg-border bg-bg-surface p-4 sm:p-5">
             <Skeleton className="h-5 w-48 rounded-full" />
@@ -104,7 +97,7 @@ export default function ListingDetailLoading() {
 
         {/* Contact sidebar (desktop) */}
         <div className="hidden lg:block">
-          <div className="rounded-[24px] border border-bg-border bg-bg-surface shadow-card">
+          <div className="rounded-card-lg border border-bg-border bg-bg-surface shadow-card">
             <div className="border-b border-bg-border px-6 py-4">
               <Skeleton className="h-3 w-28 rounded-full" />
               <Skeleton className="mt-2 h-7 w-44 rounded-lg" />

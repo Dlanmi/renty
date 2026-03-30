@@ -93,7 +93,7 @@ export default function SearchPill({
   return (
     <div className="relative mx-auto max-w-2xl">
       <div className="sticky top-16 z-[60] pb-2 sm:hidden">
-        <div className="rounded-[28px] border border-bg-border bg-bg-base/90 p-2 shadow-md backdrop-blur">
+        <div className="rounded-card-lg border border-bg-border bg-bg-base/90 p-2 shadow-md backdrop-blur">
           <div className="lift-hover flex items-center gap-2 rounded-2xl border border-bg-border bg-bg-surface p-2 shadow-card">
             <button
               type="button"
@@ -126,7 +126,7 @@ export default function SearchPill({
                   type="button"
                   onClick={() => onChange({ neighborhood: "" })}
                   aria-label={`Eliminar filtro: ${filters.neighborhood}`}
-                  className="inline-flex min-h-9 max-w-full items-center gap-1 rounded-full border border-bg-border bg-bg-surface px-3 text-xs text-t-secondary"
+                  className="inline-flex min-h-9 max-w-full items-center gap-1 rounded-full border border-bg-border bg-bg-surface px-3 text-xs text-t-secondary transition-colors hover:bg-bg-elevated active:scale-95"
                 >
                   <span className="truncate">{filters.neighborhood}</span>
                   <Icon name="close" size={14} />
@@ -137,7 +137,7 @@ export default function SearchPill({
                   type="button"
                   onClick={() => onChange({ maxPriceCOP: 0 })}
                   aria-label={`Eliminar filtro de precio: ${priceLabel}`}
-                  className="inline-flex min-h-9 items-center gap-1 rounded-full border border-bg-border bg-bg-surface px-3 text-xs text-t-secondary"
+                  className="inline-flex min-h-9 items-center gap-1 rounded-full border border-bg-border bg-bg-surface px-3 text-xs text-t-secondary transition-colors hover:bg-bg-elevated active:scale-95"
                 >
                   {priceLabel}
                   <Icon name="close" size={14} />
@@ -148,7 +148,7 @@ export default function SearchPill({
                   type="button"
                   onClick={() => onChange({ minBedrooms: 0 })}
                   aria-label={`Eliminar filtro de habitaciones: ${bedroomLabel}`}
-                  className="inline-flex min-h-9 items-center gap-1 rounded-full border border-bg-border bg-bg-surface px-3 text-xs text-t-secondary"
+                  className="inline-flex min-h-9 items-center gap-1 rounded-full border border-bg-border bg-bg-surface px-3 text-xs text-t-secondary transition-colors hover:bg-bg-elevated active:scale-95"
                 >
                   {bedroomLabel}
                   <Icon name="close" size={14} />
@@ -235,14 +235,23 @@ export default function SearchPill({
           </button>
 
           <div className="pr-2">
-            <button
-              type="button"
-              onClick={() => setOpen(null)}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-accent text-white transition-colors hover:bg-accent-hover hover:shadow-glow"
-              aria-label="Cerrar paneles"
-            >
-              <Icon name="search" size={20} />
-            </button>
+            {open ? (
+              <button
+                type="button"
+                onClick={() => setOpen(null)}
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-accent text-white transition-colors hover:bg-accent-hover hover:shadow-glow"
+                aria-label="Cerrar panel de búsqueda"
+              >
+                <Icon name="close" size={20} />
+              </button>
+            ) : (
+              <div
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-accent text-white"
+                aria-hidden="true"
+              >
+                <Icon name="search" size={20} />
+              </div>
+            )}
           </div>
 
           {open === "location" && (
@@ -250,7 +259,7 @@ export default function SearchPill({
               id={PANEL_IDS.location}
               role="dialog"
               aria-label="Filtrar por barrio"
-              className="absolute left-0 top-full z-[90] mt-2 w-72 rounded-2xl border border-bg-border bg-bg-elevated p-3 shadow-lg"
+              className="absolute left-0 top-full z-[90] mt-2 w-72 origin-top rounded-2xl border border-bg-border bg-bg-elevated p-3 shadow-lg animate-[fadeScaleIn_150ms_ease-out]"
             >
               <input
                 ref={locationInputRef}
@@ -293,7 +302,7 @@ export default function SearchPill({
               id={PANEL_IDS.price}
               role="dialog"
               aria-label="Filtrar por precio"
-              className="absolute left-1/2 top-full z-[90] mt-2 w-56 -translate-x-1/2 rounded-2xl border border-bg-border bg-bg-elevated p-2 shadow-lg"
+              className="absolute left-1/2 top-full z-[90] mt-2 w-56 origin-top -translate-x-1/2 rounded-2xl border border-bg-border bg-bg-elevated p-2 shadow-lg animate-[fadeScaleIn_150ms_ease-out]"
             >
               {priceOptions.map((option) => {
                 const isActive = filters.maxPriceCOP === option.value;
@@ -328,7 +337,7 @@ export default function SearchPill({
               id={PANEL_IDS.bedrooms}
               role="dialog"
               aria-label="Filtrar por habitaciones"
-              className="absolute right-0 top-full z-[90] mt-2 w-44 rounded-2xl border border-bg-border bg-bg-elevated p-2 shadow-lg"
+              className="absolute right-0 top-full z-[90] mt-2 w-44 origin-top rounded-2xl border border-bg-border bg-bg-elevated p-2 shadow-lg animate-[fadeScaleIn_150ms_ease-out]"
             >
               {bedroomOptions.map((option) => {
                 const isActive = filters.minBedrooms === option.value;

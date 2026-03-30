@@ -11,6 +11,7 @@ interface ListingCardLinkProps {
   href: string;
   className?: string;
   listingQueryString?: string;
+  "aria-label"?: string;
   children: ReactNode;
 }
 
@@ -18,6 +19,7 @@ export default function ListingCardLink({
   href,
   className,
   listingQueryString = "",
+  "aria-label": ariaLabel,
   children,
 }: ListingCardLinkProps) {
   const handleClick = () => {
@@ -34,7 +36,7 @@ export default function ListingCardLink({
   };
 
   return (
-    <Link href={href} className={className} onClick={handleClick}>
+    <Link href={href} className={className} aria-label={ariaLabel} onClick={handleClick}>
       {children}
     </Link>
   );

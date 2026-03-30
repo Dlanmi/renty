@@ -73,10 +73,11 @@ export default function ListingGallery({ title, photos }: ListingGalleryProps) {
   return (
     <>
       <div
-        className="overflow-hidden rounded-[26px] border border-bg-border bg-bg-elevated"
+        className="overflow-hidden rounded-card-lg border border-bg-border bg-bg-elevated focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
         role="region"
         aria-label={`Galería de fotos de ${title}`}
         aria-roledescription="carrusel"
+        tabIndex={0}
         onKeyDown={handleKeyDown}
       >
         <span className="sr-only" aria-live="polite" aria-atomic="true">
@@ -125,11 +126,9 @@ export default function ListingGallery({ title, photos }: ListingGalleryProps) {
 
           {/* Overlay bottom */}
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[6] bg-gradient-to-t from-black/60 via-black/15 to-transparent p-4 md:p-5">
-            <p className="inline-flex rounded-full bg-bg-surface/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-t-secondary">
-              Renty verificado
-            </p>
-            <p className="mt-2 text-sm font-medium text-white md:text-base">
-              Explora el detalle completo del inmueble
+            <p className="inline-flex items-center gap-1 rounded-full bg-bg-surface/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-t-secondary">
+              <Icon name="verified" size={14} className="text-accent" />
+              Fotos verificadas
             </p>
           </div>
 

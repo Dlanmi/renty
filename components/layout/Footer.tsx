@@ -58,6 +58,7 @@ export default function Footer() {
           >
             <Icon name="chat" size={17} />
             Contáctanos
+            <span className="sr-only">(abre en nueva pestaña)</span>
           </a>
         </div>
 

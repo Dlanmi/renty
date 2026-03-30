@@ -263,6 +263,9 @@ export default function ImageLightbox({
       aria-label={`Visor de fotos: ${title}`}
     >
       {/* ─ Header ─ */}
+      <span className="sr-only" aria-live="polite" aria-atomic="true">
+        Foto {currentIndex + 1} de {photos.length}
+      </span>
       <div className="flex shrink-0 items-center justify-between px-4 py-3">
         <span className="text-sm font-medium text-white/80">
           {currentIndex + 1} / {photos.length}

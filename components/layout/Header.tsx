@@ -19,7 +19,7 @@ export default function Header() {
             href="/publicar"
             className="focus-ring lift-hover inline-flex items-center gap-1.5 rounded-full border border-bg-border px-4 py-2 text-sm font-medium text-t-secondary transition-colors hover:bg-bg-elevated hover:text-t-primary"
           >
-            <Icon name="chat" size={18} />
+            <Icon name="add_home" size={18} />
             <span className="hidden sm:inline">Publicar</span>
           </Link>
         </div>

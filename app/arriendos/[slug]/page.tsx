@@ -163,7 +163,7 @@ export default async function ListingPage({ params, searchParams }: PageProps) {
     <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:py-8">
       <StructuredData id="listing-structured-data" data={jsonLd} />
 
-      <nav className="mb-4 flex min-w-0 flex-wrap items-center gap-1 text-sm text-t-muted">
+      <nav aria-label="Ruta de navegación" className="mb-4 flex min-w-0 flex-wrap items-center gap-1 text-sm text-t-muted">
         <BackToSearchLink
           fallbackHref={homeHref}
           className="shrink-0 transition-colors hover:text-t-primary"
@@ -174,39 +174,30 @@ export default async function ListingPage({ params, searchParams }: PageProps) {
         <span className="truncate text-t-secondary">{listing.neighborhood}</span>
       </nav>
 
-      <section className="lift-hover rounded-[28px] border border-bg-border bg-bg-surface p-4 shadow-card sm:p-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div className="min-w-0">
-            <h1 className="text-2xl font-bold leading-tight text-t-primary sm:text-3xl">
-              {listing.title}
-            </h1>
-            <div className="mt-2 flex min-w-0 flex-wrap items-center gap-1.5 text-sm text-t-muted">
-              <Icon name="location_on" size={16} className="shrink-0" />
-              <span className="break-words">
-                {listing.neighborhood}
-                {listing.zone ? `, ${listing.zone}` : ""} - {listing.city}
-              </span>
-            </div>
-            <div className="stagger-list mt-3 flex flex-wrap gap-2">
-              {heroChips.map((chip) => (
-                <span
-                  key={`${chip.icon}-${chip.label}`}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-bg-border bg-bg-elevated px-3 py-1 text-xs font-medium text-t-secondary"
-                >
-                  <Icon name={chip.icon} size={15} />
-                  {chip.label}
-                </span>
-              ))}
-            </div>
+      <section className="lift-hover rounded-card-lg border border-bg-border bg-bg-surface p-4 shadow-card sm:p-6">
+        <div>
+          <h1 className="text-2xl font-bold leading-tight text-t-primary sm:text-3xl">
+            {listing.title}
+          </h1>
+          <div className="mt-2 flex min-w-0 flex-wrap items-center gap-1.5 text-sm text-t-muted">
+            <Icon name="location_on" size={16} className="shrink-0" />
+            <span className="break-words">
+              {listing.neighborhood}
+              {listing.zone ? `, ${listing.zone}` : ""} - {listing.city}
+            </span>
+            <span className="text-t-muted/50">·</span>
+            <span>Actualizado {formatDateCO(listing.updated_at)}</span>
           </div>
-
-          <div className="shrink-0 rounded-2xl border border-bg-border bg-bg-elevated px-3 py-2 text-xs text-t-secondary">
-            <p className="font-semibold uppercase tracking-wide text-t-muted">
-              Actualizado
-            </p>
-            <p className="mt-1 text-sm font-medium text-t-primary">
-              {formatDateCO(listing.updated_at)}
-            </p>
+          <div className="stagger-list mt-3 flex flex-wrap gap-2">
+            {heroChips.map((chip) => (
+              <span
+                key={`${chip.icon}-${chip.label}`}
+                className="inline-flex items-center gap-1.5 rounded-full border border-bg-border bg-bg-elevated px-3 py-1 text-xs font-medium text-t-secondary"
+              >
+                <Icon name={chip.icon} size={15} />
+                {chip.label}
+              </span>
+            ))}
           </div>
         </div>
 
