@@ -7,8 +7,6 @@
 import {
   IMAGE_VARIANTS,
   PREFERRED_FORMAT,
-  FALLBACK_FORMAT,
-  FALLBACK_QUALITY,
   PROCESSING_CONCURRENCY,
   formatToExtension,
   type VariantName,
@@ -95,8 +93,7 @@ async function runWithConcurrency<T>(
 // ─── Worker-based processing ────────────────────────────────────────
 
 function processInWorker(
-  imageBuffer: ArrayBuffer,
-  useWebP: boolean
+  imageBuffer: ArrayBuffer
 ): Promise<ProcessedVariantOutput[]> {
   return new Promise((resolve, reject) => {
     let worker: Worker;
@@ -135,8 +132,10 @@ function processInWorker(
       reject(new Error(event.message || "Error en el Web Worker."));
     };
 
-    const format = useWebP ? PREFERRED_FORMAT : FALLBACK_FORMAT;
-
+    // Always try WebP first in the Worker — the Worker's OffscreenCanvas
+    // has its own fallback (if convertToBlob doesn't produce WebP, it
+    // re-encodes as JPEG). This avoids the main-thread detection being
+    // wrong about the Worker's capabilities.
     const request: ProcessImageRequest = {
       id: requestId,
       type: "process",
@@ -145,9 +144,7 @@ function processInWorker(
         name: v.name,
         maxWidth: v.maxWidth,
         quality: v.quality,
-        format,
-        fallbackFormat: FALLBACK_FORMAT,
-        fallbackQuality: FALLBACK_QUALITY,
+        format: PREFERRED_FORMAT,
       })),
     };
 
@@ -159,13 +156,18 @@ function processInWorker(
 // ─── Main-thread canvas fallback ────────────────────────────────────
 
 async function processOnMainThread(
-  imageBuffer: ArrayBuffer,
-  useWebP: boolean
+  imageBuffer: ArrayBuffer
 ): Promise<ProcessedVariantOutput[]> {
   const blob = new Blob([imageBuffer]);
-  const bitmap = await createImageBitmap(blob);
+  let bitmap: ImageBitmap;
+  try {
+    bitmap = await createImageBitmap(blob, {
+      imageOrientation: "from-image",
+    });
+  } catch {
+    bitmap = await createImageBitmap(blob);
+  }
   const results: ProcessedVariantOutput[] = [];
-  const format = useWebP ? PREFERRED_FORMAT : FALLBACK_FORMAT;
 
   for (const variant of IMAGE_VARIANTS) {
     let targetWidth = variant.maxWidth;
@@ -190,21 +192,14 @@ async function processOnMainThread(
     ctx.imageSmoothingQuality = "high";
     ctx.drawImage(bitmap, 0, 0, targetWidth, targetHeight);
 
-    let outputBlob: Blob | null = await new Promise<Blob | null>((resolve) =>
-      canvas.toBlob(resolve, format, variant.quality)
+    const outputBlob: Blob | null = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, PREFERRED_FORMAT, variant.quality)
     );
 
-    let finalFormat = format;
-
-    if (!outputBlob || outputBlob.type !== format) {
-      outputBlob = await new Promise<Blob | null>((resolve) =>
-        canvas.toBlob(resolve, FALLBACK_FORMAT, FALLBACK_QUALITY)
+    if (!outputBlob || outputBlob.type !== PREFERRED_FORMAT) {
+      throw new Error(
+        `No se pudo codificar la variante ${variant.name} como ${PREFERRED_FORMAT}.`
       );
-      finalFormat = FALLBACK_FORMAT;
-    }
-
-    if (!outputBlob) {
-      throw new Error(`No se pudo codificar la variante ${variant.name}.`);
     }
 
     const buffer = await outputBlob.arrayBuffer();
@@ -214,7 +209,7 @@ async function processOnMainThread(
       buffer,
       width: targetWidth,
       height: targetHeight,
-      format: finalFormat,
+      format: PREFERRED_FORMAT,
       size: buffer.byteLength,
     });
   }
@@ -236,6 +231,10 @@ function toProcessedVariant(output: ProcessedVariantOutput): ProcessedVariant {
   };
 }
 
+function encodedAllVariantsAsWebP(rawVariants: ProcessedVariantOutput[]): boolean {
+  return rawVariants.every((variant) => variant.format === PREFERRED_FORMAT);
+}
+
 // ─── Public API ─────────────────────────────────────────────────────
 
 /**
@@ -250,11 +249,23 @@ export async function processImages(
   files: File[],
   onProgress?: (progress: ProcessingProgress) => void,
   controller?: ProcessingController
-): Promise<ProcessedImage[]> {
+): Promise<(ProcessedImage | null)[]> {
   if (files.length === 0) return [];
 
   const useWebP = await canEncodeWebP();
   const useWorker = canUseWorker();
+
+  console.info(
+    "[image-processor] Iniciando procesamiento:",
+    { files: files.length, useWebP, useWorker }
+  );
+
+  if (!useWebP) {
+    console.info(
+      "[image-processor] Este navegador no puede codificar WebP. Se subirán los originales."
+    );
+    return files.map(() => null);
+  }
 
   let cancelled = false;
   const abortController = new AbortController();
@@ -268,7 +279,7 @@ export async function processImages(
 
   let processedCount = 0;
 
-  const tasks = files.map((file) => async (): Promise<ProcessedImage> => {
+  const tasks = files.map((file) => async (): Promise<ProcessedImage | null> => {
     if (cancelled) throw new DOMException("Cancelado", "AbortError");
 
     onProgress?.({
@@ -278,46 +289,81 @@ export async function processImages(
       currentFileName: file.name,
     });
 
-    const buffer = await file.arrayBuffer();
+    try {
+      const buffer = await file.arrayBuffer();
 
-    let rawVariants: ProcessedVariantOutput[];
+      let rawVariants: ProcessedVariantOutput[];
 
-    if (useWorker) {
-      try {
-        rawVariants = await processInWorker(buffer, useWebP);
-      } catch {
-        // Worker failed — try main thread
-        const retryBuffer = await file.arrayBuffer();
-        rawVariants = await processOnMainThread(retryBuffer, useWebP);
+      if (useWorker) {
+        try {
+          rawVariants = await processInWorker(buffer);
+
+          if (!encodedAllVariantsAsWebP(rawVariants)) {
+            console.warn(
+              "[image-processor] Worker no devolvió WebP real para",
+              file.name,
+              "— intentando main thread."
+            );
+            const retryBuffer = await file.arrayBuffer();
+            rawVariants = await processOnMainThread(retryBuffer);
+          }
+        } catch (workerError) {
+          console.warn(
+            "[image-processor] Worker falló para",
+            file.name,
+            "— intentando main thread:",
+            workerError
+          );
+          try {
+            const retryBuffer = await file.arrayBuffer();
+            rawVariants = await processOnMainThread(retryBuffer);
+          } catch (mainThreadError) {
+            console.warn(
+              "[image-processor] Main thread también falló para",
+              file.name,
+              ":",
+              mainThreadError
+            );
+            return null;
+          }
+        }
+      } else {
+        rawVariants = await processOnMainThread(buffer);
       }
-    } else {
-      rawVariants = await processOnMainThread(buffer, useWebP);
+
+      const variants = new Map<VariantName, ProcessedVariant>();
+      for (const raw of rawVariants) {
+        variants.set(raw.name as VariantName, toProcessedVariant(raw));
+      }
+
+      return {
+        originalName: file.name,
+        variants,
+      };
+    } catch (fileError) {
+      console.warn("[image-processor] Error procesando", file.name, ":", fileError);
+      return null;
+    } finally {
+      processedCount++;
+
+      onProgress?.({
+        phase: "processing",
+        current: processedCount,
+        total: files.length,
+        currentFileName: processedCount < files.length ? files[processedCount]?.name ?? "" : "",
+      });
     }
-
-    const variants = new Map<VariantName, ProcessedVariant>();
-    for (const raw of rawVariants) {
-      variants.set(raw.name as VariantName, toProcessedVariant(raw));
-    }
-
-    processedCount++;
-
-    onProgress?.({
-      phase: "processing",
-      current: processedCount,
-      total: files.length,
-      currentFileName: processedCount < files.length ? files[processedCount]?.name ?? "" : "",
-    });
-
-    return {
-      originalName: file.name,
-      variants,
-    };
   });
 
   const results = await runWithConcurrency(
     tasks,
     PROCESSING_CONCURRENCY,
     abortController.signal
+  );
+
+  const succeeded = results.filter(Boolean).length;
+  console.info(
+    `[image-processor] Completado: ${succeeded}/${files.length} procesadas exitosamente`
   );
 
   onProgress?.({

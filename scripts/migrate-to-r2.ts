@@ -19,6 +19,7 @@ import {
   PutBucketCorsCommand,
 } from "@aws-sdk/client-s3";
 import { createClient } from "@supabase/supabase-js";
+import { resolveR2AllowedOrigins } from "../lib/storage/r2";
 
 // ─── Config ─────────────────────────────────────────────────────────
 
@@ -74,12 +75,8 @@ async function setupCors() {
         CORSRules: [
           {
             AllowedHeaders: ["*"],
-            AllowedMethods: ["PUT", "GET"],
-            AllowedOrigins: [
-              "https://renty-seven.vercel.app",
-              "http://localhost:3000",
-              "http://localhost:3100",
-            ],
+            AllowedMethods: ["PUT", "GET", "HEAD"],
+            AllowedOrigins: resolveR2AllowedOrigins(),
             MaxAgeSeconds: 86400,
           },
         ],

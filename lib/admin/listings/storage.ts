@@ -17,6 +17,7 @@ import {
   uploadToR2,
   deleteFromR2,
   getR2PublicUrl,
+  headR2Object,
 } from "@/lib/storage/r2";
 import {
   deriveThumbStoragePath,
@@ -171,6 +172,31 @@ export async function insertUploadedPhotoRefs(
   startSortOrder: number
 ) {
   if (uploads.length === 0) return;
+
+  for (const upload of uploads) {
+    const storagePath = upload.storagePath.trim();
+    const thumbStoragePath = upload.thumbStoragePath?.trim() ?? "";
+
+    if (!storagePath.startsWith(`${listingId}/`)) {
+      toError("Una foto subida no pertenece al inmueble actual.");
+    }
+
+    const mainObject = await headR2Object(storagePath);
+    if (!mainObject?.contentType || !isAllowedImageMime(mainObject.contentType)) {
+      toError("No pudimos validar una de las fotos optimizadas en storage.");
+    }
+
+    if (thumbStoragePath) {
+      if (!thumbStoragePath.startsWith(`${listingId}/`)) {
+        toError("Una miniatura subida no pertenece al inmueble actual.");
+      }
+
+      const thumbObject = await headR2Object(thumbStoragePath);
+      if (!thumbObject?.contentType || !isAllowedImageMime(thumbObject.contentType)) {
+        toError("No pudimos validar una de las miniaturas optimizadas en storage.");
+      }
+    }
+  }
 
   const client = createSupabaseServerClient(accessToken);
   const rows = uploads.map((upload, index) => ({

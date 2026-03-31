@@ -244,6 +244,28 @@ async function validateSelectedFiles(files: File[]): Promise<UploadDialogState |
   return null;
 }
 
+function resolveUploadDialogState(error: unknown): UploadDialogState {
+  if (
+    error instanceof TypeError ||
+    (error instanceof Error &&
+      /failed to fetch|networkerror/i.test(error.message))
+  ) {
+    return {
+      title: "No pudimos conectar con el bucket de imágenes",
+      message:
+        "El navegador no pudo completar la subida directa a R2. Esto suele pasar por un bloqueo de CORS o por una caída de red. Si estás en desarrollo, verifica que el origen actual del admin (por ejemplo, http://localhost:3002) esté permitido en el bucket.",
+    };
+  }
+
+  return {
+    title: "No pudimos preparar la galería",
+    message:
+      error instanceof Error
+        ? error.message
+        : "Ocurrió un error inesperado mientras subíamos las fotos.",
+  };
+}
+
 export default function ListingForm({
   mode,
   action,
@@ -352,14 +374,19 @@ export default function ListingForm({
     const selectedFiles = Array.from(fileInputRef.current?.files ?? []);
     if (selectedFiles.length === 0) return;
 
+    // Capture form ref and prevent default BEFORE any await — React
+    // nullifies event.currentTarget and preventDefault() is a no-op
+    // after the handler yields to the event loop.
+    const formElement = event.currentTarget;
+    event.preventDefault();
+
     const fileValidationError = await validateSelectedFiles(selectedFiles);
     if (fileValidationError) {
-      event.preventDefault();
       setUploadDialog(fileValidationError);
       return;
     }
 
-    const formData = new FormData(event.currentTarget);
+    const formData = new FormData(formElement);
     const deleteIds = new Set(
       formData
         .getAll("delete_photo_ids")
@@ -386,7 +413,6 @@ export default function ListingForm({
       nextPhotoCount > MAX_PHOTOS_PER_LISTING &&
       nextPhotoCount > photos.length
     ) {
-      event.preventDefault();
       const overflow = nextPhotoCount - MAX_PHOTOS_PER_LISTING;
       setUploadDialog({
         title: "Se pasó el máximo de fotos",
@@ -397,7 +423,6 @@ export default function ListingForm({
       return;
     }
 
-    event.preventDefault();
     setUploadDialog(null);
     setUploadingPhotos(true);
     setUploadProgress(null);
@@ -407,7 +432,7 @@ export default function ListingForm({
 
     try {
       // ── 1. Process images client-side (if enabled) ─────────────
-      let processedImages: ProcessedImage[] | null = null;
+      let processedImages: (ProcessedImage | null)[] | null = null;
 
       if (isImageProcessingEnabled()) {
         const controller: ProcessingController = { cancel: () => {} };
@@ -435,6 +460,7 @@ export default function ListingForm({
             throw processingError;
           }
           // Otherwise fall through — upload originals
+          console.warn("[ListingForm] processImages falló completamente:", processingError);
           processedImages = null;
         } finally {
           cancelControllerRef.current = null;
@@ -509,7 +535,7 @@ export default function ListingForm({
             const lgResponse = await fetch(target.uploadUrl, {
               method: "PUT",
               body: lgVariant.blob,
-              headers: { "Content-Type": target.contentType },
+              headers: target.headers,
             });
             if (!lgResponse.ok) {
               throw new Error(
@@ -523,7 +549,7 @@ export default function ListingForm({
             const thResponse = await fetch(target.thumb.uploadUrl, {
               method: "PUT",
               body: thVariant.blob,
-              headers: { "Content-Type": target.thumb.contentType },
+              headers: target.thumb.headers,
             });
             if (!thResponse.ok) {
               throw new Error(
@@ -544,7 +570,7 @@ export default function ListingForm({
           const response = await fetch(target.uploadUrl, {
             method: "PUT",
             body: file,
-            headers: { "Content-Type": target.contentType },
+            headers: target.headers,
           });
           if (!response.ok) {
             throw new Error(
@@ -593,7 +619,7 @@ export default function ListingForm({
       }
 
       submitBypassRef.current = true;
-      requestAnimationFrame(() => event.currentTarget.requestSubmit());
+      requestAnimationFrame(() => formElement.requestSubmit());
     } catch (error) {
       if (
         error instanceof DOMException &&
@@ -620,13 +646,7 @@ export default function ListingForm({
           }
         }
 
-        setUploadDialog({
-          title: "No pudimos preparar la galería",
-          message:
-            error instanceof Error
-              ? error.message
-              : "Ocurrió un error inesperado mientras subíamos las fotos.",
-        });
+        setUploadDialog(resolveUploadDialogState(error));
       }
     } finally {
       setUploadingPhotos(false);
@@ -1285,7 +1305,7 @@ export default function ListingForm({
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={photo.publicUrl}
+                    src={photo.thumbPublicUrl ?? photo.publicUrl}
                     alt="Foto lista para guardar"
                     className="aspect-square h-full w-full object-cover"
                   />
@@ -1340,7 +1360,7 @@ export default function ListingForm({
         >
           {uploadedPhotoRefs.length > 0
             ? "Las fotos ya quedaron subidas al storage y el siguiente paso es guardar el inmueble."
-            : "Cuando des guardar, las fotos nuevas se optimizan automaticamente (WebP) y luego se suben antes de enviar el formulario."}
+            : "Cuando des guardar, las fotos nuevas se optimizan a WebP cuando el navegador lo soporta y, si no, se sube el original sin convertir."}
         </div>
 
         {uploadDialog && (

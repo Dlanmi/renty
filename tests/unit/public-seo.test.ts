@@ -1,8 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  buildGalleryPhotoAssets,
   buildGalleryPhotoUrls,
   buildHomeHref,
+  buildListingCardImageAsset,
   buildListingMetadata,
   buildListingSeoDescription,
   buildPublicSitemap,
@@ -56,6 +58,7 @@ function createListing(partial: Partial<Listing> = {}): Listing {
     description:
       "Con buena luz natural, cocina semiabierta y acceso rápido a transporte público.",
     cover_photo_url: "https://images.example.com/cover.jpg",
+    cover_photo_thumb_url: null,
     ...partial,
   };
 }
@@ -68,6 +71,7 @@ function createPhoto(
     listing_id: "00000000-0000-4000-8000-000000000001",
     storage_path: "listing-1/cover.jpg",
     public_url: "https://images.example.com/cover.jpg",
+    public_url_thumb: null,
     caption: null,
     room_type: null,
     sort_order: 0,
@@ -145,6 +149,49 @@ test("buildGalleryPhotoUrls deduplica portada y galería sin perder el orden", (
     "https://images.example.com/cover.jpg",
     "https://images.example.com/room.jpg",
   ]);
+});
+
+test("buildGalleryPhotoAssets usa thumbs cuando existen y deduplica por src", () => {
+  const assets = buildGalleryPhotoAssets(createListing(), [
+    createPhoto({
+      public_url_thumb: "https://images.example.com/cover-thumb.jpg",
+    }),
+    createPhoto({
+      id: "photo-2",
+      storage_path: "listing-1/room-lg.webp",
+      public_url: "https://images.example.com/room-lg.webp",
+      public_url_thumb: "https://images.example.com/room-th.webp",
+      sort_order: 1,
+      is_cover: false,
+    }),
+  ]);
+
+  assert.deepEqual(assets, [
+    {
+      src: "https://images.example.com/cover.jpg",
+      thumbSrc: "https://images.example.com/cover-thumb.jpg",
+    },
+    {
+      src: "https://images.example.com/room-lg.webp",
+      thumbSrc: "https://images.example.com/room-th.webp",
+    },
+  ]);
+});
+
+test("buildListingCardImageAsset publica srcSet cuando existe thumb de portada", () => {
+  const asset = buildListingCardImageAsset(
+    createListing({
+      cover_photo_url: "https://images.example.com/cover-lg.webp",
+      cover_photo_thumb_url: "https://images.example.com/cover-th.webp",
+    })
+  );
+
+  assert.deepEqual(asset, {
+    src: "https://images.example.com/cover-lg.webp",
+    srcSet:
+      "https://images.example.com/cover-th.webp 400w, https://images.example.com/cover-lg.webp 1600w",
+    sizes: "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw",
+  });
 });
 
 test("buildPublicSitemap incluye estáticas y listings activos con published_at como prioridad temporal", () => {

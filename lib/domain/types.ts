@@ -92,6 +92,7 @@ export interface Listing {
   description: string | null;
 
   cover_photo_url: string;
+  cover_photo_thumb_url?: string | null;
 }
 
 /** Row shape returned by Supabase for public.listing_photos */

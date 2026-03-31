@@ -27,6 +27,7 @@ import {
   toAbsoluteUrl,
 } from "@/lib/domain/seo";
 import {
+  buildGalleryPhotoAssets,
   buildGalleryPhotoUrls,
   buildHomeHref,
   buildListingMetadata,
@@ -110,6 +111,7 @@ export default async function ListingPage({ params, searchParams }: PageProps) {
   const shareDescription = buildListingSeoDescription(listing);
   const homeHref = buildHomeHref(resolvedSearchParams);
   const heroChips = listingHeroChips(listing);
+  const galleryPhotoAssets = buildGalleryPhotoAssets(listing, photos);
   const galleryPhotoUrls = buildGalleryPhotoUrls(listing, photos);
   const jsonLd = [
     {
@@ -202,7 +204,7 @@ export default async function ListingPage({ params, searchParams }: PageProps) {
         </div>
 
         <div className="mt-5">
-          <ListingGallery title={listing.title} photos={galleryPhotoUrls} />
+          <ListingGallery title={listing.title} photos={galleryPhotoAssets} />
         </div>
       </section>
 

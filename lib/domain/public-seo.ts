@@ -13,6 +13,20 @@ import type { Listing, ListingPhoto } from "@/lib/domain/types";
 
 const HOME_FILTER_QUERY_KEYS = ["q", "max", "beds"] as const;
 
+export interface GalleryPhotoAsset {
+  src: string;
+  thumbSrc: string;
+}
+
+export interface ListingCardImageAsset {
+  src: string;
+  srcSet?: string;
+  sizes: string;
+}
+
+const LISTING_CARD_IMAGE_SIZES =
+  "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw";
+
 export function buildListingSeoDescription(listing: Listing): string {
   const bathroomsLabel = `${listing.bathrooms} baño${
     listing.bathrooms === 1 ? "" : "s"
@@ -75,6 +89,79 @@ export function buildGalleryPhotoUrls(
   }
 
   return uniqueUrls.length > 0 ? uniqueUrls : [listing.cover_photo_url];
+}
+
+export function buildGalleryPhotoAssets(
+  listing: Listing,
+  photos: ListingPhoto[]
+): GalleryPhotoAsset[] {
+  const photoThumbBySrc = new Map<string, string>();
+
+  for (const photo of photos) {
+    const src = photo.public_url.trim();
+    const thumbSrc = photo.public_url_thumb?.trim() || src;
+
+    if (!src || photoThumbBySrc.has(src)) continue;
+    photoThumbBySrc.set(src, thumbSrc);
+  }
+
+  const candidates: GalleryPhotoAsset[] = [
+    {
+      src: listing.cover_photo_url,
+      thumbSrc:
+        photoThumbBySrc.get(listing.cover_photo_url.trim()) ??
+        listing.cover_photo_url,
+    },
+    ...photos.map((photo) => ({
+      src: photo.public_url,
+      thumbSrc: photo.public_url_thumb || photo.public_url,
+    })),
+  ];
+  const seen = new Set<string>();
+  const uniqueAssets: GalleryPhotoAsset[] = [];
+
+  for (const candidate of candidates) {
+    const src = candidate.src.trim();
+    const thumbSrc = candidate.thumbSrc.trim() || src;
+
+    if (!src || seen.has(src)) continue;
+
+    seen.add(src);
+    uniqueAssets.push({ src, thumbSrc });
+  }
+
+  if (uniqueAssets.length > 0) {
+    return uniqueAssets;
+  }
+
+  return [
+    {
+      src: listing.cover_photo_url,
+      thumbSrc:
+        photoThumbBySrc.get(listing.cover_photo_url.trim()) ??
+        listing.cover_photo_url,
+    },
+  ];
+}
+
+export function buildListingCardImageAsset(
+  listing: Pick<Listing, "cover_photo_url" | "cover_photo_thumb_url">
+): ListingCardImageAsset {
+  const src = listing.cover_photo_url.trim();
+  const thumbSrc = listing.cover_photo_thumb_url?.trim() ?? "";
+
+  if (!thumbSrc || thumbSrc === src) {
+    return {
+      src,
+      sizes: LISTING_CARD_IMAGE_SIZES,
+    };
+  }
+
+  return {
+    src,
+    srcSet: `${thumbSrc} 400w, ${src} 1600w`,
+    sizes: LISTING_CARD_IMAGE_SIZES,
+  };
 }
 
 export function buildListingMetadata(listing: Listing | null): Metadata {

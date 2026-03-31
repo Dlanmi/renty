@@ -14,6 +14,7 @@ import { buildVariantPath } from "@/lib/client/image-variants";
 import { requireAdminContext } from "@/lib/admin/auth";
 import { isValidListingId } from "@/lib/domain/listing-paths";
 import {
+  buildR2UploadHeaders,
   createPresignedUploadUrl,
   deleteFromR2,
   getR2PublicUrl,
@@ -45,6 +46,7 @@ export interface PhotoUploadThumbTarget {
   publicUrl: string;
   uploadUrl: string;
   contentType: string;
+  headers: Record<string, string>;
 }
 
 export interface PhotoUploadTarget {
@@ -52,6 +54,7 @@ export interface PhotoUploadTarget {
   publicUrl: string;
   uploadUrl: string;
   contentType: string;
+  headers: Record<string, string>;
   /** Present when client sent processed variants. */
   thumb?: PhotoUploadThumbTarget;
 }
@@ -124,12 +127,24 @@ function mimeToExtension(mime: string): string {
 async function buildVariantTarget(
   basePath: string,
   variant: RequestedVariant
-): Promise<{ storagePath: string; publicUrl: string; uploadUrl: string; contentType: string }> {
+): Promise<{
+  storagePath: string;
+  publicUrl: string;
+  uploadUrl: string;
+  contentType: string;
+  headers: Record<string, string>;
+}> {
   const ext = mimeToExtension(variant.type);
   const storagePath = buildVariantPath(basePath, variant.name, ext);
   const uploadUrl = await createPresignedUploadUrl(storagePath, variant.type);
   const publicUrl = getR2PublicUrl(storagePath);
-  return { storagePath, publicUrl, uploadUrl, contentType: variant.type };
+  return {
+    storagePath,
+    publicUrl,
+    uploadUrl,
+    contentType: variant.type,
+    headers: buildR2UploadHeaders(variant.type),
+  };
 }
 
 // ─── Main action ────────────────────────────────────────────────────
@@ -181,6 +196,7 @@ export async function createPhotoUploadPlanAction(
         publicUrl: lgTarget.publicUrl,
         uploadUrl: lgTarget.uploadUrl,
         contentType: lgTarget.contentType,
+        headers: lgTarget.headers,
       };
 
       if (thVariant) {
@@ -204,8 +220,9 @@ export async function createPhotoUploadPlanAction(
       );
       const uploadUrl = await createPresignedUploadUrl(storagePath, contentType);
       const publicUrl = getR2PublicUrl(storagePath);
+      const headers = buildR2UploadHeaders(contentType);
 
-      uploads.push({ storagePath, publicUrl, uploadUrl, contentType });
+      uploads.push({ storagePath, publicUrl, uploadUrl, contentType, headers });
     }
   }
 

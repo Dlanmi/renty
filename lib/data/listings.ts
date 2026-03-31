@@ -3,6 +3,43 @@ import { createClient } from "@/lib/supabase/server";
 import type { Listing, ListingPhoto, ListingPoi } from "@/lib/domain/types";
 import { isValidListingId } from "@/lib/domain/listing-paths";
 
+interface ListingCoverThumbRow {
+  listing_id: string;
+  public_url_thumb: string | null;
+}
+
+async function attachCoverThumbUrls(listings: Listing[]): Promise<Listing[]> {
+  if (listings.length === 0) return listings;
+
+  const listingIds = listings.map((listing) => listing.id.trim()).filter(Boolean);
+  if (listingIds.length === 0) return listings;
+
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("listing_photos")
+    .select("listing_id, public_url_thumb")
+    .in("listing_id", listingIds)
+    .eq("is_cover", true);
+
+  if (error) {
+    console.error("[attachCoverThumbUrls]", error.message);
+    return listings;
+  }
+
+  const coverThumbByListingId = new Map<string, string>();
+
+  for (const row of (data as ListingCoverThumbRow[] | null) ?? []) {
+    const thumbUrl = row.public_url_thumb?.trim();
+    if (!thumbUrl) continue;
+    coverThumbByListingId.set(row.listing_id, thumbUrl);
+  }
+
+  return listings.map((listing) => ({
+    ...listing,
+    cover_photo_thumb_url: coverThumbByListingId.get(listing.id) ?? null,
+  }));
+}
+
 const getActiveListingsRaw = async (): Promise<Listing[]> => {
   const supabase = createClient();
 
@@ -17,7 +54,7 @@ const getActiveListingsRaw = async (): Promise<Listing[]> => {
     return [];
   }
 
-  return (data as Listing[]) ?? [];
+  return attachCoverThumbUrls((data as Listing[]) ?? []);
 };
 
 /**

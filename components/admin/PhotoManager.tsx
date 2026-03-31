@@ -11,6 +11,7 @@ interface PhotoManagerProps {
 interface ManagedPhoto {
   id: string;
   publicUrl: string;
+  thumbUrl: string;
   caption: string | null;
   isCover: boolean;
   markedForDelete: boolean;
@@ -23,6 +24,7 @@ function toManagedPhotos(photos: ListingPhoto[]): ManagedPhoto[] {
     .map((photo) => ({
       id: photo.id,
       publicUrl: photo.public_url,
+      thumbUrl: photo.public_url_thumb || photo.public_url,
       caption: photo.caption,
       isCover: photo.is_cover,
       markedForDelete: false,
@@ -253,7 +255,7 @@ export default function PhotoManager({ photos }: PhotoManagerProps) {
               {/* Image */}
               <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-stone-100">
                 <Image
-                  src={item.publicUrl}
+                  src={item.thumbUrl}
                   alt={item.caption ?? "Foto del inmueble"}
                   fill
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"

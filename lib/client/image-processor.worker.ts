@@ -15,8 +15,6 @@ export interface VariantInput {
   maxWidth: number;
   quality: number;
   format: string;
-  fallbackFormat: string;
-  fallbackQuality: number;
 }
 
 export interface ProcessImageRequest {
@@ -64,6 +62,16 @@ function calculateDimensions(
   };
 }
 
+async function createBitmapFromBlob(blob: Blob): Promise<ImageBitmap> {
+  try {
+    return await createImageBitmap(blob, {
+      imageOrientation: "from-image",
+    });
+  } catch {
+    return createImageBitmap(blob);
+  }
+}
+
 // ─── Message handler ────────────────────────────────────────────────
 
 const workerSelf = self as any;
@@ -72,7 +80,7 @@ workerSelf.onmessage = async (event: MessageEvent<ProcessImageRequest>) => {
 
   try {
     const blob = new Blob([imageBuffer]);
-    const bitmap = await createImageBitmap(blob);
+    const bitmap = await createBitmapFromBlob(blob);
     const results: ProcessedVariantOutput[] = [];
 
     for (const variant of variants) {
@@ -91,21 +99,15 @@ workerSelf.onmessage = async (event: MessageEvent<ProcessImageRequest>) => {
       ctx.imageSmoothingQuality = "high";
       ctx.drawImage(bitmap, 0, 0, width, height);
 
-      // Try preferred format
-      let outputBlob = await canvas.convertToBlob({
+      const outputBlob = await canvas.convertToBlob({
         type: variant.format as "image/webp" | "image/jpeg" | "image/png",
         quality: variant.quality,
       });
 
-      let finalFormat = variant.format;
-
-      // If the browser didn't produce the requested format, fall back
       if (outputBlob.type !== variant.format) {
-        outputBlob = await canvas.convertToBlob({
-          type: variant.fallbackFormat as "image/jpeg",
-          quality: variant.fallbackQuality,
-        });
-        finalFormat = outputBlob.type || variant.fallbackFormat;
+        throw new Error(
+          `El navegador no pudo codificar la variante ${variant.name} como ${variant.format}.`
+        );
       }
 
       const buffer = await outputBlob.arrayBuffer();
@@ -115,7 +117,7 @@ workerSelf.onmessage = async (event: MessageEvent<ProcessImageRequest>) => {
         buffer,
         width,
         height,
-        format: finalFormat,
+        format: variant.format,
         size: buffer.byteLength,
       });
     }

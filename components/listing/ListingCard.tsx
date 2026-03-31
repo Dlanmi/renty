@@ -1,7 +1,7 @@
-import Image from "next/image";
 import type { Listing } from "@/lib/domain/types";
 import { formatCOP, formatBillingPeriod } from "@/lib/domain/format";
 import { iconForPropertyType } from "@/lib/domain/icons";
+import { buildListingCardImageAsset } from "@/lib/domain/public-seo";
 import Card from "@/components/ui/Card";
 import Chip from "@/components/ui/Chip";
 import Icon from "@/components/ui/Icon";
@@ -31,7 +31,6 @@ export default function ListingCard({
     bedrooms,
     bathrooms,
     includes,
-    cover_photo_url,
     listing_kind,
     area_m2,
     parking_car_count,
@@ -43,6 +42,7 @@ export default function ListingCard({
     area_m2 != null && listing_kind !== "room_private" && listing_kind !== "room_shared";
   const showParkingChip = parking_car_count > 0;
   const descriptiveAlt = `${property_type} en arriendo en ${neighborhood}, ${city}: ${title}`;
+  const cardImage = buildListingCardImageAsset(listing);
 
   return (
     <ListingCardLink
@@ -53,14 +53,17 @@ export default function ListingCard({
     >
       <Card className="lift-hover h-full min-w-0 overflow-hidden border border-bg-border transition-all duration-200 ease-out hover:border-accent hover:-translate-y-0.5 hover:shadow-lg group-focus-visible:border-accent group-focus-visible:-translate-y-0.5 group-focus-visible:shadow-lg">
         <div className="relative aspect-[4/3] overflow-hidden rounded-t-card">
-          <Image
-            src={cover_photo_url}
+          {/* Use a native img here so the browser can pick thumb vs large directly from R2. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={cardImage.src}
+            srcSet={cardImage.srcSet}
+            sizes={cardImage.sizes}
             alt={descriptiveAlt}
-            fill
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
             loading={priority ? "eager" : "lazy"}
-            priority={priority}
+            fetchPriority={priority ? "high" : "auto"}
+            decoding="async"
           />
         </div>
 

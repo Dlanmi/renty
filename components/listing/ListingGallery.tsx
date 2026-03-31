@@ -4,21 +4,25 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Icon from "@/components/ui/Icon";
 import ImageLightbox from "@/components/listing/ImageLightbox";
+import type { GalleryPhotoAsset } from "@/lib/domain/public-seo";
 
 interface ListingGalleryProps {
   title: string;
-  photos: string[];
+  photos: GalleryPhotoAsset[];
 }
 
-function dedupePhotos(photos: string[]): string[] {
+function dedupePhotos(photos: GalleryPhotoAsset[]): GalleryPhotoAsset[] {
   const seen = new Set<string>();
-  const ordered: string[] = [];
+  const ordered: GalleryPhotoAsset[] = [];
 
-  for (const raw of photos) {
-    const value = raw.trim();
-    if (!value || seen.has(value)) continue;
-    seen.add(value);
-    ordered.push(value);
+  for (const photo of photos) {
+    const src = photo.src.trim();
+    const thumbSrc = photo.thumbSrc.trim() || src;
+
+    if (!src || seen.has(src)) continue;
+
+    seen.add(src);
+    ordered.push({ src, thumbSrc });
   }
 
   return ordered;
@@ -39,8 +43,12 @@ export default function ListingGallery({ title, photos }: ListingGalleryProps) {
     setIsImageLoading(true);
   }, [selectedIndex]);
 
-  const selectedPhoto = gallery[selectedIndex] ?? gallery[0] ?? "";
+  const selectedPhoto = gallery[selectedIndex]?.src ?? gallery[0]?.src ?? "";
   const showControls = gallery.length > 1;
+  const lightboxPhotos = useMemo(
+    () => gallery.map((photo) => photo.src),
+    [gallery]
+  );
 
   const selectPrev = useCallback(() => {
     if (!showControls) return;
@@ -175,7 +183,7 @@ export default function ListingGallery({ title, photos }: ListingGalleryProps) {
 
               return (
                 <button
-                  key={`${photo}-${index}`}
+                    key={`${photo.src}-${index}`}
                   type="button"
                   onClick={() => setSelectedIndex(index)}
                   tabIndex={isActive ? 0 : -1}
@@ -186,12 +194,12 @@ export default function ListingGallery({ title, photos }: ListingGalleryProps) {
                   }`}
                   aria-label={`Ver foto ${index + 1}`}
                   aria-current={isActive ? "true" : undefined}
-                >
-                  <Image
-                    src={photo}
-                    alt={`Miniatura ${index + 1} de ${title}`}
-                    fill
-                    sizes="96px"
+                  >
+                    <Image
+                      src={photo.thumbSrc}
+                      alt={`Miniatura ${index + 1} de ${title}`}
+                      fill
+                      sizes="96px"
                     className="object-cover"
                     loading="lazy"
                   />
@@ -205,7 +213,7 @@ export default function ListingGallery({ title, photos }: ListingGalleryProps) {
       {/* ── Lightbox ── */}
       {lightboxIndex !== null && (
         <ImageLightbox
-          photos={gallery}
+          photos={lightboxPhotos}
           initialIndex={lightboxIndex}
           title={title}
           onClose={() => setLightboxIndex(null)}
