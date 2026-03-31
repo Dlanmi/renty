@@ -214,10 +214,8 @@ export default async function ListingPage({ params, searchParams }: PageProps) {
         </div>
 
         <ContactCTA
-          price={listing.price_cop}
-          billingPeriod={listing.billing_period}
+          listing={listing}
           phone={listing.whatsapp_e164}
-          title={listing.title}
           shareUrl={listingUrl}
           shareDescription={shareDescription}
         />

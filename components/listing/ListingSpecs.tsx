@@ -5,6 +5,7 @@ import {
   formatDateCO,
   humanizeTag,
 } from "@/lib/domain/format";
+import { buildListingCostSummary } from "@/lib/domain/listing-insights";
 import { iconForInclude, iconForRequirement, SPEC_ICON } from "@/lib/domain/icons";
 import Icon from "@/components/ui/Icon";
 
@@ -165,14 +166,7 @@ export default function ListingSpecs({ listing, pois = [] }: ListingSpecsProps) 
     });
   }
 
-  const hasAdminFee = listing.admin_fee_cop > 0;
-  const hasUtilitiesRange = listing.utilities_cop_min != null || listing.utilities_cop_max != null;
-  const hasCostBreakdown = hasAdminFee || hasUtilitiesRange;
-
-  const utilitiesMin = listing.utilities_cop_min ?? 0;
-  const utilitiesMax = listing.utilities_cop_max ?? listing.utilities_cop_min ?? 0;
-  const totalMin = listing.price_cop + listing.admin_fee_cop + utilitiesMin;
-  const totalMax = listing.price_cop + listing.admin_fee_cop + utilitiesMax;
+  const costSummary = buildListingCostSummary(listing);
 
   return (
     <div className="space-y-5">
@@ -184,33 +178,33 @@ export default function ListingSpecs({ listing, pois = [] }: ListingSpecsProps) 
         </div>
       </SectionCard>
 
-      {hasCostBreakdown && (
-        <SectionCard title="Costo mensual estimado" description="Transparencia de canon y costos adicionales.">
+      {costSummary.hasBreakdown && (
+        <SectionCard
+          title="Costo mensual estimado"
+          description={`${costSummary.breakdownLabel}. El total puede variar según consumo real.`}
+        >
           <ul className="space-y-2 text-sm text-t-secondary">
             <li className="flex items-center justify-between gap-3">
               <span>Canon</span>
               <strong>{formatCOP(listing.price_cop)}</strong>
             </li>
-            {hasAdminFee && (
+            {costSummary.hasAdminFee && (
               <li className="flex items-center justify-between gap-3">
-                <span>Administración</span>
+                <span>{costSummary.adminLabel}</span>
                 <strong>{formatCOP(listing.admin_fee_cop)}</strong>
               </li>
             )}
-            {hasUtilitiesRange && (
+            {costSummary.hasUtilitiesRange && (
               <li className="flex items-center justify-between gap-3">
                 <span>Servicios estimados</span>
                 <strong>
-                  {formatCOP(utilitiesMin)} - {formatCOP(utilitiesMax)}
+                  {formatCOP(costSummary.utilitiesMin)} - {formatCOP(costSummary.utilitiesMax)}
                 </strong>
               </li>
             )}
             <li className="mt-2 flex items-center justify-between gap-3 border-t border-bg-border pt-2 text-t-primary">
-              <span>Total aprox.</span>
-              <strong>
-                {formatCOP(totalMin)}
-                {totalMax !== totalMin ? ` - ${formatCOP(totalMax)}` : ""}
-              </strong>
+              <span>{costSummary.totalLineLabel}</span>
+              <strong>{costSummary.totalLabel}</strong>
             </li>
           </ul>
         </SectionCard>

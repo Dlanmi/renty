@@ -289,6 +289,32 @@ html:not(.dark) .skeleton::after {
   }
 }
 
+@keyframes mobile-price-insight-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(18px) scale(0.94);
+  }
+  65% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.01);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes mobile-price-insight-sink {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(18px) scale(0.965);
+  }
+}
+
 /* ── Hide scrollbar utility ── */
 .scrollbar-hide {
   -ms-overflow-style: none;
@@ -355,4 +381,37 @@ html:not(.dark) .skeleton::after {
 
 .skip-link:focus {
   top: 0;
+}
+
+.mobile-price-insight {
+  transform-origin: center bottom;
+  will-change: opacity, transform;
+}
+
+.mobile-price-insight[data-state="idle"] {
+  opacity: 0;
+  transform: translateY(18px) scale(0.965);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .mobile-price-insight[data-state="visible"] {
+    animation: mobile-price-insight-rise 420ms cubic-bezier(0.19, 1, 0.22, 1) both;
+  }
+
+  .mobile-price-insight[data-state="dismissed"] {
+    animation: mobile-price-insight-sink 240ms cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mobile-price-insight[data-state="visible"] {
+    opacity: 1;
+    transform: none;
+  }
+
+  .mobile-price-insight[data-state="dismissed"] {
+    opacity: 0;
+    filter: none;
+    transform: translateY(14px) scale(0.98);
+  }
 }
