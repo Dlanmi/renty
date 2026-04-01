@@ -221,7 +221,7 @@ export default async function ListingPage({ params, searchParams }: PageProps) {
         />
       </div>
 
-      <div className="h-28 lg:hidden" />
+      <div className="h-40 lg:hidden" />
     </div>
   );
 }

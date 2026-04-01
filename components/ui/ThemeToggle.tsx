@@ -2,6 +2,15 @@
 
 import { useTheme } from "next-themes";
 import { useEffect, useRef, useState, useCallback } from "react";
+import {
+  MENU_ITEM_VARIANTS,
+  MOTION_TRANSITIONS,
+  NUDGE_COMPACT_MOTION_PROPS,
+  POPOVER_VARIANTS,
+  PRESSABLE_COMPACT_MOTION_PROPS,
+  STAGGER_FAST_VARIANTS,
+} from "@/lib/motion/animations";
+import { AnimatePresence, motion } from "@/lib/motion/runtime";
 
 const THEME_OPTIONS = [
   { value: "light", label: "Claro" },
@@ -130,9 +139,10 @@ export default function ThemeToggle() {
   return (
     <div ref={containerRef} className="relative">
       {/* ── Trigger button ── */}
-      <button
+      <motion.button
         type="button"
         onClick={() => setOpen((v) => !v)}
+        {...PRESSABLE_COMPACT_MOTION_PROPS}
         className={[
           "focus-ring inline-flex h-9 w-9 items-center justify-center rounded-full",
           "border border-bg-border bg-bg-elevated/80 shadow-sm backdrop-blur",
@@ -144,76 +154,86 @@ export default function ThemeToggle() {
         aria-expanded={open}
         aria-label="Cambiar tema de color"
       >
-        <span
-          className="transition-transform duration-300 ease-out"
-          style={{ transform: open ? "rotate(90deg)" : "rotate(0deg)" }}
+        <motion.span
+          animate={{ rotate: open ? 90 : 0, scale: open ? 1.06 : 1 }}
+          transition={MOTION_TRANSITIONS.enter}
         >
           <TriggerIcon size={18} />
-        </span>
-      </button>
+        </motion.span>
+      </motion.button>
 
       {/* ── Popover menu ── */}
-      <div
-        className={[
-          "absolute right-0 top-full z-50 mt-2",
-          "w-40 origin-top-right rounded-xl",
-          "border border-bg-border bg-bg-elevated p-1.5 shadow-xl ring-1 ring-black/10 dark:ring-white/10",
-          "transition-all duration-200 ease-out",
-          open
-            ? "pointer-events-auto scale-100 opacity-100"
-            : "pointer-events-none scale-95 opacity-0",
-        ].join(" ")}
-        role="menu"
-        aria-label="Opciones de tema"
-      >
-        {THEME_OPTIONS.map((option) => {
-          const isActive = selectedTheme === option.value;
-          const IconComponent = ICON_MAP[option.value];
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            variants={POPOVER_VARIANTS}
+            className={[
+              "absolute right-0 top-full z-50 mt-2",
+              "w-40 origin-top-right rounded-xl",
+              "border border-bg-border bg-bg-elevated p-1.5 shadow-xl ring-1 ring-black/10 dark:ring-white/10",
+            ].join(" ")}
+            role="menu"
+            aria-label="Opciones de tema"
+          >
+            <motion.div initial="initial" animate="animate" variants={STAGGER_FAST_VARIANTS}>
+              {THEME_OPTIONS.map((option) => {
+                const isActive = selectedTheme === option.value;
+                const IconComponent = ICON_MAP[option.value];
 
-          return (
-            <button
-              key={option.value}
-              type="button"
-              role="menuitem"
-              onClick={() => {
-                if (mounted) {
-                  document.documentElement.classList.add("theme-transitioning");
-                  setTheme(option.value);
-                  setTimeout(() => document.documentElement.classList.remove("theme-transitioning"), 300);
-                }
-                setOpen(false);
-              }}
-              className={[
-                "flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm",
-                "transition-colors duration-150",
-                isActive
-                  ? "bg-accent/15 font-semibold text-accent"
-                  : "text-t-primary hover:bg-bg-surface",
-              ].join(" ")}
-            >
-              <IconComponent size={16} />
-              <span>{option.label}</span>
-              {isActive && (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  width={14}
-                  height={14}
-                  className="ml-auto shrink-0"
-                  aria-hidden="true"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              )}
-            </button>
-          );
-        })}
-      </div>
+                return (
+                  <motion.button
+                    key={option.value}
+                    type="button"
+                    role="menuitem"
+                    variants={MENU_ITEM_VARIANTS}
+                    onClick={() => {
+                      if (mounted) {
+                        document.documentElement.classList.add("theme-transitioning");
+                        setTheme(option.value);
+                        setTimeout(() => {
+                          document.documentElement.classList.remove("theme-transitioning");
+                        }, 300);
+                      }
+                      setOpen(false);
+                    }}
+                    {...NUDGE_COMPACT_MOTION_PROPS}
+                    className={[
+                      "flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm",
+                      "transition-colors duration-150",
+                      isActive
+                        ? "bg-accent/15 font-semibold text-accent"
+                        : "text-t-primary hover:bg-bg-surface",
+                    ].join(" ")}
+                  >
+                    <IconComponent size={16} />
+                    <span>{option.label}</span>
+                    {isActive && (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                        width={14}
+                        height={14}
+                        className="ml-auto shrink-0"
+                        aria-hidden="true"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    )}
+                  </motion.button>
+                );
+              })}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

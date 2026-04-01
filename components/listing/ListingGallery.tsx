@@ -3,6 +3,14 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Icon from "@/components/ui/Icon";
+import {
+  MEDIA_SWAP_VARIANTS,
+  MOTION_LAYOUT_TRANSITION,
+  PRESSABLE_COMPACT_MOTION_PROPS,
+  PRESSABLE_MOTION_PROPS,
+  TAP_ONLY_MOTION_PROPS,
+} from "@/lib/motion/animations";
+import { AnimatePresence, motion } from "@/lib/motion/runtime";
 import ImageLightbox from "@/components/listing/ImageLightbox";
 import type { GalleryPhotoAsset } from "@/lib/domain/public-seo";
 
@@ -30,7 +38,10 @@ function dedupePhotos(photos: GalleryPhotoAsset[]): GalleryPhotoAsset[] {
 
 export default function ListingGallery({ title, photos }: ListingGalleryProps) {
   const gallery = useMemo(() => dedupePhotos(photos), [photos]);
-  const galleryKey = useMemo(() => gallery.join("|"), [gallery]);
+  const galleryKey = useMemo(
+    () => gallery.map((photo) => photo.src).join("|"),
+    [gallery]
+  );
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isImageLoading, setIsImageLoading] = useState(true);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
@@ -104,25 +115,36 @@ export default function ListingGallery({ title, photos }: ListingGalleryProps) {
           )}
 
           {selectedPhoto && (
-            <button
+            <motion.button
               type="button"
               onClick={() => setLightboxIndex(selectedIndex)}
+              {...TAP_ONLY_MOTION_PROPS}
               className="absolute inset-0 z-[5] cursor-zoom-in focus:outline-none"
               aria-label="Abrir visor de fotos"
             >
-              <Image
-                key={selectedPhoto}
-                src={selectedPhoto}
-                alt={`Foto ${selectedIndex + 1} de ${title}`}
-                fill
-                sizes="(max-width: 768px) 100vw, 70vw"
-                className="object-cover transition-transform duration-500 hover:scale-[1.01]"
-                loading={selectedIndex === 0 ? "eager" : "lazy"}
-                priority={selectedIndex === 0}
-                onLoad={() => setIsImageLoading(false)}
-                onError={() => setIsImageLoading(false)}
-              />
-            </button>
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={selectedPhoto}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                  variants={MEDIA_SWAP_VARIANTS}
+                  className="absolute inset-0"
+                >
+                  <Image
+                    src={selectedPhoto}
+                    alt={`Foto ${selectedIndex + 1} de ${title}`}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 70vw"
+                    className="object-cover"
+                    loading={selectedIndex === 0 ? "eager" : "lazy"}
+                    priority={selectedIndex === 0}
+                    onLoad={() => setIsImageLoading(false)}
+                    onError={() => setIsImageLoading(false)}
+                  />
+                </motion.div>
+              </AnimatePresence>
+            </motion.button>
           )}
 
           {/* Photo counter — mobile only */}
@@ -142,51 +164,64 @@ export default function ListingGallery({ title, photos }: ListingGalleryProps) {
 
           {/* "Ver fotos" badge */}
           {gallery.length > 1 && (
-            <button
+            <motion.button
               type="button"
               onClick={() => setLightboxIndex(selectedIndex)}
+              {...PRESSABLE_MOTION_PROPS}
               className="absolute right-3 top-3 z-[15] inline-flex items-center gap-1.5 rounded-full border border-white/30 bg-black/50 px-3 py-1.5 text-xs font-medium text-white backdrop-blur transition-colors hover:bg-black/65"
             >
               <Icon name="photo_camera" size={16} />
               Ver {gallery.length} fotos
-            </button>
+            </motion.button>
           )}
 
           {/* Nav arrows */}
           {showControls && (
             <>
-              <button
+              <motion.button
                 type="button"
                 onClick={selectPrev}
+                {...PRESSABLE_MOTION_PROPS}
                 className="absolute left-3 top-1/2 z-20 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/30 bg-black/40 text-white backdrop-blur transition-colors hover:bg-black/55"
                 aria-label="Foto anterior"
               >
                 <Icon name="chevron_left" size={22} />
-              </button>
-              <button
+              </motion.button>
+              <motion.button
                 type="button"
                 onClick={selectNext}
+                {...PRESSABLE_MOTION_PROPS}
                 className="absolute right-3 top-1/2 z-20 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/30 bg-black/40 text-white backdrop-blur transition-colors hover:bg-black/55"
                 aria-label="Foto siguiente"
               >
                 <Icon name="chevron_right" size={22} />
-              </button>
+              </motion.button>
             </>
           )}
         </div>
 
         {/* ── Thumbnails ── */}
         {showControls && (
-          <div className="flex gap-2 overflow-x-auto border-t border-bg-border bg-bg-surface p-3">
+          <motion.div
+            layout
+            className="flex gap-2 overflow-x-auto border-t border-bg-border bg-bg-surface p-3"
+            transition={MOTION_LAYOUT_TRANSITION}
+          >
             {gallery.map((photo, index) => {
               const isActive = index === selectedIndex;
 
               return (
-                <button
-                    key={`${photo.src}-${index}`}
+                <motion.button
+                  layout="position"
+                  key={`${photo.src}-${index}`}
                   type="button"
                   onClick={() => setSelectedIndex(index)}
                   tabIndex={isActive ? 0 : -1}
+                  {...PRESSABLE_COMPACT_MOTION_PROPS}
+                  transition={{
+                    ...PRESSABLE_COMPACT_MOTION_PROPS.transition,
+                    ...MOTION_LAYOUT_TRANSITION,
+                  }}
                   className={`relative h-16 w-24 shrink-0 overflow-hidden rounded-xl border-2 transition-all ${
                     isActive
                       ? "border-accent shadow-[0_0_0_3px_rgba(16,185,129,0.15)]"
@@ -194,31 +229,33 @@ export default function ListingGallery({ title, photos }: ListingGalleryProps) {
                   }`}
                   aria-label={`Ver foto ${index + 1}`}
                   aria-current={isActive ? "true" : undefined}
-                  >
-                    <Image
-                      src={photo.thumbSrc}
-                      alt={`Miniatura ${index + 1} de ${title}`}
-                      fill
-                      sizes="96px"
+                >
+                  <Image
+                    src={photo.thumbSrc}
+                    alt={`Miniatura ${index + 1} de ${title}`}
+                    fill
+                    sizes="96px"
                     className="object-cover"
                     loading="lazy"
                   />
-                </button>
+                </motion.button>
               );
             })}
-          </div>
+          </motion.div>
         )}
       </div>
 
       {/* ── Lightbox ── */}
-      {lightboxIndex !== null && (
-        <ImageLightbox
-          photos={lightboxPhotos}
-          initialIndex={lightboxIndex}
-          title={title}
-          onClose={() => setLightboxIndex(null)}
-        />
-      )}
+      <AnimatePresence>
+        {lightboxIndex !== null && (
+          <ImageLightbox
+            photos={lightboxPhotos}
+            initialIndex={lightboxIndex}
+            title={title}
+            onClose={() => setLightboxIndex(null)}
+          />
+        )}
+      </AnimatePresence>
     </>
   );
 }

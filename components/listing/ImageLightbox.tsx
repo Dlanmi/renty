@@ -3,6 +3,15 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import Image from "next/image";
 import { createPortal } from "react-dom";
+import {
+  MEDIA_SWAP_VARIANTS,
+  MODAL_PANEL_VARIANTS,
+  MOTION_TRANSITIONS,
+  OVERLAY_VARIANTS,
+  PRESSABLE_COMPACT_MOTION_PROPS,
+  PRESSABLE_MOTION_PROPS,
+} from "@/lib/motion/animations";
+import { AnimatePresence, motion } from "@/lib/motion/runtime";
 import Icon from "@/components/ui/Icon";
 
 interface ImageLightboxProps {
@@ -33,6 +42,13 @@ export default function ImageLightbox({
 
   const isZoomed = scale > 1.05;
   const showNav = photos.length > 1;
+  const imageTransformTransition = isAnimating
+    ? {
+        x: MOTION_TRANSITIONS.layout,
+        y: MOTION_TRANSITIONS.layout,
+        scale: MOTION_TRANSITIONS.enter,
+      }
+    : { duration: 0 };
 
   const resetZoom = useCallback(() => {
     setIsAnimating(true);
@@ -256,7 +272,11 @@ export default function ImageLightbox({
 
   /* ── Render ── */
   return createPortal(
-    <div
+    <motion.div
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      variants={OVERLAY_VARIANTS}
       className="fixed inset-0 z-[100] flex flex-col bg-black/95 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
@@ -266,22 +286,33 @@ export default function ImageLightbox({
       <span className="sr-only" aria-live="polite" aria-atomic="true">
         Foto {currentIndex + 1} de {photos.length}
       </span>
-      <div className="flex shrink-0 items-center justify-between px-4 py-3">
+      <motion.div
+        variants={MODAL_PANEL_VARIANTS}
+        initial="initial"
+        animate="animate"
+        exit="exit"
+        className="flex shrink-0 items-center justify-between px-4 py-3"
+      >
         <span className="text-sm font-medium text-white/80">
           {currentIndex + 1} / {photos.length}
         </span>
-        <button
+        <motion.button
           type="button"
           onClick={onClose}
+          {...PRESSABLE_MOTION_PROPS}
           className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
           aria-label="Cerrar visor de fotos"
         >
           <Icon name="close" size={22} />
-        </button>
-      </div>
+        </motion.button>
+      </motion.div>
 
       {/* ─ Image area ─ */}
-      <div
+      <motion.div
+        variants={MODAL_PANEL_VARIANTS}
+        initial="initial"
+        animate="animate"
+        exit="exit"
         className="relative flex-1 overflow-hidden"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
@@ -289,45 +320,65 @@ export default function ImageLightbox({
         onWheel={handleWheel}
         style={{ touchAction: isZoomed ? "none" : "pan-y" }}
       >
-        <div
+        <motion.div
           className={`h-full w-full select-none ${isZoomed ? "cursor-grab active:cursor-grabbing" : "cursor-zoom-in"}`}
           onClick={handleImageClick}
           onMouseDown={handleMouseDown}
-          style={{
-            transform: `translate(${translate.x}px, ${translate.y}px) scale(${scale})`,
-            transition: isAnimating ? "transform 200ms ease" : "none",
+          animate={{
+            x: translate.x,
+            y: translate.y,
+            scale,
           }}
+          transition={imageTransformTransition}
         >
-          <Image
-            key={photos[currentIndex]}
-            src={photos[currentIndex]}
-            alt={`Foto ${currentIndex + 1} de ${title}`}
-            fill
-            sizes="100vw"
-            className="pointer-events-none object-contain"
-            priority
-          />
-        </div>
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={photos[currentIndex]}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              variants={MEDIA_SWAP_VARIANTS}
+              className="absolute inset-0"
+            >
+              <Image
+                src={photos[currentIndex]}
+                alt={`Foto ${currentIndex + 1} de ${title}`}
+                fill
+                sizes="100vw"
+                className="pointer-events-none object-contain"
+                priority
+              />
+            </motion.div>
+          </AnimatePresence>
+        </motion.div>
 
         {/* Desktop nav */}
         {showNav && !isZoomed && (
           <>
-            <button
+            <motion.button
               type="button"
-              onClick={(e) => { e.stopPropagation(); goPrev(); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                goPrev();
+              }}
+              {...PRESSABLE_MOTION_PROPS}
               className="absolute left-3 top-1/2 z-10 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur transition-colors hover:bg-white/25 sm:inline-flex"
               aria-label="Foto anterior"
             >
               <Icon name="chevron_left" size={24} />
-            </button>
-            <button
+            </motion.button>
+            <motion.button
               type="button"
-              onClick={(e) => { e.stopPropagation(); goNext(); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                goNext();
+              }}
+              {...PRESSABLE_MOTION_PROPS}
               className="absolute right-3 top-1/2 z-10 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur transition-colors hover:bg-white/25 sm:inline-flex"
               aria-label="Foto siguiente"
             >
               <Icon name="chevron_right" size={24} />
-            </button>
+            </motion.button>
           </>
         )}
 
@@ -337,16 +388,23 @@ export default function ImageLightbox({
             Doble toque para hacer zoom
           </p>
         )}
-      </div>
+      </motion.div>
 
       {/* ─ Thumbnail strip ─ */}
       {showNav && !isZoomed && (
-        <div className="flex shrink-0 justify-center gap-2 overflow-x-auto px-4 py-3">
+        <motion.div
+          variants={MODAL_PANEL_VARIANTS}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          className="flex shrink-0 justify-center gap-2 overflow-x-auto px-4 py-3"
+        >
           {photos.map((photo, index) => (
-            <button
+            <motion.button
               key={`${photo}-${index}`}
               type="button"
               onClick={() => goTo(index)}
+              {...PRESSABLE_COMPACT_MOTION_PROPS}
               className={`relative h-12 w-16 shrink-0 overflow-hidden rounded-lg border-2 transition-all ${
                 index === currentIndex
                   ? "border-white"
@@ -362,11 +420,11 @@ export default function ImageLightbox({
                 sizes="64px"
                 className="object-cover"
               />
-            </button>
+            </motion.button>
           ))}
-        </div>
+        </motion.div>
       )}
-    </div>,
+    </motion.div>,
     document.body
   );
 }

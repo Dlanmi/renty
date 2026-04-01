@@ -1,22 +1,18 @@
 "use client";
 
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useReducer,
-  useRef,
-} from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-
 import type { Listing } from "@/lib/domain/types";
 import {
   applyListingFilters,
+  areSearchFiltersEqual,
   BEDROOM_OPTIONS,
   countActiveSearchFilters,
   DEFAULT_SEARCH_FILTERS,
   filtersToQueryString,
   filtersToSearchParams,
+  getBedroomsLabel,
+  getPriceLabel,
   HOME_SCROLL_QUERY_STORAGE_KEY,
   HOME_SCROLL_Y_STORAGE_KEY,
   parseFiltersFromSearchParams,
@@ -24,13 +20,13 @@ import {
   type SearchFilters,
 } from "@/lib/domain/search";
 import {
-  createSearchFlowState,
-  searchFlowReducer,
-} from "@/lib/domain/search-flow";
-
-import SearchFlowModal from "@/components/search/SearchFlowModal";
-import SearchPill from "@/components/search/SearchPill";
-import SearchTabs from "@/components/search/SearchTabs";
+  CHIP_REVEAL_VARIANTS,
+  MOTION_LAYOUT_TRANSITION,
+  PRESSABLE_MOTION_PROPS,
+  SURFACE_REVEAL_VARIANTS,
+} from "@/lib/motion/animations";
+import { AnimatePresence, motion } from "@/lib/motion/runtime";
+import HomeSearchHero from "@/components/search/HomeSearchHero";
 import ListingGrid from "@/components/listing/ListingGrid";
 import Icon from "@/components/ui/Icon";
 
@@ -47,91 +43,50 @@ export default function SearchAndResults({ listings }: Props) {
     () => parseFiltersFromSearchParams(searchParams),
     [searchParams]
   );
-
-  const [state, dispatch] = useReducer(
-    searchFlowReducer,
-    urlFilters,
-    createSearchFlowState
-  );
-
+  const [draftFilters, setDraftFilters] = useState(urlFilters);
   const didRestoreScroll = useRef(false);
 
   useEffect(() => {
-    dispatch({ type: "sync_from_url", filters: urlFilters });
+    setDraftFilters(urlFilters);
   }, [urlFilters]);
 
-  const updateUrlWithFilters = useCallback(
-    (nextFilters: SearchFilters, mode: "push" | "replace" = "push") => {
-      const nextParams = filtersToSearchParams(nextFilters).toString();
-      const currentParams = searchParams.toString();
-      if (nextParams === currentParams) return;
+  const neighborhoodOptions = useMemo(() => {
+    const counts = new Map<string, number>();
 
-      const href = nextParams ? `${pathname}?${nextParams}` : pathname;
-      if (mode === "replace") {
-        router.replace(href, { scroll: false });
-      } else {
-        router.push(href, { scroll: false });
-      }
-    },
-    [pathname, router, searchParams]
-  );
+    for (const listing of listings) {
+      counts.set(
+        listing.neighborhood,
+        (counts.get(listing.neighborhood) ?? 0) + 1
+      );
+    }
 
-  const clearAllFilters = useCallback(() => {
-    dispatch({ type: "clear_all_filters" });
-    updateUrlWithFilters(DEFAULT_SEARCH_FILTERS, "push");
-  }, [updateUrlWithFilters]);
-
-  const applyDesktopChange = useCallback(
-    (patch: Partial<SearchFilters>) => {
-      const nextFilters = { ...state.appliedFilters, ...patch };
-      dispatch({ type: "set_applied_filters", filters: nextFilters });
-
-      const mode = Object.prototype.hasOwnProperty.call(patch, "neighborhood")
-        ? "replace"
-        : "push";
-      updateUrlWithFilters(nextFilters, mode);
-    },
-    [state.appliedFilters, updateUrlWithFilters]
-  );
-
-  const openMobileFlow = useCallback(() => {
-    dispatch({ type: "open_mobile_flow" });
-  }, []);
-
-  const closeMobileFlow = useCallback(() => {
-    dispatch({ type: "cancel_mobile_flow" });
-  }, []);
-
-  const applyMobileFilters = useCallback(() => {
-    updateUrlWithFilters(state.draftFilters, "push");
-    dispatch({ type: "apply_mobile_filters" });
-  }, [state.draftFilters, updateUrlWithFilters]);
-
-  const neighborhoods = useMemo(() => {
-    const set = new Set(listings.map((listing) => listing.neighborhood));
-    return Array.from(set).sort((a, b) => a.localeCompare(b, "es"));
+    return Array.from(counts.entries())
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => {
+        if (a.count !== b.count) return b.count - a.count;
+        return a.name.localeCompare(b.name, "es");
+      });
   }, [listings]);
 
   const filteredListings = useMemo(
-    () => applyListingFilters(listings, state.appliedFilters),
-    [listings, state.appliedFilters]
+    () => applyListingFilters(listings, urlFilters),
+    [listings, urlFilters]
   );
-
   const draftCount = useMemo(
-    () => applyListingFilters(listings, state.draftFilters).length,
-    [listings, state.draftFilters]
+    () => applyListingFilters(listings, draftFilters).length,
+    [listings, draftFilters]
   );
 
-  const activeFilterCount = countActiveSearchFilters(state.appliedFilters);
+  const activeFilterCount = countActiveSearchFilters(urlFilters);
   const listingQueryString = useMemo(
-    () => filtersToQueryString(state.appliedFilters),
-    [state.appliedFilters]
+    () => filtersToQueryString(urlFilters),
+    [urlFilters]
   );
-
   const appliedQuery = useMemo(
-    () => filtersToSearchParams(state.appliedFilters).toString(),
-    [state.appliedFilters]
+    () => filtersToSearchParams(urlFilters).toString(),
+    [urlFilters]
   );
+  const hasDraftChanges = !areSearchFiltersEqual(draftFilters, urlFilters);
 
   useEffect(() => {
     if (didRestoreScroll.current || typeof window === "undefined") return;
@@ -154,68 +109,182 @@ export default function SearchAndResults({ listings }: Props) {
     didRestoreScroll.current = true;
   }, [appliedQuery]);
 
+  function updateUrlWithFilters(nextFilters: SearchFilters) {
+    const nextParams = filtersToSearchParams(nextFilters).toString();
+    const currentParams = searchParams.toString();
+    if (nextParams === currentParams) return;
+
+    const href = nextParams ? `${pathname}?${nextParams}` : pathname;
+    router.push(href, { scroll: false });
+  }
+
+  function applyFilters(nextFilters: SearchFilters) {
+    setDraftFilters(nextFilters);
+    updateUrlWithFilters(nextFilters);
+  }
+
+  function clearAllFilters() {
+    applyFilters(DEFAULT_SEARCH_FILTERS);
+  }
+
+  function removeAppliedFilter(patch: Partial<SearchFilters>) {
+    const nextFilters = { ...urlFilters, ...patch };
+    applyFilters(nextFilters);
+  }
+
+  const resultsDescription =
+    activeFilterCount > 0
+      ? "Mostrando las publicaciones que coinciden con tu búsqueda actual."
+      : "Explora el inventario activo de Renty y ajusta la búsqueda cuando quieras.";
+
   return (
-    <div className="space-y-6">
-      <SearchPill
-        filters={state.appliedFilters}
-        neighborhoods={neighborhoods}
+    <div className="space-y-8 sm:space-y-10">
+      <HomeSearchHero
+        draftFilters={draftFilters}
+        neighborhoodOptions={neighborhoodOptions}
         priceOptions={PRICE_OPTIONS}
         bedroomOptions={BEDROOM_OPTIONS}
         activeFilterCount={activeFilterCount}
-        onOpenMobileFlow={openMobileFlow}
-        onChange={applyDesktopChange}
-        onClearApplied={clearAllFilters}
+        draftCount={draftCount}
+        hasDraftChanges={hasDraftChanges}
+        onDraftChange={(patch) =>
+          setDraftFilters((current) => ({ ...current, ...patch }))
+        }
+        onSubmit={() => applyFilters(draftFilters)}
+        onClear={clearAllFilters}
+        onResetDraft={() => setDraftFilters(urlFilters)}
       />
 
-      {activeFilterCount === 0 && <SearchTabs />}
+      <section
+        className="mx-auto max-w-7xl space-y-4 px-4 sm:px-6"
+        aria-labelledby="home-listings-heading"
+      >
+        <motion.div
+          layout
+          initial="initial"
+          animate="animate"
+          variants={SURFACE_REVEAL_VARIANTS}
+          transition={MOTION_LAYOUT_TRANSITION}
+          className="rounded-[28px] border border-bg-border bg-bg-surface px-5 py-5 shadow-card sm:px-6"
+        >
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.24em] text-accent">
+                <Icon name="home_work" size={16} className="text-accent" />
+                Resultados
+              </div>
+              <div>
+                <h2
+                  id="home-listings-heading"
+                  className="text-2xl font-bold tracking-tight text-t-primary"
+                >
+                  {filteredListings.length}{" "}
+                  {filteredListings.length === 1
+                    ? "arriendo disponible"
+                    : "arriendos disponibles"}
+                </h2>
+                <p className="mt-1 max-w-2xl text-sm leading-6 text-t-secondary">
+                  {resultsDescription}
+                </p>
+              </div>
+            </div>
 
-      <div className="mt-4 flex flex-col gap-3 text-sm text-t-muted sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex min-w-0 items-center gap-1.5">
-          <Icon name="home_work" size={18} />
-          <span>
-            <strong className="font-semibold text-t-primary">
-              {filteredListings.length}
-            </strong>{" "}
-            {filteredListings.length === 1
-              ? "arriendo disponible"
-              : "arriendos disponibles"}
-          </span>
-        </div>
+            <motion.div
+              layout="position"
+              className="flex flex-wrap items-center gap-2"
+              transition={MOTION_LAYOUT_TRANSITION}
+            >
+              <AnimatePresence initial={false} mode="popLayout">
+                {urlFilters.neighborhood && (
+                  <motion.button
+                    layout="position"
+                    key="chip-neighborhood"
+                    type="button"
+                    onClick={() => removeAppliedFilter({ neighborhood: "" })}
+                    {...PRESSABLE_MOTION_PROPS}
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
+                    variants={CHIP_REVEAL_VARIANTS}
+                    className="inline-flex min-h-10 items-center gap-1 rounded-full border border-bg-border bg-bg-base px-3 text-sm text-t-secondary transition-colors hover:border-accent hover:text-accent"
+                  >
+                    {urlFilters.neighborhood}
+                    <Icon name="close" size={14} />
+                  </motion.button>
+                )}
+                {urlFilters.maxPriceCOP > 0 && (
+                  <motion.button
+                    layout="position"
+                    key="chip-price"
+                    type="button"
+                    onClick={() => removeAppliedFilter({ maxPriceCOP: 0 })}
+                    {...PRESSABLE_MOTION_PROPS}
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
+                    variants={CHIP_REVEAL_VARIANTS}
+                    className="inline-flex min-h-10 items-center gap-1 rounded-full border border-bg-border bg-bg-base px-3 text-sm text-t-secondary transition-colors hover:border-accent hover:text-accent"
+                  >
+                    {getPriceLabel(urlFilters.maxPriceCOP)}
+                    <Icon name="close" size={14} />
+                  </motion.button>
+                )}
+                {urlFilters.minBedrooms > 0 && (
+                  <motion.button
+                    layout="position"
+                    key="chip-bedrooms"
+                    type="button"
+                    onClick={() => removeAppliedFilter({ minBedrooms: 0 })}
+                    {...PRESSABLE_MOTION_PROPS}
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
+                    variants={CHIP_REVEAL_VARIANTS}
+                    className="inline-flex min-h-10 items-center gap-1 rounded-full border border-bg-border bg-bg-base px-3 text-sm text-t-secondary transition-colors hover:border-accent hover:text-accent"
+                  >
+                    {getBedroomsLabel(urlFilters.minBedrooms)}
+                    <Icon name="close" size={14} />
+                  </motion.button>
+                )}
+              </AnimatePresence>
 
-        {activeFilterCount > 0 && (
-          <button
-            type="button"
-            onClick={clearAllFilters}
-            className="lift-hover inline-flex min-h-11 w-full items-center justify-center gap-1 rounded-full px-3 py-1 text-xs font-medium text-accent transition-colors hover:bg-accent-dark/20 sm:w-auto"
-          >
-            <Icon name="close" size={14} />
-            Limpiar filtros
-          </button>
-        )}
-      </div>
+              <motion.a
+                layout="position"
+                href="#home-search"
+                {...PRESSABLE_MOTION_PROPS}
+                className="inline-flex min-h-10 items-center rounded-full border border-bg-border px-4 text-sm font-medium text-t-secondary transition-colors hover:bg-bg-elevated hover:text-t-primary"
+              >
+                Editar búsqueda
+              </motion.a>
 
-      <section className="mt-4">
+              <AnimatePresence initial={false} mode="popLayout">
+                {activeFilterCount > 0 && (
+                  <motion.button
+                    layout="position"
+                    key="clear-filters"
+                    type="button"
+                    onClick={clearAllFilters}
+                    {...PRESSABLE_MOTION_PROPS}
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
+                    variants={CHIP_REVEAL_VARIANTS}
+                    className="inline-flex min-h-10 items-center rounded-full bg-accent px-4 text-sm font-semibold text-white transition-colors hover:bg-accent-hover"
+                  >
+                    Limpiar filtros
+                  </motion.button>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          </div>
+        </motion.div>
+
         <ListingGrid
           listings={filteredListings}
           listingQueryString={listingQueryString}
           onClearFilters={activeFilterCount > 0 ? clearAllFilters : undefined}
         />
       </section>
-
-      <SearchFlowModal
-        isOpen={state.isMobileFlowOpen}
-        step={state.mobileStep}
-        filters={state.draftFilters}
-        neighborhoods={neighborhoods}
-        priceOptions={PRICE_OPTIONS}
-        bedroomOptions={BEDROOM_OPTIONS}
-        resultsCount={draftCount}
-        onClose={closeMobileFlow}
-        onClear={clearAllFilters}
-        onApply={applyMobileFilters}
-        onStepChange={(step) => dispatch({ type: "set_mobile_step", step })}
-        onChange={(patch) => dispatch({ type: "set_draft_patch", patch })}
-      />
     </div>
   );
 }

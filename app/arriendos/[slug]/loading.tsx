@@ -13,11 +13,11 @@ export default function ListingDetailLoading() {
       {/* Hero card */}
       <section className="rounded-card-lg border border-bg-border bg-bg-surface p-4 shadow-card sm:p-6">
         <div className="min-w-0 space-y-3">
-          <Skeleton className="h-9 w-72 rounded-2xl sm:w-96" />
+          <Skeleton className="h-9 w-[min(28rem,100%)] rounded-2xl sm:w-[30rem]" />
           <div className="flex items-center gap-1.5">
             <Skeleton className="h-4 w-4 rounded-full" />
-            <Skeleton className="h-4 w-48 rounded-full" />
-            <Skeleton className="h-4 w-32 rounded-full" />
+            <Skeleton className="h-4 w-52 rounded-full" />
+            <Skeleton className="h-4 w-28 rounded-full" />
           </div>
           <div className="flex flex-wrap gap-2">
             <Skeleton className="h-7 w-24 rounded-full" />
@@ -97,25 +97,38 @@ export default function ListingDetailLoading() {
 
         {/* Contact sidebar (desktop) */}
         <div className="hidden lg:block">
-          <div className="rounded-card-lg border border-bg-border bg-bg-surface shadow-card">
-            <div className="border-b border-bg-border px-6 py-4">
+          <div className="space-y-3">
+            <div className="rounded-2xl border border-accent/15 bg-bg-surface px-4 py-3 shadow-card">
               <Skeleton className="h-3 w-28 rounded-full" />
-              <Skeleton className="mt-2 h-7 w-44 rounded-lg" />
+              <Skeleton className="mt-2 h-4 w-56 rounded-full" />
             </div>
-            <div className="space-y-4 p-6">
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <Skeleton className="h-4 w-4 rounded" />
-                  <Skeleton className="h-4 w-44 rounded-full" />
-                </div>
-                <div className="flex items-center gap-2">
-                  <Skeleton className="h-4 w-4 rounded" />
-                  <Skeleton className="h-4 w-32 rounded-full" />
+
+            <div className="rounded-card-lg border border-bg-border bg-bg-surface shadow-card">
+              <div className="border-b border-bg-border bg-gradient-to-br from-accent-dark/20 via-bg-surface to-bg-elevated px-6 py-4">
+                <Skeleton className="h-3 w-28 rounded-full" />
+                <Skeleton className="mt-2 h-8 w-40 rounded-lg" />
+                <div className="mt-3 rounded-2xl border border-accent/15 bg-accent/10 px-4 py-3">
+                  <Skeleton className="h-3 w-36 rounded-full" />
+                  <Skeleton className="mt-2 h-5 w-28 rounded-full" />
+                  <Skeleton className="mt-2 h-3 w-44 rounded-full" />
                 </div>
               </div>
-              <Skeleton className="h-11 w-full rounded-xl" />
-              <Skeleton className="h-11 w-full rounded-xl" />
-              <Skeleton className="mx-auto h-3 w-48 rounded-full" />
+
+              <div className="space-y-4 p-6">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-4 w-4 rounded" />
+                    <Skeleton className="h-4 w-44 rounded-full" />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-4 w-4 rounded" />
+                    <Skeleton className="h-4 w-32 rounded-full" />
+                  </div>
+                </div>
+                <Skeleton className="h-11 w-full rounded-xl" />
+                <Skeleton className="h-11 w-full rounded-xl" />
+                <Skeleton className="mx-auto h-3 w-48 rounded-full" />
+              </div>
             </div>
           </div>
         </div>

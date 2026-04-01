@@ -4,7 +4,7 @@ import ThemeToggle from "@/components/ui/ThemeToggle";
 
 export default function Header() {
   return (
-    <header className="sticky top-0 z-50 border-b border-bg-border bg-bg-surface/80 backdrop-blur-md">
+    <header className="sticky top-0 z-50 border-b border-bg-border bg-bg-surface/90 backdrop-blur-lg">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
         <Link href="/" className="flex items-center gap-2">
           <Icon name="home_work" className="text-accent" size={28} />

@@ -3,6 +3,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Icon from "@/components/ui/Icon";
 import { getButtonClasses } from "@/components/ui/Button";
+import {
+  PRESSABLE_MOTION_PROPS,
+  STATUS_SWAP_VARIANTS,
+} from "@/lib/motion/animations";
+import { AnimatePresence, motion } from "@/lib/motion/runtime";
 
 type ShareStatus = "idle" | "copied" | "shared" | "error";
 
@@ -84,27 +89,41 @@ export default function ShareListingButton({
 
   if (compact) {
     return (
-      <button
+      <motion.button
         type="button"
         onClick={handleShare}
+        {...PRESSABLE_MOTION_PROPS}
         className={`lift-hover inline-flex h-11 min-w-11 items-center justify-center rounded-xl border border-bg-border bg-bg-surface text-t-secondary transition-colors hover:bg-bg-elevated ${className}`}
         aria-label={statusLabel}
         title={statusLabel}
       >
         <Icon name={status === "error" ? "error" : "share"} size={18} />
-      </button>
+      </motion.button>
     );
   }
 
   return (
-    <button
+    <motion.button
       type="button"
       onClick={handleShare}
+      {...PRESSABLE_MOTION_PROPS}
       className={getButtonClasses("secondary", `lift-hover w-full ${className}`)}
       aria-live="polite"
     >
       <Icon name={status === "error" ? "error" : "share"} size={18} />
-      {statusLabel}
-    </button>
+      <span className="relative inline-flex min-h-[1lh] items-center overflow-hidden">
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.span
+            key={statusLabel}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            variants={STATUS_SWAP_VARIANTS}
+          >
+            {statusLabel}
+          </motion.span>
+        </AnimatePresence>
+      </span>
+    </motion.button>
   );
 }
