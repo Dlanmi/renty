@@ -2,6 +2,7 @@
 
 import { ThemeProvider } from "next-themes";
 import type { ReactNode } from "react";
+import TrackingBootstrap from "@/components/analytics/TrackingBootstrap";
 import ThemeColorMeta from "@/components/ui/ThemeColorMeta";
 import {
   LazyMotion,
@@ -20,6 +21,7 @@ export default function Providers({ children }: { children: ReactNode }) {
           disableTransitionOnChange={false}
           storageKey="theme"
         >
+          <TrackingBootstrap />
           <ThemeColorMeta />
           {children}
         </ThemeProvider>

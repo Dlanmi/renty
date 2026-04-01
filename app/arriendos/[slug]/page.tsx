@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
+import TrackEventOnMount from "@/components/analytics/TrackEventOnMount";
 import StructuredData from "@/components/seo/StructuredData";
 import BackToSearchLink from "@/components/listing/BackToSearchLink";
 import ContactCTA from "@/components/listing/ContactCTA";
@@ -26,6 +27,7 @@ import {
   SITE_NAME,
   toAbsoluteUrl,
 } from "@/lib/domain/seo";
+import { buildAnalyticsSearchContextFromRecord } from "@/lib/analytics/search-context";
 import {
   buildGalleryPhotoAssets,
   buildGalleryPhotoUrls,
@@ -110,6 +112,9 @@ export default async function ListingPage({ params, searchParams }: PageProps) {
   const listingUrl = toAbsoluteUrl(canonicalPath);
   const shareDescription = buildListingSeoDescription(listing);
   const homeHref = buildHomeHref(resolvedSearchParams);
+  const searchContext = buildAnalyticsSearchContextFromRecord(
+    resolvedSearchParams
+  );
   const heroChips = listingHeroChips(listing);
   const galleryPhotoAssets = buildGalleryPhotoAssets(listing, photos);
   const galleryPhotoUrls = buildGalleryPhotoUrls(listing, photos);
@@ -163,6 +168,14 @@ export default async function ListingPage({ params, searchParams }: PageProps) {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:py-8">
+      <TrackEventOnMount
+        eventName="listing_detail_view"
+        source="listing_detail_page"
+        listingId={listing.id}
+        pagePath={canonicalPath}
+        searchContext={searchContext}
+        dedupeKey={`${listing.id}:${JSON.stringify(searchContext ?? {})}`}
+      />
       <StructuredData id="listing-structured-data" data={jsonLd} />
 
       <nav aria-label="Ruta de navegación" className="mb-4 flex min-w-0 flex-wrap items-center gap-1 text-sm text-t-muted">
@@ -204,7 +217,13 @@ export default async function ListingPage({ params, searchParams }: PageProps) {
         </div>
 
         <div className="mt-5">
-          <ListingGallery title={listing.title} photos={galleryPhotoAssets} />
+          <ListingGallery
+            listingId={listing.id}
+            pagePath={canonicalPath}
+            searchContext={searchContext}
+            title={listing.title}
+            photos={galleryPhotoAssets}
+          />
         </div>
       </section>
 
@@ -215,7 +234,8 @@ export default async function ListingPage({ params, searchParams }: PageProps) {
 
         <ContactCTA
           listing={listing}
-          phone={listing.whatsapp_e164}
+          pagePath={canonicalPath}
+          searchContext={searchContext}
           shareUrl={listingUrl}
           shareDescription={shareDescription}
         />

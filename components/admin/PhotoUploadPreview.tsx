@@ -47,14 +47,14 @@ export default function PhotoUploadPreview({
 
   return (
     <div className="mt-3 space-y-2">
-      <p className="text-xs font-medium text-stone-700">
+      <p className="text-xs font-medium text-t-secondary">
         {previews.length} {previews.length === 1 ? "archivo seleccionado" : "archivos seleccionados"}
       </p>
       <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
         {previews.map((preview, index) => (
           <div
             key={`preview-${index}`}
-            className="group relative aspect-square overflow-hidden rounded-lg border border-stone-200 bg-stone-100"
+            className="group relative aspect-square overflow-hidden rounded-lg border border-bg-border bg-bg-elevated"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img

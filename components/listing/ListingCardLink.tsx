@@ -11,6 +11,7 @@ interface ListingCardLinkProps {
   href: string;
   className?: string;
   listingQueryString?: string;
+  onNavigate?: () => void;
   "aria-label"?: string;
   children: ReactNode;
 }
@@ -19,10 +20,13 @@ export default function ListingCardLink({
   href,
   className,
   listingQueryString = "",
+  onNavigate,
   "aria-label": ariaLabel,
   children,
 }: ListingCardLinkProps) {
   const handleClick = () => {
+    onNavigate?.();
+
     if (typeof window === "undefined") return;
 
     window.sessionStorage.setItem(

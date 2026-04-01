@@ -19,7 +19,6 @@ export default function ListingCardSkeleton({ count = 6 }: ListingCardSkeletonPr
               <Skeleton className="h-3 w-40 rounded-full" />
             </div>
             <Skeleton className="h-4 w-[78%] rounded-lg" />
-            <Skeleton className="h-4 w-[58%] rounded-lg" />
             <div className="flex items-end gap-2 pt-0.5">
               <Skeleton className="h-6 w-28 rounded-lg" />
               <Skeleton className="h-3.5 w-16 rounded-full" />

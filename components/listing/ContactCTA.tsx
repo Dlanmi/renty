@@ -1,6 +1,10 @@
 "use client";
 
-import { formatCOP, formatBillingPeriod, whatsappLink } from "@/lib/domain/format";
+import { useCallback } from "react";
+import { trackEvent } from "@/lib/analytics/client";
+import { buildWhatsAppProxyPath } from "@/lib/analytics/shared";
+import type { AnalyticsSearchContext } from "@/lib/analytics/types";
+import { formatCOP, formatBillingPeriod } from "@/lib/domain/format";
 import { buildListingCostSummary } from "@/lib/domain/listing-insights";
 import type { Listing } from "@/lib/domain/types";
 import {
@@ -17,6 +21,7 @@ import ShareListingButton from "@/components/listing/ShareListingButton";
 interface ContactCTAProps {
   listing: Pick<
     Listing,
+    | "id"
     | "price_cop"
     | "billing_period"
     | "title"
@@ -24,22 +29,50 @@ interface ContactCTAProps {
     | "utilities_cop_min"
     | "utilities_cop_max"
   >;
-  phone: string;
+  pagePath: string;
+  searchContext?: AnalyticsSearchContext;
   shareUrl: string;
   shareDescription: string;
 }
 
 export default function ContactCTA({
   listing,
-  phone,
+  pagePath,
+  searchContext,
   shareUrl,
   shareDescription,
 }: ContactCTAProps) {
   const { price_cop: price, billing_period: billingPeriod, title } = listing;
-  const message = `Hola, estoy interesado(a) en el arriendo: "${title}". ¿Está disponible?`;
-  const href = whatsappLink(phone, message);
   const shareTitle = `${title} | Renty`;
   const costSummary = buildListingCostSummary(listing);
+  const desktopWhatsAppHref = buildWhatsAppProxyPath({
+    intent: "listing",
+    source: "listing_detail_sidebar",
+    listingId: listing.id,
+    pagePath,
+    searchContext,
+  });
+  const mobileWhatsAppHref = buildWhatsAppProxyPath({
+    intent: "listing",
+    source: "listing_detail_sticky",
+    listingId: listing.id,
+    pagePath,
+    searchContext,
+  });
+
+  const handleWhatsAppClick = useCallback(
+    (source: string) => {
+      void trackEvent({
+        eventName: "whatsapp_click",
+        source,
+        listingId: listing.id,
+        pagePath,
+        searchContext,
+        dedupeKey: `${listing.id}:${source}`,
+      });
+    },
+    [listing.id, pagePath, searchContext]
+  );
 
   return (
     <>
@@ -91,9 +124,11 @@ export default function ContactCTA({
               </ul>
 
               <motion.a
-                href={href}
+                href={desktopWhatsAppHref}
                 target="_blank"
                 rel="noopener noreferrer"
+                data-whatsapp-cta="listing-sidebar"
+                onClick={() => handleWhatsAppClick("listing_detail_sidebar")}
                 {...PRESSABLE_MOTION_PROPS}
                 className="flex w-full items-center justify-center gap-2 rounded-xl bg-accent px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-base"
               >
@@ -109,7 +144,7 @@ export default function ContactCTA({
               />
 
               <p className="text-center text-xs text-t-muted">
-                Respuesta típica en menos de 1 hora
+                Sin intermediarios. Sin comisiones ocultas.
               </p>
             </div>
           </motion.div>
@@ -117,13 +152,14 @@ export default function ContactCTA({
       </div>
 
       <MobileStickyContactBar
-        href={href}
+        href={mobileWhatsAppHref}
         priceLabel={formatCOP(price)}
         billingPeriodLabel={formatBillingPeriod(billingPeriod)}
         totalLineLabel={costSummary.totalLineLabel}
         totalLabel={costSummary.totalLabel}
         insightMessage={costSummary.insightLabel}
         hasBreakdown={costSummary.hasBreakdown}
+        onWhatsAppClick={() => handleWhatsAppClick("listing_detail_sticky")}
       />
     </>
   );

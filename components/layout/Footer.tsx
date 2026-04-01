@@ -1,7 +1,8 @@
 import Link from "next/link";
+import { getRentyPublishWhatsAppUrl } from "@/lib/domain/contact";
 import Icon from "@/components/ui/Icon";
 
-const WHATSAPP_CONTACT_URL = "https://wa.me/573144436688";
+const WHATSAPP_CONTACT_URL = getRentyPublishWhatsAppUrl();
 
 const TIPS = [
   "Nunca pagues sin visitar el inmueble",
@@ -54,7 +55,7 @@ export default function Footer() {
             href={WHATSAPP_CONTACT_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex min-h-10 items-center gap-1.5 rounded-full bg-[#25D366] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#22c55e]"
+            className="inline-flex min-h-10 items-center gap-1.5 rounded-full bg-whatsapp px-4 text-sm font-semibold text-white transition-colors hover:bg-whatsapp-hover"
           >
             <Icon name="chat" size={17} />
             Contáctanos

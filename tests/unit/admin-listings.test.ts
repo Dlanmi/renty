@@ -57,6 +57,7 @@ function createParsedListingInput(
     deletePhotoIds: [],
     photoOrderIds: [],
     newPhotos: [],
+    preUploadedPhotos: [],
     ...partial,
   };
 }

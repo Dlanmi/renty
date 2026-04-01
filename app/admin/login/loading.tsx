@@ -3,7 +3,7 @@ import Skeleton from "@/components/ui/Skeleton";
 export default function AdminLoginLoading() {
   return (
     <div className="mx-auto max-w-md px-4 py-10 sm:px-6">
-      <div className="rounded-card border border-stone-200 bg-white p-6 shadow-card">
+      <div className="rounded-card border border-bg-border bg-bg-surface p-6 shadow-card">
         <Skeleton className="h-8 w-64 rounded-xl" />
         <Skeleton className="mt-2 h-4 w-72 rounded-full" />
 

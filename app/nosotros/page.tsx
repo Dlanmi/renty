@@ -150,19 +150,19 @@ export default function AboutPage() {
       <section className="rounded-2xl border border-bg-border bg-bg-surface p-5 shadow-card sm:p-6">
         <h2 className="text-xl font-semibold text-t-primary">Nuestro objetivo</h2>
         <p className="mt-3 text-sm leading-relaxed text-t-secondary">
-          Renty comenzó como un proyecto académico, pero rápidamente
-          entendimos que el problema que queríamos resolver era mucho más
-          grande.
+          Renty nació de una pregunta simple: ¿por qué encontrar arriendo en
+          Bogotá tiene que ser tan complicado? Después de meses entendiendo el
+          problema de primera mano, construimos la plataforma que nos habría
+          gustado tener.
         </p>
         <p className="mt-3 text-sm leading-relaxed text-t-secondary">
           Miles de personas en Bogotá pasan días o semanas buscando vivienda.
-          Nuestro objetivo es construir una plataforma que haga ese proceso más
-          sencillo.
+          Nuestro objetivo es hacer ese proceso más rápido, claro y confiable.
         </p>
         <p className="mt-3 text-sm leading-relaxed text-t-secondary">
-          Hoy Renty se enfoca en facilitar la búsqueda de arriendos. En el
-          futuro, la plataforma está pensada para incluir más formas de
-          encontrar vivienda, como propiedades en venta o alquileres temporales.
+          Hoy Renty se enfoca en facilitar la búsqueda de arriendos con
+          información clara, fotos reales y contacto directo. En el futuro,
+          queremos incluir más formas de encontrar vivienda en la ciudad.
         </p>
       </section>
 

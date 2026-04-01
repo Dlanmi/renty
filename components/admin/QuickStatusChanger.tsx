@@ -21,11 +21,11 @@ const STATUS_OPTIONS: Array<{ value: ListingStatus; label: string }> = [
 ];
 
 function statusChipClasses(status: ListingStatus): string {
-  if (status === "active") return "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100";
-  if (status === "rented") return "border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100";
+  if (status === "active") return "border-emerald-600/20 bg-emerald-600/10 text-emerald-700 hover:bg-emerald-600/15 dark:text-emerald-400";
+  if (status === "rented") return "border-amber-600/20 bg-amber-600/10 text-amber-700 hover:bg-amber-600/15 dark:text-amber-400";
   if (status === "draft" || status === "pending_review")
-    return "border-stone-200 bg-stone-50 text-stone-700 hover:bg-stone-100";
-  return "border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100"; // For rejected/inactive
+    return "border-bg-border bg-bg-elevated text-t-secondary hover:bg-bg-elevated";
+  return "border-rose-600/20 bg-rose-600/10 text-rose-700 hover:bg-rose-600/15 dark:text-rose-400"; // For rejected/inactive
 }
 
 export default function QuickStatusChanger({
@@ -109,7 +109,7 @@ export default function QuickStatusChanger({
               viewBox="0 0 24 24"
               strokeWidth={2}
               stroke="currentColor"
-              className="h-3 w-3 text-stone-500"
+              className="h-3 w-3 text-t-muted"
             >
               <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
             </svg>
@@ -124,8 +124,8 @@ export default function QuickStatusChanger({
             <div
               className={`flex items-center gap-3 rounded-xl border px-4 py-3 shadow-lg ${
                 toast.type === "success"
-                  ? "border-emerald-200 bg-emerald-50 text-emerald-800"
-                  : "border-rose-200 bg-rose-50 text-rose-800"
+                  ? "border-emerald-600/20 bg-emerald-600/10 text-emerald-800 dark:text-emerald-300"
+                  : "border-rose-600/20 bg-rose-600/10 text-rose-800 dark:text-rose-300"
               }`}
             >
               {toast.type === "success" ? (

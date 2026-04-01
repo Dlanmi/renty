@@ -18,6 +18,7 @@ interface MobileStickyContactBarProps {
   totalLabel: string;
   insightMessage: string;
   hasBreakdown: boolean;
+  onWhatsAppClick?: () => void;
 }
 
 const INSIGHT_GAP_PX = 22;
@@ -31,6 +32,7 @@ export default function MobileStickyContactBar({
   totalLabel,
   insightMessage,
   hasBreakdown,
+  onWhatsAppClick,
 }: MobileStickyContactBarProps) {
   const viewportBottomInset = useViewportBottomInset();
   const footerRef = useRef<HTMLDivElement>(null);
@@ -150,8 +152,10 @@ export default function MobileStickyContactBar({
             href={href}
             target="_blank"
             rel="noopener noreferrer"
+            data-whatsapp-cta="mobile-sticky"
+            onClick={onWhatsAppClick}
             {...PRESSABLE_MOTION_PROPS}
-            className="inline-flex h-[52px] w-[136px] shrink-0 items-center justify-center gap-2 rounded-[18px] bg-[#25D366] px-4 text-[14px] font-bold text-white transition-colors hover:bg-[#20bd5a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-surface min-[380px]:w-[144px]"
+            className="inline-flex h-[52px] w-[136px] shrink-0 items-center justify-center gap-2 rounded-[18px] bg-whatsapp px-4 text-[14px] font-bold text-white transition-colors hover:bg-whatsapp-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-surface min-[380px]:w-[144px]"
           >
             <WhatsAppIcon className="h-5 w-5" />
             WhatsApp

@@ -1,3 +1,10 @@
+// Runtime guard: prevents accidental execution in browser context.
+// We avoid `import "server-only"` because it breaks Node test runner
+// when test code transitively imports this module through barrel exports.
+if (typeof window !== "undefined") {
+  throw new Error("lib/storage/r2.ts must only be imported on the server");
+}
+
 import {
   S3Client,
   PutObjectCommand,

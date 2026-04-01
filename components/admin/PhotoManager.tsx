@@ -163,15 +163,15 @@ export default function PhotoManager({ photos }: PhotoManagerProps) {
     <div className="mt-4 space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between gap-2">
-        <p className="text-sm font-semibold text-stone-900">
+        <p className="text-sm font-semibold text-t-primary">
           Fotos del inmueble
         </p>
         <div className="flex items-center gap-2 text-xs">
-          <span className="rounded-full bg-stone-100 px-2 py-0.5 text-stone-600">
+          <span className="rounded-full bg-bg-elevated px-2 py-0.5 text-t-secondary">
             {activeItems.length} activas
           </span>
           {deletedItems.length > 0 && (
-            <span className="rounded-full bg-rose-100 px-2 py-0.5 text-rose-600">
+            <span className="rounded-full bg-rose-600/15 px-2 py-0.5 text-rose-600">
               {deletedItems.length} por eliminar
             </span>
           )}
@@ -179,7 +179,7 @@ export default function PhotoManager({ photos }: PhotoManagerProps) {
       </div>
 
       {/* Tip */}
-      <p className="rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-500">
+      <p className="rounded-lg border border-bg-border bg-bg-elevated px-3 py-2 text-xs text-t-muted">
         <strong>Arrastra</strong> para reordenar en escritorio. En
         móvil usa los botones ▲ ▼. La primera foto activa será la portada, o
         elige una con el botón ★.
@@ -232,10 +232,10 @@ export default function PhotoManager({ photos }: PhotoManagerProps) {
                 isDropTarget
                   ? "border-accent bg-accent/5 shadow-lg"
                   : isDeleted
-                    ? "border-rose-200 bg-rose-50"
+                    ? "border-rose-600/20 bg-rose-600/10"
                     : isCurrentCover
                       ? "border-accent bg-accent/5"
-                      : "border-stone-200 bg-white hover:border-stone-300"
+                      : "border-bg-border bg-bg-surface hover:border-accent/40"
               } ${!isDeleted ? "cursor-grab active:cursor-grabbing" : ""}`}
             >
               {/* Cover badge */}
@@ -253,7 +253,7 @@ export default function PhotoManager({ photos }: PhotoManagerProps) {
               )}
 
               {/* Image */}
-              <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-stone-100">
+              <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-bg-elevated">
                 <Image
                   src={item.thumbUrl}
                   alt={item.caption ?? "Foto del inmueble"}
@@ -268,7 +268,7 @@ export default function PhotoManager({ photos }: PhotoManagerProps) {
                 {/* Drag handle overlay (desktop) */}
                 {!isDeleted && (
                   <div className="pointer-events-none absolute inset-x-0 bottom-0 flex justify-center bg-gradient-to-t from-black/30 to-transparent pb-2 pt-6 opacity-0 transition-opacity group-hover:opacity-100 sm:opacity-0 sm:hover:opacity-100">
-                    <div className="rounded-md bg-white/80 px-2 py-1 text-[10px] font-medium text-stone-700 backdrop-blur-sm">
+                    <div className="rounded-md bg-bg-surface/80 px-2 py-1 text-[10px] font-medium text-t-secondary backdrop-blur-sm">
                       Arrastra para reordenar
                     </div>
                   </div>
@@ -292,7 +292,7 @@ export default function PhotoManager({ photos }: PhotoManagerProps) {
                     type="button"
                     onClick={() => movePhoto(item.id, -1)}
                     disabled={index === 0 || isDeleted}
-                    className="flex h-8 flex-1 items-center justify-center rounded-lg border border-stone-200 bg-white text-xs font-medium text-stone-700 disabled:opacity-40"
+                    className="flex h-8 flex-1 items-center justify-center rounded-lg border border-bg-border bg-bg-surface text-xs font-medium text-t-secondary disabled:opacity-40"
                   >
                     ▲
                   </button>
@@ -300,7 +300,7 @@ export default function PhotoManager({ photos }: PhotoManagerProps) {
                     type="button"
                     onClick={() => movePhoto(item.id, 1)}
                     disabled={index === items.length - 1 || isDeleted}
-                    className="flex h-8 flex-1 items-center justify-center rounded-lg border border-stone-200 bg-white text-xs font-medium text-stone-700 disabled:opacity-40"
+                    className="flex h-8 flex-1 items-center justify-center rounded-lg border border-bg-border bg-bg-surface text-xs font-medium text-t-secondary disabled:opacity-40"
                   >
                     ▼
                   </button>
@@ -315,7 +315,7 @@ export default function PhotoManager({ photos }: PhotoManagerProps) {
                     className={`flex h-8 items-center justify-center gap-1 rounded-lg border text-xs font-medium transition-colors ${
                       isCurrentCover
                         ? "border-accent bg-accent/10 text-accent"
-                        : "border-stone-200 bg-white text-stone-600 hover:border-accent hover:text-accent disabled:opacity-40"
+                        : "border-bg-border bg-bg-surface text-t-secondary hover:border-accent hover:text-accent disabled:opacity-40"
                     }`}
                   >
                     ★ {isCurrentCover ? "Portada" : "Elegir"}
@@ -325,8 +325,8 @@ export default function PhotoManager({ photos }: PhotoManagerProps) {
                     onClick={() => toggleDelete(item.id)}
                     className={`flex h-8 items-center justify-center rounded-lg border text-xs font-medium transition-colors ${
                       isDeleted
-                        ? "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
-                        : "border-rose-200 bg-white text-rose-600 hover:bg-rose-50"
+                        ? "border-emerald-600/20 bg-emerald-600/10 text-emerald-700 hover:bg-emerald-600/15 dark:text-emerald-400"
+                        : "border-rose-600/20 bg-bg-surface text-rose-600 hover:bg-rose-600/10"
                     }`}
                   >
                     {isDeleted ? "Restaurar" : "Eliminar"}

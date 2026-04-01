@@ -3,9 +3,9 @@ import type { Metadata } from "next";
 export const SITE_NAME = "Renty";
 export const SITE_LOCALE = "es_CO";
 export const DEFAULT_SITE_TITLE =
-  "Arriendos en Bogota con contacto directo por WhatsApp";
+  "Renty — Arriendos en Bogotá sin intermediarios";
 export const DEFAULT_SITE_DESCRIPTION =
-  "Encuentra apartamentos, habitaciones y casas en arriendo en Bogota con contacto directo por WhatsApp, filtros rapidos y fichas optimizadas para SEO.";
+  "Descubre apartamentos, habitaciones y casas en arriendo en Bogotá. Filtra por barrio, precio y habitaciones, ve fotos reales y contacta directo por WhatsApp — sin intermediarios ni comisiones.";
 export const DEFAULT_SOCIAL_IMAGE_PATH = "/opengraph-image";
 export const DEFAULT_SOCIAL_IMAGE_ALT =
   "Renty, plataforma de arriendos en Bogota";

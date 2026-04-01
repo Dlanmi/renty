@@ -34,6 +34,10 @@ const config: Config = {
           hover: "var(--indigo-400)",
           dark: "var(--indigo-900)",
         },
+        whatsapp: {
+          DEFAULT: "var(--whatsapp)",
+          hover: "var(--whatsapp-hover)",
+        },
         success: "var(--success)",
         warning: "var(--warning)",
         danger: "var(--danger)",

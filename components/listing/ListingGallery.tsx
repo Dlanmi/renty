@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
+import { trackEvent } from "@/lib/analytics/client";
+import type { AnalyticsSearchContext } from "@/lib/analytics/types";
 import Icon from "@/components/ui/Icon";
 import {
   MEDIA_SWAP_VARIANTS,
@@ -15,6 +17,9 @@ import ImageLightbox from "@/components/listing/ImageLightbox";
 import type { GalleryPhotoAsset } from "@/lib/domain/public-seo";
 
 interface ListingGalleryProps {
+  listingId: string;
+  pagePath: string;
+  searchContext?: AnalyticsSearchContext;
   title: string;
   photos: GalleryPhotoAsset[];
 }
@@ -36,7 +41,13 @@ function dedupePhotos(photos: GalleryPhotoAsset[]): GalleryPhotoAsset[] {
   return ordered;
 }
 
-export default function ListingGallery({ title, photos }: ListingGalleryProps) {
+export default function ListingGallery({
+  listingId,
+  pagePath,
+  searchContext,
+  title,
+  photos,
+}: ListingGalleryProps) {
   const gallery = useMemo(() => dedupePhotos(photos), [photos]);
   const galleryKey = useMemo(
     () => gallery.map((photo) => photo.src).join("|"),
@@ -59,6 +70,30 @@ export default function ListingGallery({ title, photos }: ListingGalleryProps) {
   const lightboxPhotos = useMemo(
     () => gallery.map((photo) => photo.src),
     [gallery]
+  );
+  const galleryOpenDedupeKey = useMemo(
+    () => `${listingId}:${pagePath}`,
+    [listingId, pagePath]
+  );
+
+  const openLightbox = useCallback(
+    (index: number) => {
+      void trackEvent({
+        eventName: "gallery_opened",
+        source: "listing_gallery",
+        listingId,
+        pagePath,
+        searchContext,
+        dedupeKey: galleryOpenDedupeKey,
+        payload: {
+          photoCount: gallery.length,
+          startIndex: index + 1,
+        },
+      });
+
+      setLightboxIndex(index);
+    },
+    [gallery.length, galleryOpenDedupeKey, listingId, pagePath, searchContext]
   );
 
   const selectPrev = useCallback(() => {
@@ -117,7 +152,7 @@ export default function ListingGallery({ title, photos }: ListingGalleryProps) {
           {selectedPhoto && (
             <motion.button
               type="button"
-              onClick={() => setLightboxIndex(selectedIndex)}
+              onClick={() => openLightbox(selectedIndex)}
               {...TAP_ONLY_MOTION_PROPS}
               className="absolute inset-0 z-[5] cursor-zoom-in focus:outline-none"
               aria-label="Abrir visor de fotos"
@@ -166,7 +201,7 @@ export default function ListingGallery({ title, photos }: ListingGalleryProps) {
           {gallery.length > 1 && (
             <motion.button
               type="button"
-              onClick={() => setLightboxIndex(selectedIndex)}
+              onClick={() => openLightbox(selectedIndex)}
               {...PRESSABLE_MOTION_PROPS}
               className="absolute right-3 top-3 z-[15] inline-flex items-center gap-1.5 rounded-full border border-white/30 bg-black/50 px-3 py-1.5 text-xs font-medium text-white backdrop-blur transition-colors hover:bg-black/65"
             >

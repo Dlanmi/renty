@@ -7,6 +7,7 @@ import Providers from "@/app/providers";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import StructuredData from "@/components/seo/StructuredData";
+import { getRentyPublishWhatsAppUrl } from "@/lib/domain/contact";
 import {
   DEFAULT_SITE_DESCRIPTION,
   DEFAULT_SITE_TITLE,
@@ -29,6 +30,7 @@ const materialSymbolsOutlined = localFont({
 });
 
 const siteUrl = getSiteUrl();
+const rentyWhatsAppUrl = getRentyPublishWhatsAppUrl();
 const isPreviewDeployment = process.env.VERCEL_ENV === "preview";
 const themeInitScript = `
   (function() {
@@ -56,19 +58,22 @@ export const metadata: Metadata = {
   },
   description: DEFAULT_SITE_DESCRIPTION,
   keywords: [
-    "arriendos en Bogota",
-    "apartamentos en arriendo Bogota",
-    "habitaciones en arriendo Bogota",
-    "casas en arriendo Bogota",
-    "arriendo con WhatsApp",
+    "arriendos en Bogotá",
+    "apartamentos en arriendo Bogotá",
+    "habitaciones en arriendo Bogotá",
+    "casas en arriendo Bogotá",
+    "arriendo directo propietario Bogotá",
+    "arriendo sin intermediarios Bogotá",
+    "arriendo barato Bogotá",
+    "Renty arriendos",
   ],
   icons: {
     icon: [
-      { url: "/icon.svg?v=2", type: "image/svg+xml" },
-      { url: "/favicon.ico?v=2" },
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", sizes: "48x48" },
     ],
-    shortcut: "/favicon.ico?v=2",
-    apple: "/favicon.ico?v=2",
+    shortcut: "/favicon.ico",
+    apple: "/apple-icon",
   },
   openGraph: {
     title: `${DEFAULT_SITE_TITLE} | ${SITE_NAME}`,
@@ -123,7 +128,7 @@ export default function RootLayout({
       name: SITE_NAME,
       url: siteUrl.toString(),
       areaServed: "Bogotá",
-      sameAs: ["https://wa.me/573144436688"],
+      sameAs: [rentyWhatsAppUrl],
     },
     {
       "@context": "https://schema.org",

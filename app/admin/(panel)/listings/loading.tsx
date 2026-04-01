@@ -3,7 +3,7 @@ import Skeleton from "@/components/ui/Skeleton";
 export default function AdminListingsLoading() {
   return (
     <div className="space-y-5">
-      <div className="rounded-card border border-stone-200 bg-white p-4 shadow-card">
+      <div className="rounded-card border border-bg-border bg-bg-surface p-4 shadow-card">
         <Skeleton className="h-8 w-48 rounded-xl" />
         <Skeleton className="mt-2 h-4 w-64 rounded-full" />
         <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_220px_auto]">
@@ -13,11 +13,11 @@ export default function AdminListingsLoading() {
         </div>
       </div>
 
-      <section className="space-y-3 rounded-card border border-stone-200 bg-white p-4 shadow-card">
+      <section className="space-y-3 rounded-card border border-bg-border bg-bg-surface p-4 shadow-card">
         {Array.from({ length: 6 }).map((_, index) => (
           <div
             key={index}
-            className="rounded-xl border border-stone-100 bg-stone-50 p-3"
+            className="rounded-xl border border-bg-border bg-bg-elevated p-3"
           >
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-3">

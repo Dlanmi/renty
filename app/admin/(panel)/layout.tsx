@@ -14,13 +14,13 @@ export default async function AdminPanelLayout({
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6">
-      <div className="lift-hover mb-6 rounded-card border border-stone-200 bg-white p-4 shadow-card">
+      <div className="lift-hover mb-6 rounded-card border border-bg-border bg-bg-surface p-4 shadow-card">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-xs uppercase tracking-wide text-muted">
               Administración
             </p>
-            <p className="text-lg font-semibold text-stone-900">
+            <p className="text-lg font-semibold text-t-primary">
               {admin.fullName?.trim() || admin.email || "Usuario admin"}
             </p>
           </div>
@@ -28,13 +28,13 @@ export default async function AdminPanelLayout({
           <div className="flex flex-wrap items-center gap-2">
             <Link
               href="/admin"
-              className="lift-hover inline-flex min-h-10 items-center rounded-full border border-stone-200 px-4 text-sm font-medium text-stone-700 hover:bg-stone-50"
+              className="lift-hover inline-flex min-h-10 items-center rounded-full border border-bg-border px-4 text-sm font-medium text-t-secondary hover:bg-bg-elevated"
             >
               Dashboard
             </Link>
             <Link
               href="/admin/listings"
-              className="lift-hover inline-flex min-h-10 items-center rounded-full border border-stone-200 px-4 text-sm font-medium text-stone-700 hover:bg-stone-50"
+              className="lift-hover inline-flex min-h-10 items-center rounded-full border border-bg-border px-4 text-sm font-medium text-t-secondary hover:bg-bg-elevated"
             >
               Inmuebles
             </Link>
@@ -47,7 +47,7 @@ export default async function AdminPanelLayout({
             <form action={logoutAdminAction}>
               <button
                 type="submit"
-                className="lift-hover inline-flex min-h-10 items-center rounded-full border border-stone-200 px-4 text-sm font-medium text-stone-700 hover:bg-stone-50"
+                className="lift-hover inline-flex min-h-10 items-center rounded-full border border-bg-border px-4 text-sm font-medium text-t-secondary hover:bg-bg-elevated"
               >
                 Cerrar sesión
               </button>

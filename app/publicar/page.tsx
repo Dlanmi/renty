@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { buildWhatsAppProxyPath } from "@/lib/analytics/shared";
+import TrackEventOnMount from "@/components/analytics/TrackEventOnMount";
 import Icon from "@/components/ui/Icon";
 import { getButtonClasses } from "@/components/ui/Button";
 import StructuredData from "@/components/seo/StructuredData";
 import { SITE_NAME, buildPageMetadata, toAbsoluteUrl } from "@/lib/domain/seo";
-
-const WHATSAPP_PUBLISH_URL = "https://wa.me/573144436688";
 
 const WHY_RENTY = [
   "Publicación clara y organizada del inmueble",
@@ -74,6 +74,16 @@ export const metadata: Metadata = buildPageMetadata({
 });
 
 export default function PublishPage() {
+  const heroWhatsAppHref = buildWhatsAppProxyPath({
+    intent: "publish",
+    source: "publish_hero",
+    pagePath: "/publicar",
+  });
+  const footerWhatsAppHref = buildWhatsAppProxyPath({
+    intent: "publish",
+    source: "publish_footer",
+    pagePath: "/publicar",
+  });
   const serviceJsonLd = [
     {
       "@context": "https://schema.org",
@@ -104,6 +114,12 @@ export default function PublishPage() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-8 px-4 py-8 sm:px-6 lg:space-y-10 lg:py-10">
+      <TrackEventOnMount
+        eventName="publish_page_view"
+        source="publish_page"
+        pagePath="/publicar"
+        dedupeKey="publish_page_view"
+      />
       <StructuredData id="publish-structured-data" data={serviceJsonLd} />
       <section className="relative overflow-hidden rounded-card-lg border border-bg-border bg-bg-surface px-5 py-8 text-center shadow-card sm:px-8 sm:py-10">
         <div className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-accent/10 blur-3xl" />
@@ -130,10 +146,10 @@ export default function PublishPage() {
 
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
             <a
-              href={WHATSAPP_PUBLISH_URL}
+              href={heroWhatsAppHref}
               target="_blank"
               rel="noopener noreferrer"
-              className="lift-hover inline-flex items-center justify-center gap-2 rounded-xl bg-[#25D366] px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-[#22c55e] hover:shadow-[0_0_20px_rgba(37,211,102,0.2)]"
+              className="lift-hover inline-flex items-center justify-center gap-2 rounded-xl bg-whatsapp px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-whatsapp-hover hover:shadow-glow"
             >
               <Icon name="chat" size={18} />
               Quiero publicar mi inmueble
@@ -264,10 +280,10 @@ export default function PublishPage() {
 
         <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
           <a
-            href={WHATSAPP_PUBLISH_URL}
+            href={footerWhatsAppHref}
             target="_blank"
             rel="noopener noreferrer"
-            className="lift-hover inline-flex items-center justify-center gap-2 rounded-xl bg-[#25D366] px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-[#22c55e] hover:shadow-[0_0_20px_rgba(37,211,102,0.2)]"
+            className="lift-hover inline-flex items-center justify-center gap-2 rounded-xl bg-whatsapp px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-whatsapp-hover hover:shadow-glow"
           >
             <Icon name="chat" size={18} />
             Hablar por WhatsApp

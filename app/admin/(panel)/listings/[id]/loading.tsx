@@ -3,12 +3,12 @@ import Skeleton from "@/components/ui/Skeleton";
 export default function AdminListingDetailLoading() {
   return (
     <div className="space-y-4">
-      <div className="rounded-card border border-stone-200 bg-white p-4 shadow-card">
+      <div className="rounded-card border border-bg-border bg-bg-surface p-4 shadow-card">
         <Skeleton className="h-8 w-52 rounded-xl" />
         <Skeleton className="mt-2 h-4 w-72 rounded-full" />
       </div>
 
-      <div className="rounded-card border border-stone-200 bg-white p-4 shadow-card">
+      <div className="rounded-card border border-bg-border bg-bg-surface p-4 shadow-card">
         <div className="grid gap-4 sm:grid-cols-2">
           {Array.from({ length: 8 }).map((_, index) => (
             <div key={index} className="space-y-2">

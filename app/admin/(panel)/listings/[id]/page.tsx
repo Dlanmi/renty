@@ -63,17 +63,17 @@ export default async function AdminListingDetailPage({
 
   return (
     <div className="space-y-4">
-      <div className="lift-hover rounded-card border border-stone-200 bg-white p-4 shadow-card">
+      <div className="lift-hover rounded-card border border-bg-border bg-bg-surface p-4 shadow-card">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-xl font-semibold text-stone-900">Editar inmueble</h1>
+            <h1 className="text-xl font-semibold text-t-primary">Editar inmueble</h1>
             <p className="text-sm text-muted">{listing.title}</p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
             <Link
               href="/admin/listings"
-              className="lift-hover inline-flex min-h-10 items-center rounded-full border border-stone-200 px-4 text-sm font-medium text-stone-700 hover:bg-stone-50"
+              className="lift-hover inline-flex min-h-10 items-center rounded-full border border-bg-border px-4 text-sm font-medium text-t-secondary hover:bg-bg-elevated"
             >
               Volver al listado
             </Link>
@@ -81,7 +81,7 @@ export default async function AdminListingDetailPage({
               href={getListingPath(listing as Listing)}
               target="_blank"
               rel="noopener noreferrer"
-              className="lift-hover inline-flex min-h-10 items-center rounded-full border border-stone-200 px-4 text-sm font-medium text-stone-700 hover:bg-stone-50"
+              className="lift-hover inline-flex min-h-10 items-center rounded-full border border-bg-border px-4 text-sm font-medium text-t-secondary hover:bg-bg-elevated"
             >
               Ver público
             </Link>
@@ -97,14 +97,14 @@ export default async function AdminListingDetailPage({
         </div>
 
         {saved && (
-          <p className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+          <p className="mt-4 rounded-xl border border-emerald-600/20 bg-emerald-600/10 px-3 py-2 text-sm text-emerald-700 dark:text-emerald-400">
             Cambios guardados correctamente
             {hasSavedAt ? ` (${formatSavedAtLabel(savedAt)}).` : "."}
           </p>
         )}
 
         {error && (
-          <p className="mt-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+          <p className="mt-4 rounded-xl border border-rose-600/20 bg-rose-600/10 px-3 py-2 text-sm text-rose-700 dark:text-rose-400">
             {error}
           </p>
         )}

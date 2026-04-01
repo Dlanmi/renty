@@ -84,14 +84,14 @@ export default function PoiEditor({ pois = [] }: PoiEditorProps) {
           {rows.map((row) => (
             <div
               key={row.id}
-              className="grid grid-cols-[1fr_2fr_80px_80px_36px] items-center gap-2 rounded-xl border border-stone-200 bg-stone-50 p-2"
+              className="grid grid-cols-[1fr_2fr_80px_80px_36px] items-center gap-2 rounded-xl border border-bg-border bg-bg-elevated p-2"
             >
               <select
                 value={row.kind}
                 onChange={(e) =>
                   updateRow(row.id, "kind", e.target.value)
                 }
-                className="h-9 w-full rounded-lg border border-stone-200 bg-white px-2 text-xs text-stone-900"
+                className="h-9 w-full rounded-lg border border-bg-border bg-bg-surface px-2 text-xs text-t-primary"
               >
                 {POI_KINDS.map((kind) => (
                   <option key={kind} value={kind}>
@@ -105,7 +105,7 @@ export default function PoiEditor({ pois = [] }: PoiEditorProps) {
                 value={row.name}
                 onChange={(e) => updateRow(row.id, "name", e.target.value)}
                 placeholder="Nombre del lugar"
-                className="h-9 w-full rounded-lg border border-stone-200 bg-white px-2 text-xs text-stone-900"
+                className="h-9 w-full rounded-lg border border-bg-border bg-bg-surface px-2 text-xs text-t-primary"
               />
 
               <input
@@ -116,7 +116,7 @@ export default function PoiEditor({ pois = [] }: PoiEditorProps) {
                 }
                 placeholder="m"
                 min={0}
-                className="h-9 w-full rounded-lg border border-stone-200 bg-white px-2 text-xs text-stone-900"
+                className="h-9 w-full rounded-lg border border-bg-border bg-bg-surface px-2 text-xs text-t-primary"
                 title="Distancia en metros"
               />
 
@@ -128,14 +128,14 @@ export default function PoiEditor({ pois = [] }: PoiEditorProps) {
                 }
                 placeholder="min"
                 min={0}
-                className="h-9 w-full rounded-lg border border-stone-200 bg-white px-2 text-xs text-stone-900"
+                className="h-9 w-full rounded-lg border border-bg-border bg-bg-surface px-2 text-xs text-t-primary"
                 title="Minutos a pie"
               />
 
               <button
                 type="button"
                 onClick={() => removeRow(row.id)}
-                className="flex h-9 w-9 items-center justify-center rounded-lg border border-rose-200 bg-rose-50 text-rose-600 transition-colors hover:bg-rose-100"
+                className="flex h-9 w-9 items-center justify-center rounded-lg border border-rose-600/20 bg-rose-600/10 text-rose-600 transition-colors hover:bg-rose-600/15"
                 aria-label="Eliminar punto cercano"
               >
                 <svg
@@ -155,7 +155,7 @@ export default function PoiEditor({ pois = [] }: PoiEditorProps) {
       <button
         type="button"
         onClick={addRow}
-        className="inline-flex items-center gap-1.5 rounded-lg border border-stone-200 bg-white px-3 py-2 text-xs font-medium text-stone-700 transition-colors hover:bg-stone-50"
+        className="inline-flex items-center gap-1.5 rounded-lg border border-bg-border bg-bg-surface px-3 py-2 text-xs font-medium text-t-secondary transition-colors hover:bg-bg-elevated"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"

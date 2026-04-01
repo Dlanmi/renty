@@ -141,24 +141,24 @@ function statusHint(status: ListingStatus): {
 
 function statusHintClasses(tone: "neutral" | "success" | "warning"): string {
   if (tone === "success") {
-    return "border-emerald-200 bg-emerald-50 text-emerald-700";
+    return "border-emerald-600/20 bg-emerald-600/10 text-emerald-700 dark:text-emerald-400";
   }
   if (tone === "warning") {
-    return "border-amber-200 bg-amber-50 text-amber-700";
+    return "border-amber-600/20 bg-amber-600/10 text-amber-700 dark:text-amber-400";
   }
-  return "border-stone-200 bg-stone-50 text-stone-700";
+  return "border-bg-border bg-bg-elevated text-t-secondary";
 }
 
 /* Style constants to reduce duplication */
 const INPUT_CLASS =
-  "h-11 w-full rounded-xl border border-stone-200 px-3 text-sm text-stone-900 focus:border-accent focus:outline-none";
+  "h-11 w-full rounded-xl border border-bg-border bg-bg-surface px-3 text-sm text-t-primary focus:border-accent focus:outline-none";
 const SELECT_CLASS =
-  "h-11 w-full rounded-xl border border-stone-200 bg-white px-3 text-sm text-stone-900 focus:border-accent focus:outline-none";
+  "h-11 w-full rounded-xl border border-bg-border bg-bg-surface px-3 text-sm text-t-primary focus:border-accent focus:outline-none";
 const TEXTAREA_CLASS =
-  "w-full rounded-xl border border-stone-200 px-3 py-2 text-sm text-stone-900 focus:border-accent focus:outline-none";
-const LABEL_CLASS = "text-sm font-medium text-stone-700";
+  "w-full rounded-xl border border-bg-border bg-bg-surface px-3 py-2 text-sm text-t-primary focus:border-accent focus:outline-none";
+const LABEL_CLASS = "text-sm font-medium text-t-secondary";
 const SECTION_CLASS =
-  "rounded-card border border-stone-200 bg-white p-4 shadow-card";
+  "rounded-card border border-bg-border bg-bg-surface p-4 shadow-card";
 
 function uploadedPhotoDraftKey(listingId: string): string {
   return `${UPLOAD_DRAFT_STORAGE_PREFIX}${listingId}`;
@@ -697,7 +697,7 @@ export default function ListingForm({
 
       {/* ── Publicación ────────────────────────────────────────────── */}
       <section className={SECTION_CLASS}>
-        <h2 className="text-lg font-semibold text-stone-900">Publicacion</h2>
+        <h2 className="text-lg font-semibold text-t-primary">Publicacion</h2>
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           <label className="block space-y-1">
             <span className={LABEL_CLASS}>Estado</span>
@@ -739,7 +739,7 @@ export default function ListingForm({
 
       {/* ── Datos principales ──────────────────────────────────────── */}
       <section className={SECTION_CLASS}>
-        <h2 className="text-lg font-semibold text-stone-900">
+        <h2 className="text-lg font-semibold text-t-primary">
           Datos principales
         </h2>
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -801,7 +801,7 @@ export default function ListingForm({
 
       {/* ── Ubicación y contexto ───────────────────────────────────── */}
       <section className={SECTION_CLASS}>
-        <h2 className="text-lg font-semibold text-stone-900">
+        <h2 className="text-lg font-semibold text-t-primary">
           Ubicacion y contexto
         </h2>
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -880,7 +880,7 @@ export default function ListingForm({
 
       {/* ── Precio y costos ────────────────────────────────────────── */}
       <section className={SECTION_CLASS}>
-        <h2 className="text-lg font-semibold text-stone-900">
+        <h2 className="text-lg font-semibold text-t-primary">
           Precio y costos
         </h2>
         <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -957,7 +957,7 @@ export default function ListingForm({
 
       {/* ── Características ────────────────────────────────────────── */}
       <section className={SECTION_CLASS}>
-        <h2 className="text-lg font-semibold text-stone-900">
+        <h2 className="text-lg font-semibold text-t-primary">
           Caracteristicas
         </h2>
 
@@ -1147,7 +1147,7 @@ export default function ListingForm({
 
       {/* ── Servicios, requisitos y contacto ───────────────────────── */}
       <section className={SECTION_CLASS}>
-        <h2 className="text-lg font-semibold text-stone-900">
+        <h2 className="text-lg font-semibold text-t-primary">
           Servicios, requisitos y contacto
         </h2>
         <div className="mt-3 grid gap-3 sm:grid-cols-1">
@@ -1203,7 +1203,7 @@ export default function ListingForm({
 
       {/* ── Entorno y puntos cercanos ──────────────────────────────── */}
       <section className={SECTION_CLASS}>
-        <h2 className="text-lg font-semibold text-stone-900">
+        <h2 className="text-lg font-semibold text-t-primary">
           Entorno y puntos cercanos
         </h2>
         <div className="mt-3">
@@ -1213,7 +1213,7 @@ export default function ListingForm({
 
       {/* ── Fotos y portada ────────────────────────────────────────── */}
       <section className={SECTION_CLASS}>
-        <h2 className="text-lg font-semibold text-stone-900">
+        <h2 className="text-lg font-semibold text-t-primary">
           Fotos y portada
         </h2>
 
@@ -1257,7 +1257,7 @@ export default function ListingForm({
             multiple
             accept="image/jpeg,image/png,image/webp,image/avif"
             onChange={() => setUploadDialog(null)}
-            className="block w-full rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm text-stone-900 file:mr-3 file:rounded-lg file:border-0 file:bg-accent/10 file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-accent"
+            className="block w-full rounded-xl border border-bg-border bg-bg-surface px-3 py-2 text-sm text-t-primary file:mr-3 file:rounded-lg file:border-0 file:bg-accent/10 file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-accent"
           />
           <p className="text-xs text-muted">
             Máximo {MAX_PHOTOS_PER_LISTING} fotos por inmueble. Cada foto puede
@@ -1273,7 +1273,7 @@ export default function ListingForm({
         <PhotoUploadPreview inputName="new_photos" />
 
         {uploadedPhotoRefs.length > 0 && (
-          <div className="mt-3 rounded-2xl border border-emerald-200 bg-emerald-50/80 p-3">
+          <div className="mt-3 rounded-2xl border border-emerald-600/20 bg-emerald-600/10/80 p-3">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="text-sm font-semibold text-emerald-800">
@@ -1291,7 +1291,7 @@ export default function ListingForm({
                 type="button"
                 onClick={() => void handleClearUploadedPhotos()}
                 disabled={uploadingPhotos}
-                className="inline-flex min-h-10 items-center rounded-xl border border-emerald-300 bg-white px-3 text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex min-h-10 items-center rounded-xl border border-emerald-600/30 bg-bg-surface px-3 text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-600/15 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 Vaciar fotos listas
               </button>
@@ -1301,7 +1301,7 @@ export default function ListingForm({
               {uploadedPhotoRefs.map((photo) => (
                 <div
                   key={photo.storagePath}
-                  className="overflow-hidden rounded-xl border border-emerald-200 bg-white"
+                  className="overflow-hidden rounded-xl border border-emerald-600/20 bg-bg-surface"
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
@@ -1317,10 +1317,10 @@ export default function ListingForm({
 
         {/* Progress bar during processing/uploading */}
         {uploadProgress && (
-          <div className="mt-3 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3">
+          <div className="mt-3 rounded-xl border border-blue-600/20 bg-blue-600/10 px-4 py-3">
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-semibold text-blue-800">
+                <p className="text-sm font-semibold text-blue-800 dark:text-blue-300">
                   {uploadProgress.phase === "processing"
                     ? "Procesando fotos..."
                     : "Subiendo fotos..."}
@@ -1335,12 +1335,12 @@ export default function ListingForm({
               <button
                 type="button"
                 onClick={handleCancelUpload}
-                className="shrink-0 rounded-lg border border-blue-300 bg-white px-3 py-1.5 text-xs font-medium text-blue-700 transition-colors hover:bg-blue-100"
+                className="shrink-0 rounded-lg border border-blue-600/30 bg-bg-surface px-3 py-1.5 text-xs font-medium text-blue-700 dark:text-blue-400 transition-colors hover:bg-blue-600/15"
               >
                 Cancelar
               </button>
             </div>
-            <div className="mt-2 h-2 overflow-hidden rounded-full bg-blue-200">
+            <div className="mt-2 h-2 overflow-hidden rounded-full bg-blue-600/20">
               <div
                 className="h-full rounded-full bg-blue-600 transition-all duration-300"
                 style={{
@@ -1354,8 +1354,8 @@ export default function ListingForm({
         <div
           className={`mt-3 rounded-xl border px-3 py-2 text-xs ${
             uploadedPhotoRefs.length > 0
-              ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-              : "border-stone-200 bg-stone-50 text-stone-600"
+              ? "border-emerald-600/20 bg-emerald-600/10 text-emerald-700"
+              : "border-bg-border bg-bg-elevated text-t-secondary"
           }`}
         >
           {uploadedPhotoRefs.length > 0
@@ -1364,7 +1364,7 @@ export default function ListingForm({
         </div>
 
         {uploadDialog && (
-          <div className="mt-3 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+          <div className="mt-3 rounded-xl border border-rose-600/20 bg-rose-600/10 px-3 py-2 text-sm text-rose-700 dark:text-rose-400">
             <p className="font-semibold">{uploadDialog.title}</p>
             <p className="mt-1">{uploadDialog.message}</p>
           </div>

@@ -63,11 +63,11 @@ export default function TagInput({
 
   return (
     <div className="block space-y-1">
-      <span className="text-sm font-medium text-stone-700">{label}</span>
+      <span className="text-sm font-medium text-t-secondary">{label}</span>
       <input type="hidden" name={name} value={serialized} />
 
       <div
-        className="flex min-h-11 flex-wrap items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-2 py-1.5 focus-within:border-accent"
+        className="flex min-h-11 flex-wrap items-center gap-1.5 rounded-xl border border-bg-border bg-bg-surface px-2 py-1.5 focus-within:border-accent"
         onClick={() => inputRef.current?.focus()}
       >
         {tags.map((tag, index) => (
@@ -109,7 +109,7 @@ export default function TagInput({
             if (inputValue.trim()) addTag(inputValue);
           }}
           placeholder={tags.length === 0 ? placeholder : ""}
-          className="min-w-[120px] flex-1 border-0 bg-transparent px-1 py-0.5 text-sm text-stone-900 outline-none placeholder:text-stone-400"
+          className="min-w-[120px] flex-1 border-0 bg-transparent px-1 py-0.5 text-sm text-t-primary outline-none placeholder:text-t-muted"
         />
       </div>
 
@@ -124,7 +124,7 @@ export default function TagInput({
                 addTag(suggestion);
                 inputRef.current?.focus();
               }}
-              className="inline-flex items-center gap-1 rounded-lg border border-stone-200 bg-stone-50 px-2 py-0.5 text-xs text-stone-600 transition-colors hover:border-accent hover:bg-accent/5 hover:text-accent"
+              className="inline-flex items-center gap-1 rounded-lg border border-bg-border bg-bg-elevated px-2 py-0.5 text-xs text-t-secondary transition-colors hover:border-accent hover:bg-accent/5 hover:text-accent"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"

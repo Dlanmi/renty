@@ -230,7 +230,9 @@ function SearchHeroCard({
               enterKeyHint="search"
               placeholder="Buscar por barrio"
               className="w-full bg-transparent text-base font-medium leading-6 text-t-primary outline-none placeholder:text-t-muted focus-visible:shadow-none sm:text-[15px]"
+              role="combobox"
               aria-autocomplete="list"
+              aria-expanded={isLocationOpen}
               aria-controls="home-hero-neighborhood-options"
             />
           </SearchField>
@@ -374,6 +376,7 @@ export default function HomeSearchHero(props: HomeSearchHeroProps) {
             alt="Panorámica ilustrada de Bogotá al atardecer"
             fill
             priority
+            placeholder="blur"
             sizes="100vw"
             className="object-cover object-center"
           />

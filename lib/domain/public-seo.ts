@@ -304,7 +304,7 @@ export function buildRobotsMetadata(
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/admin", "/admin/", "/admin/login", "/api/", "/_next/"],
+        disallow: ["/admin", "/admin/", "/admin/login", "/api/", "/go/", "/_next/"],
       },
     ],
     sitemap: `${siteUrl}/sitemap.xml`,

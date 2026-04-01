@@ -1,6 +1,10 @@
 "use client";
 
+import { useMemo, useRef } from "react";
 import { motion } from "@/lib/motion/runtime";
+import { trackEvent } from "@/lib/analytics/client";
+import type { AnalyticsSearchContext } from "@/lib/analytics/types";
+import { useTrackVisibleEvent } from "@/lib/analytics/useTrackVisibleEvent";
 import type { Listing } from "@/lib/domain/types";
 import { formatCOP, formatBillingPeriod } from "@/lib/domain/format";
 import { iconForPropertyType } from "@/lib/domain/icons";
@@ -18,14 +22,18 @@ import ListingCardLink from "@/components/listing/ListingCardLink";
 interface ListingCardProps {
   listing: Listing;
   href: string;
+  position: number;
   listingQueryString?: string;
+  searchContext?: AnalyticsSearchContext;
   priority?: boolean;
 }
 
 export default function ListingCard({
   listing,
   href,
+  position,
   listingQueryString = "",
+  searchContext,
   priority = false,
 }: ListingCardProps) {
   const {
@@ -51,15 +59,51 @@ export default function ListingCard({
   const showParkingChip = parking_car_count > 0;
   const descriptiveAlt = `${property_type} en arriendo en ${neighborhood}, ${city}: ${title}`;
   const cardImage = buildListingCardImageAsset(listing);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const impressionDedupeKey = useMemo(
+    () =>
+      `${listing.id}:${searchContext?.searchQuery ?? ""}:${searchContext?.maxPriceCOP ?? 0}:${searchContext?.minBedrooms ?? 0}`,
+    [
+      listing.id,
+      searchContext?.searchQuery,
+      searchContext?.maxPriceCOP,
+      searchContext?.minBedrooms,
+    ]
+  );
+
+  useTrackVisibleEvent({
+    elementRef: cardRef,
+    eventName: "listing_card_impression",
+    source: "listing_grid",
+    listingId: listing.id,
+    position,
+    searchContext,
+    dedupeKey: impressionDedupeKey,
+  });
+
+  const handleCardNavigate = () => {
+    void trackEvent({
+      eventName: "listing_card_click",
+      source: "listing_grid",
+      listingId: listing.id,
+      position,
+      searchContext,
+      payload: {
+        destinationPath: href,
+      },
+    });
+  };
 
   return (
     <ListingCardLink
       href={`${href}${listingQueryString}`}
       className="group block h-full min-w-0"
       listingQueryString={listingQueryString}
+      onNavigate={handleCardNavigate}
       aria-label={`${title} — ${formatCOP(price_cop)}${formatBillingPeriod(billing_period)} en ${neighborhood}`}
     >
       <motion.div
+        ref={cardRef}
         layout
         initial="rest"
         animate="rest"

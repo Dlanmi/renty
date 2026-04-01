@@ -92,7 +92,8 @@ test("buildListingMetadata publica canonical e index para listings activos", () 
     metadata.alternates?.canonical,
     "/arriendos/apartamento-cerca-al-parque-verbenal-bogota"
   );
-  assert.equal(metadata.robots?.index, true);
+  const robots = metadata.robots as Record<string, unknown>;
+  assert.equal(robots?.index, true);
   assert.equal(
     metadata.openGraph?.url,
     "https://rentyco.app/arriendos/apartamento-cerca-al-parque-verbenal-bogota"
@@ -108,8 +109,9 @@ test("buildListingMetadata no expone canonical y aplica noindex a listings no p�
   );
 
   assert.equal(metadata.alternates, undefined);
-  assert.equal(metadata.robots?.index, false);
-  assert.equal(metadata.robots?.follow, false);
+  const robots = metadata.robots as Record<string, unknown>;
+  assert.equal(robots?.index, false);
+  assert.equal(robots?.follow, false);
 });
 
 test("buildListingSeoDescription resume precio, tipología y trunca descripciones largas", () => {
@@ -239,11 +241,13 @@ test("buildRobotsMetadata bloquea previews y expone sitemap en producción", () 
     productionRobots.sitemap,
     "https://rentyco.app/sitemap.xml"
   );
-  assert.deepEqual(productionRobots.rules?.[0]?.disallow, [
+  const rules = productionRobots.rules as Array<Record<string, unknown>>;
+  assert.deepEqual(rules?.[0]?.disallow, [
     "/admin",
     "/admin/",
     "/admin/login",
     "/api/",
+    "/go/",
     "/_next/",
   ]);
 });

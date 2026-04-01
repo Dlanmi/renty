@@ -179,7 +179,7 @@ test("mobile: info insight anchors to the breakdown block without colliding with
   const layout = await page.evaluate(() => {
     const footer = document.querySelector('[data-mobile-sticky-cta-state="visible"]');
     const priceBlock = footer?.querySelector("div.min-w-0");
-    const button = footer?.querySelector('a[href^="https://wa.me/"]');
+    const button = footer?.querySelector('[data-whatsapp-cta="mobile-sticky"]');
     const insight = document.querySelector('.mobile-price-insight[data-state="visible"]');
     const insightTarget = footer?.querySelector('[data-mobile-insight-target="visible"]');
 

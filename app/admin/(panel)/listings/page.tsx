@@ -76,10 +76,10 @@ export default async function AdminListingsPage({ searchParams }: ListingsPagePr
 
   return (
     <div className="space-y-5">
-      <div className="lift-hover rounded-card border border-stone-200 bg-white p-4 shadow-card">
+      <div className="lift-hover rounded-card border border-bg-border bg-bg-surface p-4 shadow-card">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-xl font-semibold text-stone-900">Inmuebles</h1>
+            <h1 className="text-xl font-semibold text-t-primary">Inmuebles</h1>
             <p className="text-sm text-muted">
               Administra estados, detalles, fotos y puntos cercanos.
             </p>
@@ -99,13 +99,13 @@ export default async function AdminListingsPage({ searchParams }: ListingsPagePr
             name="q"
             defaultValue={q}
             placeholder="Buscar por título, barrio o ciudad"
-            className="h-11 rounded-xl border border-stone-200 px-3 text-sm text-stone-900 focus:border-accent focus:outline-none"
+            className="h-11 rounded-xl border border-bg-border px-3 text-sm text-t-primary focus:border-accent focus:outline-none"
           />
 
           <select
             name="status"
             defaultValue={isValidStatus(statusFilter) ? statusFilter : "all"}
-            className="h-11 rounded-xl border border-stone-200 bg-white px-3 text-sm text-stone-900 focus:border-accent focus:outline-none"
+            className="h-11 rounded-xl border border-bg-border bg-bg-surface px-3 text-sm text-t-primary focus:border-accent focus:outline-none"
           >
             {STATUS_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
@@ -116,20 +116,20 @@ export default async function AdminListingsPage({ searchParams }: ListingsPagePr
 
           <button
             type="submit"
-            className="inline-flex min-h-11 items-center justify-center rounded-xl border border-stone-200 px-4 text-sm font-medium text-stone-700 hover:bg-stone-50"
+            className="inline-flex min-h-11 items-center justify-center rounded-xl border border-bg-border px-4 text-sm font-medium text-t-secondary hover:bg-bg-elevated"
           >
             Filtrar
           </button>
         </form>
 
         {deleted && (
-          <p className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+          <p className="mt-4 rounded-xl border border-emerald-600/20 bg-emerald-600/10 px-3 py-2 text-sm text-emerald-700 dark:text-emerald-400">
             El inmueble se eliminó correctamente.
           </p>
         )}
       </div>
 
-      <section className="rounded-card border border-stone-200 bg-white p-4 shadow-card">
+      <section className="rounded-card border border-bg-border bg-bg-surface p-4 shadow-card">
         {listings.length === 0 ? (
           <p className="text-sm text-muted">No hay inmuebles que coincidan con el filtro.</p>
         ) : (
@@ -137,11 +137,11 @@ export default async function AdminListingsPage({ searchParams }: ListingsPagePr
             {listings.map((listing) => (
               <li
                 key={listing.id}
-                className="lift-hover rounded-xl border border-stone-100 bg-stone-50 p-3"
+                className="lift-hover rounded-xl border border-bg-border bg-bg-elevated p-3"
               >
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="relative h-16 w-24 overflow-hidden rounded-lg bg-stone-100">
+                    <div className="relative h-16 w-24 overflow-hidden rounded-lg bg-bg-elevated">
                       <Image
                         src={listing.cover_photo_url}
                         alt={listing.title}
@@ -152,7 +152,7 @@ export default async function AdminListingsPage({ searchParams }: ListingsPagePr
                     </div>
 
                     <div>
-                      <p className="font-semibold text-stone-900">{listing.title}</p>
+                      <p className="font-semibold text-t-primary">{listing.title}</p>
                       <p className="text-xs text-muted">
                         {listing.neighborhood} · {listing.listing_kind}
                       </p>
@@ -168,10 +168,10 @@ export default async function AdminListingsPage({ searchParams }: ListingsPagePr
                       listingId={listing.id}
                       currentStatus={listing.status}
                     />
-                    <span className="inline-flex min-h-8 items-center rounded-full border border-stone-200 bg-white px-3 text-xs font-medium text-stone-700">
+                    <span className="inline-flex min-h-8 items-center rounded-full border border-bg-border bg-bg-surface px-3 text-xs font-medium text-t-secondary">
                       {visibilityLabel(listing.status)}
                     </span>
-                    <span className="inline-flex min-h-8 items-center rounded-full border border-stone-200 bg-white px-3 text-xs font-medium text-stone-700">
+                    <span className="inline-flex min-h-8 items-center rounded-full border border-bg-border bg-bg-surface px-3 text-xs font-medium text-t-secondary">
                       ${listing.price_cop.toLocaleString("es-CO")}
                     </span>
                     <Link

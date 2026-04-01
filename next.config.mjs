@@ -62,7 +62,7 @@ const nextConfig = {
   },
   images: {
     formats: ["image/avif", "image/webp"],
-    minimumCacheTTL: 60,
+    minimumCacheTTL: 2_592_000, // 30 days
     // Permissive mode: allow external HTTPS/HTTP images from any hostname,
     // including local network hosts used during development.
     remotePatterns: [

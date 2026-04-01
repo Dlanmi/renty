@@ -1,5 +1,6 @@
 "use client";
 
+import type { AnalyticsSearchContext } from "@/lib/analytics/types";
 import type { Listing } from "@/lib/domain/types";
 import {
   LIST_ITEM_REVEAL_VARIANTS,
@@ -16,12 +17,14 @@ import { getListingPath } from "@/lib/domain/listing-paths";
 interface ListingGridProps {
   listings: Listing[];
   listingQueryString?: string;
+  searchContext?: AnalyticsSearchContext;
   onClearFilters?: () => void;
 }
 
 export default function ListingGrid({
   listings,
   listingQueryString = "",
+  searchContext,
   onClearFilters,
 }: ListingGridProps) {
   if (listings.length === 0) {
@@ -81,7 +84,9 @@ export default function ListingGrid({
             <ListingCard
               listing={listing}
               href={getListingPath(listing)}
+              position={index + 1}
               listingQueryString={listingQueryString}
+              searchContext={searchContext}
               priority={index < 3}
             />
           </motion.div>

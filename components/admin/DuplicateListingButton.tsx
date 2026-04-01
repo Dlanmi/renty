@@ -70,7 +70,7 @@ export default function DuplicateListingButton({
         <button
           type="button"
           onClick={() => setShowModal(true)}
-          className="lift-hover inline-flex min-h-8 items-center rounded-full border border-stone-200 bg-white px-3 text-xs font-medium text-stone-700 transition-colors hover:bg-stone-50"
+          className="lift-hover inline-flex min-h-8 items-center rounded-full border border-bg-border bg-bg-surface px-3 text-xs font-medium text-t-secondary transition-colors hover:bg-bg-elevated"
           title="Duplicar inmueble"
           aria-label={`Duplicar ${listingTitle}`}
         >
@@ -89,7 +89,7 @@ export default function DuplicateListingButton({
         <button
           type="button"
           onClick={() => setShowModal(true)}
-          className="lift-hover inline-flex min-h-10 items-center gap-2 rounded-full border border-stone-200 bg-white px-4 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-50"
+          className="lift-hover inline-flex min-h-10 items-center gap-2 rounded-full border border-bg-border bg-bg-surface px-4 text-sm font-medium text-t-secondary transition-colors hover:bg-bg-elevated"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -116,7 +116,7 @@ export default function DuplicateListingButton({
             aria-labelledby="duplicate-modal-title"
           >
             <div
-              className="w-full max-w-md animate-[fadeScaleIn_0.2s_ease-out] rounded-2xl border border-stone-200 bg-white p-6 shadow-xl"
+              className="w-full max-w-md animate-[fadeScaleIn_0.2s_ease-out] rounded-2xl border border-bg-border bg-bg-surface p-6 shadow-xl"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-accent/10">
@@ -134,13 +134,13 @@ export default function DuplicateListingButton({
 
               <h2
                 id="duplicate-modal-title"
-                className="text-lg font-semibold text-stone-900"
+                className="text-lg font-semibold text-t-primary"
               >
                 Duplicar inmueble
               </h2>
-              <p className="mt-2 text-sm text-stone-600">
+              <p className="mt-2 text-sm text-t-secondary">
                 ¿Estás seguro de crear una copia de{" "}
-                <strong className="font-semibold text-stone-900">
+                <strong className="font-semibold text-t-primary">
                   {listingTitle}
                 </strong>
                 ? Se clonarán todos los detalles, estado (como borrador), fotos y puntos de interés.
@@ -151,7 +151,7 @@ export default function DuplicateListingButton({
                   type="button"
                   onClick={() => setShowModal(false)}
                   disabled={duplicating}
-                  className="inline-flex min-h-10 items-center rounded-xl border border-stone-200 px-4 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex min-h-10 items-center rounded-xl border border-bg-border px-4 text-sm font-medium text-t-secondary transition-colors hover:bg-bg-elevated disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Cancelar
                 </button>
@@ -183,8 +183,8 @@ export default function DuplicateListingButton({
             <div
               className={`flex items-center gap-3 rounded-xl border px-4 py-3 shadow-lg ${
                 toast.type === "success"
-                  ? "border-emerald-200 bg-emerald-50 text-emerald-800"
-                  : "border-rose-200 bg-rose-50 text-rose-800"
+                  ? "border-emerald-600/20 bg-emerald-600/10 text-emerald-800 dark:text-emerald-300"
+                  : "border-rose-600/20 bg-rose-600/10 text-rose-800 dark:text-rose-300"
               }`}
             >
               {toast.type === "success" ? (

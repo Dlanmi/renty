@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { trackEvent } from "@/lib/analytics/client";
+import { buildAnalyticsSearchContextFromFilters } from "@/lib/analytics/search-context";
 import type { Listing } from "@/lib/domain/types";
 import {
   applyListingFilters,
@@ -87,6 +89,11 @@ export default function SearchAndResults({ listings }: Props) {
     [urlFilters]
   );
   const hasDraftChanges = !areSearchFiltersEqual(draftFilters, urlFilters);
+  const analyticsSearchContext = useMemo(
+    () =>
+      buildAnalyticsSearchContextFromFilters(urlFilters, filteredListings.length),
+    [urlFilters, filteredListings.length]
+  );
 
   useEffect(() => {
     if (didRestoreScroll.current || typeof window === "undefined") return;
@@ -109,18 +116,37 @@ export default function SearchAndResults({ listings }: Props) {
     didRestoreScroll.current = true;
   }, [appliedQuery]);
 
-  function updateUrlWithFilters(nextFilters: SearchFilters) {
+  function updateUrlWithFilters(nextFilters: SearchFilters): boolean {
     const nextParams = filtersToSearchParams(nextFilters).toString();
     const currentParams = searchParams.toString();
-    if (nextParams === currentParams) return;
+    if (nextParams === currentParams) return false;
 
     const href = nextParams ? `${pathname}?${nextParams}` : pathname;
     router.push(href, { scroll: false });
+    return true;
   }
 
   function applyFilters(nextFilters: SearchFilters) {
+    const nextCount = applyListingFilters(listings, nextFilters).length;
+    const nextContext = buildAnalyticsSearchContextFromFilters(
+      nextFilters,
+      nextCount
+    );
+    const didChange = updateUrlWithFilters(nextFilters);
+
+    if (didChange) {
+      void trackEvent({
+        eventName: "filter_applied",
+        source: "home_search",
+        pagePath: pathname,
+        searchContext: nextContext,
+        payload: {
+          activeFilterCount: countActiveSearchFilters(nextFilters),
+        },
+      });
+    }
+
     setDraftFilters(nextFilters);
-    updateUrlWithFilters(nextFilters);
   }
 
   function clearAllFilters() {
@@ -136,6 +162,19 @@ export default function SearchAndResults({ listings }: Props) {
     activeFilterCount > 0
       ? "Mostrando las publicaciones que coinciden con tu búsqueda actual."
       : "Explora el inventario activo de Renty y ajusta la búsqueda cuando quieras.";
+
+  useEffect(() => {
+    void trackEvent({
+      eventName: "search_results_viewed",
+      source: "home_results",
+      pagePath: pathname,
+      searchContext: analyticsSearchContext,
+      payload: {
+        activeFilterCount,
+      },
+      dedupeKey: appliedQuery || "all",
+    });
+  }, [activeFilterCount, analyticsSearchContext, appliedQuery, pathname]);
 
   return (
     <div className="space-y-8 sm:space-y-10">
@@ -165,7 +204,7 @@ export default function SearchAndResults({ listings }: Props) {
           animate="animate"
           variants={SURFACE_REVEAL_VARIANTS}
           transition={MOTION_LAYOUT_TRANSITION}
-          className="rounded-[28px] border border-bg-border bg-bg-surface px-5 py-5 shadow-card sm:px-6"
+          className="rounded-card-lg border border-bg-border bg-bg-surface px-5 py-5 shadow-card sm:px-6"
         >
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div className="space-y-2">
@@ -282,6 +321,7 @@ export default function SearchAndResults({ listings }: Props) {
         <ListingGrid
           listings={filteredListings}
           listingQueryString={listingQueryString}
+          searchContext={analyticsSearchContext}
           onClearFilters={activeFilterCount > 0 ? clearAllFilters : undefined}
         />
       </section>
