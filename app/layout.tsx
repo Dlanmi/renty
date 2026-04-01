@@ -49,7 +49,7 @@ const themeInitScript = `
 `;
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://renty-seven.vercel.app'),
+  metadataBase: siteUrl,
   title: {
     default: DEFAULT_SITE_TITLE,
     template: `%s | ${SITE_NAME}`,

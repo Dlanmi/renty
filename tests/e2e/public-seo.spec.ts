@@ -1,4 +1,7 @@
 import { test, expect } from "@playwright/test";
+import { getSiteOrigin } from "../../lib/domain/seo";
+
+const expectedSiteOrigin = getSiteOrigin();
 
 test("seo: robots y sitemap públicos responden con reglas clave", async ({
   request,
@@ -7,13 +10,13 @@ test("seo: robots y sitemap públicos responden con reglas clave", async ({
   expect(robots.ok()).toBeTruthy();
   const robotsText = await robots.text();
   expect(robotsText).toContain("Disallow: /admin");
-  expect(robotsText).toContain("Sitemap: https://renty-seven.vercel.app/sitemap.xml");
+  expect(robotsText).toContain(`Sitemap: ${expectedSiteOrigin}/sitemap.xml`);
 
   const sitemap = await request.get("/sitemap.xml");
   expect(sitemap.ok()).toBeTruthy();
   const sitemapText = await sitemap.text();
-  expect(sitemapText).toContain("https://renty-seven.vercel.app/publicar");
-  expect(sitemapText).toContain("https://renty-seven.vercel.app/nosotros");
+  expect(sitemapText).toContain(`${expectedSiteOrigin}/publicar`);
+  expect(sitemapText).toContain(`${expectedSiteOrigin}/nosotros`);
 });
 
 test("seo: la ruta legacy /listing redirige al canonical /arriendos preservando query", async ({

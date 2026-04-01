@@ -3,7 +3,7 @@ import test from "node:test";
 import {
   resolveR2AllowedOrigins,
 } from "@/lib/storage/r2";
-import { PRODUCTION_SITE_URL } from "@/lib/domain/seo";
+import { getSiteOrigin } from "@/lib/domain/seo";
 
 function withEnv<T>(
   nextEnv: Partial<Record<"R2_ALLOWED_ORIGINS" | "NEXT_PUBLIC_SITE_URL" | "NEXT_PUBLIC_APP_URL", string | undefined>>,
@@ -63,7 +63,7 @@ test("resolveR2AllowedOrigins incluye defaults de producción y desarrollo", () 
     () => resolveR2AllowedOrigins()
   );
 
-  assert.ok(origins.includes(PRODUCTION_SITE_URL));
+  assert.ok(origins.includes(getSiteOrigin()));
   assert.ok(origins.includes("http://localhost:3002"));
   assert.ok(origins.includes("http://127.0.0.1:3002"));
 });

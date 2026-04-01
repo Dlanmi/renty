@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 
-export const PRODUCTION_SITE_URL = "https://renty-seven.vercel.app";
-
 export const SITE_NAME = "Renty";
 export const SITE_LOCALE = "es_CO";
 export const DEFAULT_SITE_TITLE =
@@ -11,16 +9,53 @@ export const DEFAULT_SITE_DESCRIPTION =
 export const DEFAULT_SOCIAL_IMAGE_PATH = "/opengraph-image";
 export const DEFAULT_SOCIAL_IMAGE_ALT =
   "Renty, plataforma de arriendos en Bogota";
+export const LOCAL_DEVELOPMENT_SITE_URL = "http://localhost:3000";
+
+const SITE_URL_ENV_KEYS = ["NEXT_PUBLIC_SITE_URL", "SITE_URL"] as const;
+
+function normalizeSiteUrl(value: string | undefined): URL | null {
+  const trimmed = value?.trim();
+  if (!trimmed) return null;
+
+  const candidate = /^[a-zA-Z][a-zA-Z\d+\-.]*:\/\//.test(trimmed)
+    ? trimmed
+    : `https://${trimmed}`;
+
+  try {
+    const url = new URL(candidate);
+    return new URL(`${url.origin}/`);
+  } catch {
+    return null;
+  }
+}
 
 export function getSiteUrl(): URL {
-  return new URL(PRODUCTION_SITE_URL);
+  const candidates = [
+    ...SITE_URL_ENV_KEYS.map((key) => process.env[key]),
+    process.env.VERCEL_PROJECT_PRODUCTION_URL,
+    process.env.VERCEL_ENV === "production" ? process.env.VERCEL_URL : undefined,
+    process.env.NODE_ENV === "production" ? undefined : LOCAL_DEVELOPMENT_SITE_URL,
+  ];
+
+  for (const candidate of candidates) {
+    const resolvedUrl = normalizeSiteUrl(candidate);
+    if (resolvedUrl) {
+      return resolvedUrl;
+    }
+  }
+
+  return new URL(LOCAL_DEVELOPMENT_SITE_URL);
+}
+
+export function getSiteOrigin(): string {
+  return getSiteUrl().origin;
 }
 
 /**
  * Build an absolute URL from an app-relative path.
  */
-export function toAbsoluteUrl(path: string): string {
-  return new URL(path, getSiteUrl()).toString();
+export function toAbsoluteUrl(path: string, siteUrl = getSiteUrl()): string {
+  return new URL(path, siteUrl).toString();
 }
 
 /**
@@ -52,9 +87,9 @@ export function buildPageMetadata({
   imageAlt = title,
   type = "website",
   noIndex = false,
-}: BuildPageMetadataOptions): Metadata {
-  const canonicalUrl = toAbsoluteUrl(path);
-  const socialImageUrl = toAbsoluteUrl(imagePath);
+}: BuildPageMetadataOptions, siteUrl = getSiteUrl()): Metadata {
+  const canonicalUrl = toAbsoluteUrl(path, siteUrl);
+  const socialImageUrl = toAbsoluteUrl(imagePath, siteUrl);
   const normalizedDescription = truncateMetaText(description);
   const socialTitle = `${title} | ${SITE_NAME}`;
 

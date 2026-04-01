@@ -2,9 +2,9 @@ import type { Metadata, MetadataRoute } from "next";
 import { formatBillingPeriod, formatCOP } from "@/lib/domain/format";
 import { getListingPath } from "@/lib/domain/listing-paths";
 import {
-  PRODUCTION_SITE_URL,
   SITE_LOCALE,
   SITE_NAME,
+  getSiteOrigin,
   getSiteUrl,
   toAbsoluteUrl,
   truncateMetaText,
@@ -164,7 +164,10 @@ export function buildListingCardImageAsset(
   };
 }
 
-export function buildListingMetadata(listing: Listing | null): Metadata {
+export function buildListingMetadata(
+  listing: Listing | null,
+  siteUrl = getSiteUrl()
+): Metadata {
   if (!listing) {
     return {
       title: "Propiedad no encontrada",
@@ -177,8 +180,11 @@ export function buildListingMetadata(listing: Listing | null): Metadata {
 
   const isActive = listing.status === "active";
   const canonicalPath = getListingPath(listing);
-  const canonicalUrl = toAbsoluteUrl(canonicalPath);
-  const socialImageUrl = toAbsoluteUrl(`${canonicalPath}/opengraph-image`);
+  const canonicalUrl = toAbsoluteUrl(canonicalPath, siteUrl);
+  const socialImageUrl = toAbsoluteUrl(
+    `${canonicalPath}/opengraph-image`,
+    siteUrl
+  );
   const title = `${listing.title} en ${listing.neighborhood}, ${listing.city}`;
   const description = buildListingSeoDescription(listing);
 
@@ -201,6 +207,7 @@ export function buildListingMetadata(listing: Listing | null): Metadata {
       description,
       type: "website",
       url: canonicalUrl,
+      siteName: SITE_NAME,
       images: [
         {
           url: socialImageUrl,
@@ -278,7 +285,7 @@ export function buildPublicSitemap(
 
 export function buildRobotsMetadata(
   isPreviewDeployment: boolean,
-  siteUrl = PRODUCTION_SITE_URL
+  siteUrl = getSiteOrigin()
 ): MetadataRoute.Robots {
   if (isPreviewDeployment) {
     return {

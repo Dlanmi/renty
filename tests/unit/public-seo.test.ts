@@ -12,6 +12,9 @@ import {
 } from "@/lib/domain/public-seo";
 import type { Listing, ListingPhoto } from "@/lib/domain/types";
 
+const TEST_SITE_URL = new URL("https://rentyco.app");
+const TEST_SITE_ORIGIN = TEST_SITE_URL.origin;
+
 function createListing(partial: Partial<Listing> = {}): Listing {
   return {
     id: "00000000-0000-4000-8000-000000000001",
@@ -83,7 +86,7 @@ function createPhoto(
 }
 
 test("buildListingMetadata publica canonical e index para listings activos", () => {
-  const metadata = buildListingMetadata(createListing());
+  const metadata = buildListingMetadata(createListing(), TEST_SITE_URL);
 
   assert.equal(
     metadata.alternates?.canonical,
@@ -92,7 +95,7 @@ test("buildListingMetadata publica canonical e index para listings activos", () 
   assert.equal(metadata.robots?.index, true);
   assert.equal(
     metadata.openGraph?.url,
-    "https://renty-seven.vercel.app/arriendos/apartamento-cerca-al-parque-verbenal-bogota"
+    "https://rentyco.app/arriendos/apartamento-cerca-al-parque-verbenal-bogota"
   );
 });
 
@@ -100,7 +103,8 @@ test("buildListingMetadata no expone canonical y aplica noindex a listings no p�
   const metadata = buildListingMetadata(
     createListing({
       status: "draft",
-    })
+    }),
+    TEST_SITE_URL
   );
 
   assert.equal(metadata.alternates, undefined);
@@ -205,14 +209,15 @@ test("buildPublicSitemap incluye estáticas y listings activos con published_at 
         updated_at: "2026-03-24T00:00:00.000Z",
       },
     ],
-    now
+    now,
+    TEST_SITE_URL
   );
 
   assert.equal(sitemap.length, 4);
-  assert.equal(sitemap[0]?.url, "https://renty-seven.vercel.app/");
+  assert.equal(sitemap[0]?.url, "https://rentyco.app/");
   assert.equal(
     sitemap[3]?.url,
-    "https://renty-seven.vercel.app/arriendos/listing-1"
+    "https://rentyco.app/arriendos/listing-1"
   );
   assert.equal(
     new Date(sitemap[3]?.lastModified ?? 0).toISOString(),
@@ -221,7 +226,7 @@ test("buildPublicSitemap incluye estáticas y listings activos con published_at 
 });
 
 test("buildRobotsMetadata bloquea previews y expone sitemap en producción", () => {
-  const previewRobots = buildRobotsMetadata(true);
+  const previewRobots = buildRobotsMetadata(true, TEST_SITE_ORIGIN);
   assert.deepEqual(previewRobots.rules, [
     {
       userAgent: "*",
@@ -229,10 +234,10 @@ test("buildRobotsMetadata bloquea previews y expone sitemap en producción", () 
     },
   ]);
 
-  const productionRobots = buildRobotsMetadata(false);
+  const productionRobots = buildRobotsMetadata(false, TEST_SITE_ORIGIN);
   assert.equal(
     productionRobots.sitemap,
-    "https://renty-seven.vercel.app/sitemap.xml"
+    "https://rentyco.app/sitemap.xml"
   );
   assert.deepEqual(productionRobots.rules?.[0]?.disallow, [
     "/admin",

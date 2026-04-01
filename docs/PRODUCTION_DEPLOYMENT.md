@@ -66,11 +66,14 @@ Variables en Vercel:
 
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `NEXT_PUBLIC_SITE_URL`
 
 Reglas:
 
 - Preview usa Supabase `staging`.
 - Production usa Supabase `prod`.
+- Para SEO técnico consistente, define `NEXT_PUBLIC_SITE_URL=https://rentyco.app`.
+  Si dejas expuestas las System Environment Variables de Vercel, el app también puede resolver el dominio de producción con `VERCEL_PROJECT_PRODUCTION_URL`, pero el override explícito evita sorpresas.
 
 ## 5) Seguridad aplicada en la app
 

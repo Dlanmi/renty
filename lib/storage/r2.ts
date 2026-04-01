@@ -7,7 +7,7 @@ import {
   PutBucketCorsCommand,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { PRODUCTION_SITE_URL } from "@/lib/domain/seo";
+import { getSiteOrigin } from "@/lib/domain/seo";
 
 // ─── Configuration ──────────────────────────────────────────────────
 
@@ -61,13 +61,15 @@ export function resolveR2AllowedOrigins(): string[] {
     return dedupeOrigins(configuredOrigins);
   }
 
-  const appOrigins = splitOrigins(
-    process.env.NEXT_PUBLIC_SITE_URL ?? process.env.NEXT_PUBLIC_APP_URL
-  );
+  const appOrigins = dedupeOrigins([
+    ...splitOrigins(process.env.NEXT_PUBLIC_SITE_URL),
+    ...splitOrigins(process.env.SITE_URL),
+    ...splitOrigins(process.env.NEXT_PUBLIC_APP_URL),
+  ]);
 
   return dedupeOrigins([
     ...appOrigins,
-    PRODUCTION_SITE_URL,
+    getSiteOrigin(),
     ...DEFAULT_R2_DEV_ORIGINS,
   ]);
 }
