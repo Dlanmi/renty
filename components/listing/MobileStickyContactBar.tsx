@@ -6,6 +6,7 @@ import {
   PRESSABLE_MOTION_PROPS,
 } from "@/lib/motion/animations";
 import { motion, useAnimationControls } from "@/lib/motion/runtime";
+import Icon from "@/components/ui/Icon";
 import WhatsAppIcon from "@/components/ui/WhatsAppIcon";
 import useViewportBottomInset from "@/components/ui/useViewportBottomInset";
 import MobilePriceInsight from "@/components/listing/MobilePriceInsight";
@@ -19,6 +20,8 @@ interface MobileStickyContactBarProps {
   insightMessage: string;
   hasBreakdown: boolean;
   onWhatsAppClick?: () => void;
+  shareUrl: string;
+  shareTitle: string;
 }
 
 const INSIGHT_GAP_PX = 22;
@@ -33,6 +36,8 @@ export default function MobileStickyContactBar({
   insightMessage,
   hasBreakdown,
   onWhatsAppClick,
+  shareUrl,
+  shareTitle,
 }: MobileStickyContactBarProps) {
   const viewportBottomInset = useViewportBottomInset();
   const footerRef = useRef<HTMLDivElement>(null);
@@ -65,6 +70,22 @@ export default function MobileStickyContactBar({
       window.removeEventListener("resize", syncHeight);
     };
   }, []);
+
+  const handleShare = useCallback(async () => {
+    try {
+      if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
+        await navigator.share({ title: shareTitle, url: shareUrl });
+        return;
+      }
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") return;
+    }
+    try {
+      await navigator.clipboard?.writeText(shareUrl);
+    } catch {
+      /* silent fallback */
+    }
+  }, [shareTitle, shareUrl]);
 
   const handleInsightAbsorb = useCallback(() => {
     setInfoPulseCount((current) => current + 1);
@@ -116,7 +137,7 @@ export default function MobileStickyContactBar({
           paddingBottom: "env(safe-area-inset-bottom, 0px)",
         }}
       >
-        <div className="flex items-center gap-3 px-4 py-3">
+        <div className="flex items-center gap-2 px-3 py-3 min-[400px]:gap-3 min-[400px]:px-4">
           <div className="min-w-0 flex-1">
             <p className="text-[20px] font-extrabold leading-tight tracking-tight text-t-primary min-[380px]:text-[21px]">
               {priceLabel}
@@ -132,13 +153,13 @@ export default function MobileStickyContactBar({
               >
                 <motion.p
                   animate={infoLineControls}
-                  className="text-[11px] font-medium leading-tight text-t-secondary"
+                  className="whitespace-nowrap text-[11px] font-medium leading-tight text-t-secondary"
                 >
                   {totalLineLabel}
                 </motion.p>
                 <motion.p
                   animate={totalLineControls}
-                  className="text-[12px] font-semibold leading-tight text-t-primary min-[380px]:text-[13px]"
+                  className="whitespace-nowrap text-[11px] font-semibold leading-tight text-t-primary min-[400px]:text-[12px] min-[440px]:text-[13px]"
                 >
                   {totalLabel}
                 </motion.p>
@@ -148,18 +169,30 @@ export default function MobileStickyContactBar({
             )}
           </div>
 
-          <motion.a
-            href={href}
-            target="_blank"
-            rel="noopener noreferrer"
-            data-whatsapp-cta="mobile-sticky"
-            onClick={onWhatsAppClick}
-            {...PRESSABLE_MOTION_PROPS}
-            className="inline-flex h-[52px] w-[136px] shrink-0 items-center justify-center gap-2 rounded-[18px] bg-whatsapp px-4 text-[14px] font-bold text-white transition-colors hover:bg-whatsapp-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-surface min-[380px]:w-[144px]"
-          >
-            <WhatsAppIcon className="h-5 w-5" />
-            WhatsApp
-          </motion.a>
+          <div className="flex shrink-0 items-center gap-1">
+            <motion.button
+              type="button"
+              onClick={handleShare}
+              aria-label="Compartir"
+              {...PRESSABLE_MOTION_PROPS}
+              className="flex h-[52px] w-11 items-center justify-center rounded-2xl text-t-muted transition-colors hover:text-t-secondary active:text-t-primary"
+            >
+              <Icon name="share" size={20} />
+            </motion.button>
+
+            <motion.a
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              data-whatsapp-cta="mobile-sticky"
+              onClick={onWhatsAppClick}
+              {...PRESSABLE_MOTION_PROPS}
+              className="inline-flex h-[52px] w-[124px] shrink-0 items-center justify-center gap-2 rounded-[18px] bg-whatsapp px-3 text-[14px] font-bold text-white transition-colors hover:bg-whatsapp-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-surface min-[400px]:w-[136px] min-[400px]:px-4 min-[440px]:w-[144px]"
+            >
+              <WhatsAppIcon className="h-5 w-5" />
+              WhatsApp
+            </motion.a>
+          </div>
         </div>
       </motion.div>
     </>

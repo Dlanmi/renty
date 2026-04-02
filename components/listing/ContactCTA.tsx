@@ -160,6 +160,8 @@ export default function ContactCTA({
         insightMessage={costSummary.insightLabel}
         hasBreakdown={costSummary.hasBreakdown}
         onWhatsAppClick={() => handleWhatsAppClick("listing_detail_sticky")}
+        shareUrl={shareUrl}
+        shareTitle={shareTitle}
       />
     </>
   );

@@ -58,13 +58,13 @@ function SpecRow({
   value: string;
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-bg-border bg-bg-elevated px-4 py-3 min-w-0 max-w-full overflow-hidden">
+    <div className="flex min-w-0 max-w-full items-center gap-2.5 overflow-hidden rounded-xl border border-bg-border bg-bg-elevated px-3 py-3 sm:gap-3 sm:px-4">
       <Icon name={icon} size={21} className="shrink-0 text-accent" />
       <div className="min-w-0 flex-1">
         <p className="text-[11px] font-medium uppercase tracking-wide text-t-muted">
           {label}
         </p>
-        <p className="truncate text-sm font-semibold text-t-primary" title={value}>
+        <p className="truncate text-[13px] font-semibold text-t-primary sm:text-sm" title={value}>
           {value}
         </p>
       </div>
@@ -183,28 +183,28 @@ export default function ListingSpecs({ listing, pois = [] }: ListingSpecsProps) 
           title="Costo mensual estimado"
           description={`${costSummary.breakdownLabel}. El total puede variar según consumo real.`}
         >
-          <ul className="space-y-2 text-sm text-t-secondary">
-            <li className="flex items-center justify-between gap-3">
-              <span>Canon</span>
-              <strong>{formatCOP(listing.price_cop)}</strong>
+          <ul className="space-y-2 text-[13px] text-t-secondary sm:text-sm">
+            <li className="flex items-baseline justify-between gap-2">
+              <span className="min-w-0">Canon</span>
+              <strong className="shrink-0 whitespace-nowrap tabular-nums text-right">{formatCOP(listing.price_cop)}</strong>
             </li>
             {costSummary.hasAdminFee && (
-              <li className="flex items-center justify-between gap-3">
-                <span>{costSummary.adminLabel}</span>
-                <strong>{formatCOP(listing.admin_fee_cop)}</strong>
+              <li className="flex items-baseline justify-between gap-2">
+                <span className="min-w-0">{costSummary.adminLabel}</span>
+                <strong className="shrink-0 whitespace-nowrap tabular-nums text-right">{formatCOP(listing.admin_fee_cop)}</strong>
               </li>
             )}
             {costSummary.hasUtilitiesRange && (
-              <li className="flex items-center justify-between gap-3">
-                <span>Servicios estimados</span>
-                <strong>
+              <li className="flex items-baseline justify-between gap-2">
+                <span className="min-w-0">Servicios estimados</span>
+                <strong className="shrink-0 whitespace-nowrap tabular-nums text-right">
                   {formatCOP(costSummary.utilitiesMin)} - {formatCOP(costSummary.utilitiesMax)}
                 </strong>
               </li>
             )}
-            <li className="mt-2 flex items-center justify-between gap-3 border-t border-bg-border pt-2 text-t-primary">
-              <span>{costSummary.totalLineLabel}</span>
-              <strong>{costSummary.totalLabel}</strong>
+            <li className="mt-2 flex items-baseline justify-between gap-2 border-t border-bg-border pt-2 text-t-primary">
+              <span className="min-w-0">{costSummary.totalLineLabel}</span>
+              <strong className="shrink-0 whitespace-nowrap tabular-nums text-right">{costSummary.totalLabel}</strong>
             </li>
           </ul>
         </SectionCard>

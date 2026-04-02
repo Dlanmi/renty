@@ -164,6 +164,37 @@ export function buildListingCardImageAsset(
   };
 }
 
+/**
+ * Título OG estilo Airbnb: "Apartamento en Chapinero".
+ * Limpio y corto — los specs van en la descripción.
+ */
+export function buildListingOgTitle(listing: Listing): string {
+  return `${listing.property_type} en ${listing.neighborhood}`;
+}
+
+/**
+ * Descripción OG info-rich: specs + precio + descripción real truncada.
+ * Ejemplo: "2 hab · 1 baño · 48m² · $850.000/mes. Con buena luz natural…"
+ */
+export function buildListingOgDescription(listing: Listing): string {
+  const specs: string[] = [];
+  if (listing.bedrooms > 0) specs.push(`${listing.bedrooms} hab`);
+  if (listing.bathrooms > 0) {
+    specs.push(
+      `${listing.bathrooms} ${listing.bathrooms === 1 ? "baño" : "baños"}`
+    );
+  }
+  if (listing.area_m2 != null) specs.push(`${listing.area_m2}m²`);
+  specs.push(
+    `${formatCOP(listing.price_cop)}${formatBillingPeriod(listing.billing_period)}`
+  );
+
+  const prefix = specs.join(" · ");
+  const desc = listing.description?.trim();
+
+  return truncateMetaText(desc ? `${prefix}. ${desc}` : `${prefix}.`, 155);
+}
+
 export function buildListingMetadata(
   listing: Listing | null,
   siteUrl = getSiteUrl()
@@ -181,12 +212,12 @@ export function buildListingMetadata(
   const isActive = listing.status === "active";
   const canonicalPath = getListingPath(listing);
   const canonicalUrl = toAbsoluteUrl(canonicalPath, siteUrl);
-  const socialImageUrl = toAbsoluteUrl(
-    `${canonicalPath}/opengraph-image`,
-    siteUrl
-  );
   const title = `${listing.title} en ${listing.neighborhood}, ${listing.city}`;
   const description = buildListingSeoDescription(listing);
+  const ogTitle = buildListingOgTitle(listing);
+  const ogDescription = buildListingOgDescription(listing);
+  const ogImage =
+    listing.cover_photo_url || toAbsoluteUrl("/opengraph-image", siteUrl);
 
   return {
     title,
@@ -203,16 +234,14 @@ export function buildListingMetadata(
         }
       : undefined,
     openGraph: {
-      title: `${title} | ${SITE_NAME}`,
-      description,
+      title: ogTitle,
+      description: ogDescription,
       type: "website",
       url: canonicalUrl,
       siteName: SITE_NAME,
       images: [
         {
-          url: socialImageUrl,
-          width: 1200,
-          height: 630,
+          url: ogImage,
           alt: `${listing.title} - ${SITE_NAME}`,
         },
       ],
@@ -220,9 +249,9 @@ export function buildListingMetadata(
     },
     twitter: {
       card: "summary_large_image",
-      title: `${title} | ${SITE_NAME}`,
-      description,
-      images: [socialImageUrl],
+      title: ogTitle,
+      description: ogDescription,
+      images: [ogImage],
     },
     robots: isActive
       ? {

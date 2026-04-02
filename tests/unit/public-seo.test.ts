@@ -6,6 +6,8 @@ import {
   buildHomeHref,
   buildListingCardImageAsset,
   buildListingMetadata,
+  buildListingOgDescription,
+  buildListingOgTitle,
   buildListingSeoDescription,
   buildPublicSitemap,
   buildRobotsMetadata,
@@ -100,6 +102,30 @@ test("buildListingMetadata publica canonical e index para listings activos", () 
   );
 });
 
+test("buildListingMetadata usa foto de R2 como og:image y título limpio estilo Airbnb", () => {
+  const listing = createListing({
+    cover_photo_url: "https://pub-xxx.r2.dev/listing-1/cover-lg.webp",
+  });
+  const metadata = buildListingMetadata(listing, TEST_SITE_URL);
+
+  const ogImages = metadata.openGraph?.images as Array<Record<string, unknown>>;
+  assert.equal(ogImages?.[0]?.url, "https://pub-xxx.r2.dev/listing-1/cover-lg.webp");
+  assert.equal(metadata.openGraph?.title, "Apartamento en Verbenal");
+  assert.equal(metadata.twitter?.card, "summary_large_image");
+  assert.equal(metadata.twitter?.title, "Apartamento en Verbenal");
+});
+
+test("buildListingMetadata OG description incluye specs, precio y texto real", () => {
+  const metadata = buildListingMetadata(createListing(), TEST_SITE_URL);
+  const ogDesc = metadata.openGraph?.description ?? "";
+
+  assert.match(ogDesc, /2 hab/);
+  assert.match(ogDesc, /1 baño/);
+  assert.match(ogDesc, /\$\s850\.000\/mes/);
+  assert.match(ogDesc, /buena luz natural/);
+  assert.ok(ogDesc.length <= 155);
+});
+
 test("buildListingMetadata no expone canonical y aplica noindex a listings no públicos", () => {
   const metadata = buildListingMetadata(
     createListing({
@@ -112,6 +138,41 @@ test("buildListingMetadata no expone canonical y aplica noindex a listings no p�
   const robots = metadata.robots as Record<string, unknown>;
   assert.equal(robots?.index, false);
   assert.equal(robots?.follow, false);
+});
+
+test("buildListingOgTitle devuelve tipo y barrio limpio sin specs", () => {
+  assert.equal(
+    buildListingOgTitle(createListing()),
+    "Apartamento en Verbenal"
+  );
+  assert.equal(
+    buildListingOgTitle(createListing({ property_type: "Casa", neighborhood: "Chapinero" })),
+    "Casa en Chapinero"
+  );
+});
+
+test("buildListingOgDescription incluye specs, área, precio y trunca a 155", () => {
+  const desc = buildListingOgDescription(createListing());
+  assert.match(desc, /2 hab · 1 baño · 48m²/);
+  assert.match(desc, /\$\s850\.000\/mes/);
+  assert.match(desc, /buena luz natural/);
+  assert.ok(desc.length <= 155);
+});
+
+test("buildListingOgDescription omite área si no existe y pluraliza baños", () => {
+  const desc = buildListingOgDescription(
+    createListing({ area_m2: null, bathrooms: 3 })
+  );
+  assert.match(desc, /2 hab · 3 baños · \$/);
+  assert.ok(!desc.includes("m²"));
+});
+
+test("buildListingOgDescription trunca descripciones largas sin cortar a mitad de palabra", () => {
+  const desc = buildListingOgDescription(
+    createListing({ description: "Luminoso apartamento ".repeat(20) })
+  );
+  assert.ok(desc.length <= 155);
+  assert.match(desc, /…$/);
 });
 
 test("buildListingSeoDescription resume precio, tipología y trunca descripciones largas", () => {
