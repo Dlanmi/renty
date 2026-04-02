@@ -23,7 +23,7 @@ interface SpecItem {
 const POI_META: Record<ListingPoiKind, { label: string; icon: string }> = {
   park: { label: "Parque", icon: "park" },
   transport: { label: "Transporte", icon: "directions_bus" },
-  supermarket: { label: "Supermercado", icon: "local_grocery_store" },
+  supermarket: { label: "Supermercado", icon: "grocery" },
   pharmacy: { label: "Farmacia", icon: "local_pharmacy" },
   school: { label: "Colegio", icon: "school" },
   hospital: { label: "Hospital", icon: "local_hospital" },
@@ -40,7 +40,7 @@ function SectionCard({
   children: ReactNode;
 }) {
   return (
-    <section className="lift-hover rounded-2xl border border-bg-border bg-bg-surface p-4 sm:p-5">
+    <section className="rounded-2xl border border-bg-border bg-bg-surface p-4 sm:p-5">
       <h3 className="text-base font-semibold text-t-primary">{title}</h3>
       {description && <p className="mt-1 text-xs text-t-muted">{description}</p>}
       <div className="mt-3">{children}</div>
@@ -250,7 +250,7 @@ export default function ListingSpecs({ listing, pois = [] }: ListingSpecsProps) 
 
       <SectionCard title="Ubicación" description="Ubicación aproximada para proteger privacidad.">
         <div className="flex items-start gap-2.5 text-sm text-t-secondary">
-          <Icon name="location_on" size={20} className="mt-0.5 text-accent" />
+          <Icon name="place" size={20} className="mt-0.5 text-accent" />
           <div>
             <p className="font-medium text-t-primary">
               {listing.neighborhood}

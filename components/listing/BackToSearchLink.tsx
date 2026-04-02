@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { HOME_SCROLL_QUERY_STORAGE_KEY } from "@/lib/domain/search";
+import useBackToSearchHref from "@/lib/hooks/useBackToSearchHref";
 
 interface BackToSearchLinkProps {
   fallbackHref: string;
@@ -11,29 +10,12 @@ interface BackToSearchLinkProps {
   children: ReactNode;
 }
 
-function toHomeHref(queryString: string): string {
-  const normalized = queryString.replace(/^\?/, "").trim();
-  return normalized ? `/?${normalized}` : "/";
-}
-
 export default function BackToSearchLink({
   fallbackHref,
   className,
   children,
 }: BackToSearchLinkProps) {
-  const [href, setHref] = useState(fallbackHref);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const storedQuery = window.sessionStorage.getItem(HOME_SCROLL_QUERY_STORAGE_KEY);
-    if (!storedQuery) {
-      setHref(fallbackHref);
-      return;
-    }
-
-    setHref(toHomeHref(storedQuery));
-  }, [fallbackHref]);
+  const href = useBackToSearchHref(fallbackHref);
 
   return (
     <Link href={href} className={className}>

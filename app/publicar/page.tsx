@@ -1,17 +1,48 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { buildWhatsAppProxyPath } from "@/lib/analytics/shared";
 import TrackEventOnMount from "@/components/analytics/TrackEventOnMount";
 import Icon from "@/components/ui/Icon";
-import { getButtonClasses } from "@/components/ui/Button";
 import StructuredData from "@/components/seo/StructuredData";
+import WhatsAppIcon from "@/components/ui/WhatsAppIcon";
 import { SITE_NAME, buildPageMetadata, toAbsoluteUrl } from "@/lib/domain/seo";
+import heroImage from "@/app/assets/foto_publicar.webp";
+import PublishPageClient from "@/app/publicar/PublishPageClient";
+
+/* ── Data ── */
+
+const TRUST_SIGNALS = [
+  { icon: "bolt", label: "Publicamos en 24h" },
+  { icon: "shield", label: "Sin intermediarios" },
+  { icon: "payments", label: "100% gratis" },
+];
 
 const WHY_RENTY = [
-  "Publicación clara y organizada del inmueble",
-  "Contacto directo por WhatsApp con interesados reales",
-  "Acompañamiento humano para cargar y optimizar tu anuncio",
-  "Experiencia simple para quien busca y para quien publica",
+  {
+    icon: "bolt",
+    title: "Acompañamiento humano",
+    description:
+      "No estás solo. Te guiamos paso a paso para que tu anuncio quede perfecto.",
+  },
+  {
+    icon: "photo_camera",
+    title: "Fotos bien presentadas",
+    description:
+      "Optimizamos tus imágenes para que tu inmueble se vea profesional.",
+  },
+  {
+    icon: "chat",
+    title: "Contacto directo por WhatsApp",
+    description:
+      "Los interesados te escriben directo. Sin formularios, sin esperas.",
+  },
+  {
+    icon: "verified",
+    title: "Sin costos ocultos",
+    description:
+      "Publicar es completamente gratis. Sin comisiones, sin sorpresas.",
+  },
 ];
 
 const PUBLISH_STEPS = [
@@ -19,29 +50,29 @@ const PUBLISH_STEPS = [
     title: "Cuéntanos tu inmueble",
     description:
       "Nos escribes por WhatsApp con los datos básicos: ubicación, precio y tipo de propiedad.",
-    icon: "chat",
+    illustration: "/illustrations/message-sent.svg",
   },
   {
     title: "Nos envías fotos y detalles",
     description:
       "Te pedimos información clave para que el anuncio se entienda fácil y genere confianza.",
-    icon: "photo_camera",
+    illustration: "/illustrations/selfie.svg",
   },
   {
     title: "Publicamos y te conectamos",
     description:
       "Subimos tu inmueble en Renty y recibes contactos directos para cerrar más rápido.",
-    icon: "rocket_launch",
+    illustration: "/illustrations/high-five.svg",
   },
 ];
 
 const REQUIRED_INFO = [
-  "Título del inmueble y descripción corta",
-  "Barrio o ubicación aproximada en Bogotá",
-  "Precio mensual y número de habitaciones y baños",
-  "Características importantes: parqueadero, amoblado, servicios y reglas",
-  "Fotos reales y recientes del inmueble",
-  "Número de WhatsApp para contacto",
+  { icon: "description", text: "Título del inmueble y descripción corta" },
+  { icon: "place", text: "Barrio o ubicación aproximada en Bogotá" },
+  { icon: "home", text: "Precio mensual, habitaciones y baños" },
+  { icon: "task_alt", text: "Características: parqueadero, amoblado, servicios" },
+  { icon: "photo_camera", text: "Fotos reales y recientes del inmueble" },
+  { icon: "chat", text: "Número de WhatsApp para contacto" },
 ];
 
 const FAQ = [
@@ -59,6 +90,8 @@ const FAQ = [
   },
 ];
 
+/* ── Metadata ── */
+
 export const metadata: Metadata = buildPageMetadata({
   title: "Publicar inmueble en Bogotá",
   description:
@@ -72,6 +105,8 @@ export const metadata: Metadata = buildPageMetadata({
     "anuncio de arriendo por WhatsApp",
   ],
 });
+
+/* ── Page (server component, renders client wrapper for animations) ── */
 
 export default function PublishPage() {
   const heroWhatsAppHref = buildWhatsAppProxyPath({
@@ -104,16 +139,13 @@ export default function PublishPage() {
       mainEntity: FAQ.map((item) => ({
         "@type": "Question",
         name: item.q,
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: item.a,
-        },
+        acceptedAnswer: { "@type": "Answer", text: item.a },
       })),
     },
   ];
 
   return (
-    <div className="mx-auto max-w-6xl space-y-8 px-4 py-8 sm:px-6 lg:space-y-10 lg:py-10">
+    <>
       <TrackEventOnMount
         eventName="publish_page_view"
         source="publish_page"
@@ -121,183 +153,87 @@ export default function PublishPage() {
         dedupeKey="publish_page_view"
       />
       <StructuredData id="publish-structured-data" data={serviceJsonLd} />
-      <section className="relative overflow-hidden rounded-card-lg border border-bg-border bg-bg-surface px-5 py-8 text-center shadow-card sm:px-8 sm:py-10">
-        <div className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-accent/10 blur-3xl" />
-        <div className="absolute -bottom-20 -left-10 h-52 w-52 rounded-full bg-[#6366f1]/10 blur-3xl" />
 
-        <div className="relative mx-auto max-w-3xl">
-          <p className="inline-flex items-center gap-1 rounded-full border border-accent/30 bg-accent-dark/20 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-accent">
-            <Icon name="verified" size={14} />
-            Publicación asistida
+      {/* ━━━ HERO con imagen de fondo ━━━ */}
+      <section className="relative overflow-hidden">
+        <Image
+          src={heroImage}
+          alt="Ilustración de Bogotá — Publica tu inmueble en Renty"
+          fill
+          priority
+          placeholder="blur"
+          className="object-cover"
+          sizes="100vw"
+          aria-hidden="true"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/30" />
+
+        <div className="relative mx-auto flex max-w-6xl flex-col items-center px-5 pb-14 pt-14 text-center sm:px-6 sm:pb-20 sm:pt-20 lg:pb-28 lg:pt-24">
+          <p className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-white/90 backdrop-blur-sm">
+            <Icon name="verified" size={13} />
+            Sin intermediarios · Sin comisiones
           </p>
 
-          <h1 className="mt-4 text-3xl font-extrabold leading-tight tracking-tight text-t-primary sm:text-4xl">
-            Publica tu inmueble en{" "}
-            <span className="bg-gradient-to-r from-accent to-accent-hover bg-clip-text text-transparent">
-              Renty
+          <h1 className="mx-auto mt-5 max-w-[18ch] text-[28px] font-extrabold leading-[1.12] tracking-tight text-white sm:mt-6 sm:max-w-3xl sm:text-4xl lg:text-5xl lg:leading-[1.1]">
+            Publica tu inmueble y conecta con{" "}
+            <span className="bg-gradient-to-r from-emerald-300 to-emerald-400 bg-clip-text text-transparent">
+              inquilinos reales
             </span>
           </h1>
 
-          <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-t-secondary">
-            Te ayudamos a publicar tu arriendo con información clara, fotos
-            bien presentadas y contacto directo por WhatsApp para que cierres
-            más rápido.
+          <p className="mx-auto mt-4 max-w-xl text-[15px] leading-relaxed text-white/85 sm:mt-5 sm:max-w-2xl sm:text-lg">
+            Te ayudamos a crear un anuncio profesional con fotos claras y
+            contacto directo por WhatsApp.
           </p>
 
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+          <div className="mt-7 flex w-full flex-col gap-3 sm:mt-8 sm:w-auto sm:flex-row">
             <a
               href={heroWhatsAppHref}
               target="_blank"
               rel="noopener noreferrer"
-              className="lift-hover inline-flex items-center justify-center gap-2 rounded-xl bg-whatsapp px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-whatsapp-hover hover:shadow-glow"
+              className="lift-hover inline-flex items-center justify-center gap-2.5 rounded-2xl bg-whatsapp px-7 py-4 text-[15px] font-semibold text-white shadow-lg transition-all hover:bg-whatsapp-hover hover:shadow-[0_0_32px_rgba(37,211,102,0.3)]"
             >
-              <Icon name="chat" size={18} />
+              <WhatsAppIcon className="h-5 w-5" />
               Quiero publicar mi inmueble
-              <span className="sr-only">(abre en nueva pestaña)</span>
             </a>
-
             <Link
               href="/"
-              className={getButtonClasses("secondary", "lift-hover rounded-xl")}
+              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/20 bg-white/10 px-6 py-4 text-[15px] font-medium text-white backdrop-blur-sm transition-colors hover:bg-white/20"
             >
               <Icon name="home" size={18} />
-              Ir al sitio
+              Ver arriendos
             </Link>
           </div>
         </div>
       </section>
 
-      <section className="space-y-4">
-        <div className="text-center">
-          <h2 className="text-xl font-semibold text-t-primary">
-            ¿Por qué publicar con Renty?
-          </h2>
-          <p className="mx-auto mt-2 max-w-2xl text-sm leading-relaxed text-t-secondary">
-            Menos fricción para publicar, más claridad para atraer buenos
-            contactos.
-          </p>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {WHY_RENTY.map((item) => (
-            <article
-              key={item}
-              className="lift-hover rounded-2xl border border-bg-border bg-bg-surface p-4 text-center shadow-card"
+      {/* ━━━ TRUST STRIP ━━━ */}
+      <section className="border-b border-bg-border bg-bg-surface">
+        <div className="mx-auto grid max-w-4xl grid-cols-3 gap-2 px-4 py-5 sm:gap-8 sm:px-6 sm:py-6">
+          {TRUST_SIGNALS.map((item) => (
+            <div
+              key={item.label}
+              className="flex flex-col items-center gap-1.5 text-center sm:flex-row sm:gap-2.5 sm:text-left"
             >
-              <Icon name="task_alt" size={18} className="text-accent" />
-              <p className="mt-2 text-sm font-medium leading-relaxed text-t-secondary">
-                {item}
-              </p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="rounded-2xl border border-bg-border bg-bg-surface p-5 shadow-card sm:p-6">
-        <div className="text-center">
-          <h2 className="text-xl font-semibold text-t-primary">Cómo publicar</h2>
-          <p className="mx-auto mt-2 max-w-2xl text-sm leading-relaxed text-t-secondary">
-            Proceso simple en 3 pasos. Nosotros te acompañamos en todo el
-            flujo.
-          </p>
-        </div>
-
-        <div className="mt-5 grid gap-3 md:grid-cols-3">
-          {PUBLISH_STEPS.map((item, index) => (
-            <article
-              key={item.title}
-              className="h-full rounded-2xl border border-bg-border bg-bg-elevated p-5"
-            >
-              <div className="flex items-center gap-3">
-                <div className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-bold text-white shadow-sm">
-                  {index + 1}
-                </div>
-                <h3 className="text-sm font-semibold leading-snug text-t-primary sm:text-base">
-                  {item.title}
-                </h3>
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent/10">
+                <Icon name={item.icon} size={18} className="text-accent" />
               </div>
-              <p className="mt-3 text-sm leading-relaxed text-t-secondary">
-                {item.description}
-              </p>
-            </article>
+              <span className="text-[12px] font-medium leading-tight text-t-secondary sm:text-sm">
+                {item.label}
+              </span>
+            </div>
           ))}
         </div>
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-2">
-        <article className="lift-hover rounded-2xl border border-bg-border bg-bg-surface p-5 shadow-card sm:p-6">
-          <h2 className="text-lg font-semibold text-t-primary">
-            Qué necesitamos para publicar tu inmueble
-          </h2>
-          <ul className="mt-3 space-y-2">
-            {REQUIRED_INFO.map((item) => (
-              <li
-                key={item}
-                className="flex items-start gap-2 text-sm text-t-secondary"
-              >
-                <Icon
-                  name="check_circle"
-                  size={18}
-                  className="mt-0.5 shrink-0 text-success"
-                />
-                <span>{item}</span>
-              </li>
-            ))}
-          </ul>
-        </article>
-
-        <article className="lift-hover rounded-2xl border border-bg-border bg-bg-surface p-5 shadow-card sm:p-6">
-          <h2 className="text-lg font-semibold text-t-primary">
-            Preguntas frecuentes
-          </h2>
-          <ul className="mt-3 space-y-3">
-            {FAQ.map((item) => (
-              <li
-                key={item.q}
-                className="rounded-xl border border-bg-border bg-bg-elevated p-3"
-              >
-                <p className="text-sm font-semibold text-t-primary">{item.q}</p>
-                <p className="mt-1 text-sm leading-relaxed text-t-secondary">
-                  {item.a}
-                </p>
-              </li>
-            ))}
-          </ul>
-        </article>
-      </section>
-
-      <section className="rounded-2xl border border-accent/30 bg-accent-dark/20 p-5 text-center shadow-card sm:p-6">
-        <p className="text-xs font-semibold uppercase tracking-wide text-accent">
-          Publica con Renty
-        </p>
-        <p className="mx-auto mt-2 max-w-2xl text-lg font-semibold text-t-primary">
-          Tu inmueble merece una publicación clara y profesional para atraer
-          mejores contactos.
-        </p>
-        <p className="mx-auto mt-2 max-w-2xl text-sm leading-relaxed text-t-secondary">
-          Escríbenos por WhatsApp y te ayudamos a publicarlo paso a paso.
-        </p>
-
-        <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
-          <a
-            href={footerWhatsAppHref}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="lift-hover inline-flex items-center justify-center gap-2 rounded-xl bg-whatsapp px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-whatsapp-hover hover:shadow-glow"
-          >
-            <Icon name="chat" size={18} />
-            Hablar por WhatsApp
-            <span className="sr-only">(abre en nueva pestaña)</span>
-          </a>
-          <Link
-            href="/"
-            className={getButtonClasses("secondary", "lift-hover rounded-xl")}
-          >
-            <Icon name="arrow_back" size={18} />
-            Volver al inicio
-          </Link>
-        </div>
-      </section>
-    </div>
+      {/* ━━━ Secciones animadas (client component) ━━━ */}
+      <PublishPageClient
+        steps={PUBLISH_STEPS}
+        benefits={WHY_RENTY}
+        requirements={REQUIRED_INFO}
+        faq={FAQ}
+        footerWhatsAppHref={footerWhatsAppHref}
+      />
+    </>
   );
 }

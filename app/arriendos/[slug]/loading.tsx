@@ -2,45 +2,58 @@ import Skeleton from "@/components/ui/Skeleton";
 
 export default function ListingDetailLoading() {
   return (
-    <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:py-8">
-      {/* Breadcrumb */}
-      <div className="mb-4 flex items-center gap-1">
+    <div className="mx-auto max-w-6xl px-4 py-2 sm:px-6 lg:py-8">
+      {/* ── Breadcrumb (desktop only) ── */}
+      <div className="mb-4 hidden items-center gap-1 lg:flex">
         <Skeleton className="h-4 w-12 rounded-full" />
         <Skeleton className="h-4 w-4 rounded" />
         <Skeleton className="h-4 w-24 rounded-full" />
       </div>
 
-      {/* Hero card */}
-      <section className="rounded-card-lg border border-bg-border bg-bg-surface p-4 shadow-card sm:p-6">
-        <div className="min-w-0 space-y-3">
-          <Skeleton className="h-9 w-[min(28rem,100%)] rounded-2xl sm:w-[30rem]" />
-          <div className="flex items-center gap-1.5">
-            <Skeleton className="h-4 w-4 rounded-full" />
-            <Skeleton className="h-4 w-52 rounded-full" />
-            <Skeleton className="h-4 w-28 rounded-full" />
+      {/* ── Hero: title + gallery, reordered via CSS order ── */}
+      <div className="flex flex-col">
+        {/* Title group: order-2 mobile, order-1 desktop */}
+        <div className="order-2 mt-5 space-y-2 text-center lg:order-1 lg:mt-0 lg:mb-5 lg:text-left">
+          <div className="flex items-center justify-center gap-4 lg:justify-between">
+            <Skeleton className="h-7 w-[min(22rem,90%)] rounded-2xl lg:h-9 lg:w-[28rem]" />
+            <Skeleton className="hidden h-11 w-11 shrink-0 rounded-xl lg:block" />
           </div>
-          <div className="flex flex-wrap gap-2">
-            <Skeleton className="h-7 w-24 rounded-full" />
-            <Skeleton className="h-7 w-20 rounded-full" />
-            <Skeleton className="h-7 w-20 rounded-full" />
-            <Skeleton className="h-7 w-24 rounded-full" />
+          <div className="flex items-center justify-center gap-1.5 lg:justify-start">
+            <Skeleton className="h-4 w-4 shrink-0 rounded-full" />
+            <Skeleton className="h-4 w-48 rounded-full" />
           </div>
+          {/* Mobile inline specs */}
+          <Skeleton className="mx-auto h-4 w-56 rounded-full lg:hidden" />
         </div>
 
-        {/* Gallery skeleton — main image + thumbnail strip */}
-        <div className="mt-5">
-          <div className="overflow-hidden rounded-card-lg border border-bg-border bg-bg-elevated">
-            <Skeleton className="aspect-[4/3] w-full rounded-none md:aspect-[16/9] md:min-h-[420px]" />
-            <div className="flex gap-2 border-t border-bg-border bg-bg-surface p-3">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Skeleton key={i} className="h-16 w-24 shrink-0 rounded-xl" />
-              ))}
+        {/* Gallery: order-1 mobile, order-2 desktop */}
+        <div className="order-1 -mx-4 sm:-mx-6 lg:order-2 lg:mx-0">
+          {/* Mobile: full-bleed carousel skeleton */}
+          <div className="lg:hidden">
+            <Skeleton className="aspect-[4/3] w-full rounded-none" />
+          </div>
+          {/* Desktop: mosaic grid skeleton */}
+          <div className="hidden lg:block">
+            <div className="grid aspect-[16/9] grid-cols-4 grid-rows-2 gap-[3px] overflow-hidden rounded-xl">
+              <Skeleton className="col-span-2 row-span-2 rounded-none" />
+              <Skeleton className="rounded-none" />
+              <Skeleton className="rounded-none" />
+              <Skeleton className="rounded-none" />
+              <Skeleton className="rounded-none" />
             </div>
           </div>
         </div>
-      </section>
 
-      {/* Content grid */}
+        {/* Desktop chips */}
+        <div className="order-3 mt-4 hidden gap-2 lg:flex">
+          <Skeleton className="h-7 w-24 rounded-full" />
+          <Skeleton className="h-7 w-20 rounded-full" />
+          <Skeleton className="h-7 w-20 rounded-full" />
+          <Skeleton className="h-7 w-24 rounded-full" />
+        </div>
+      </div>
+
+      {/* ── Content grid ── */}
       <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_340px]">
         {/* Specs column */}
         <div className="space-y-5">
@@ -135,7 +148,7 @@ export default function ListingDetailLoading() {
       </div>
 
       {/* Spacer for mobile fixed CTA */}
-      <div className="h-24 lg:hidden" />
+      <div className="h-40 lg:hidden" />
     </div>
   );
 }

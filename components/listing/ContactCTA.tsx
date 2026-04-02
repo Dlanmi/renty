@@ -130,7 +130,7 @@ export default function ContactCTA({
                 data-whatsapp-cta="listing-sidebar"
                 onClick={() => handleWhatsAppClick("listing_detail_sidebar")}
                 {...PRESSABLE_MOTION_PROPS}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-accent px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-base"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-whatsapp px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-whatsapp-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-base"
               >
                 <WhatsAppIcon className="h-5 w-5" />
                 Contactar por WhatsApp

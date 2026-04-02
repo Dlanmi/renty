@@ -47,6 +47,9 @@ next-env.d.ts
 /playwright-report
 /test-results
 
+# source illustration assets (only optimized versions in public/ are committed)
+/Ilustraciones svg/
+
 # local agent/editor context
 /.agents/
 /.claude/

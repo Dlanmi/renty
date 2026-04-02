@@ -55,6 +55,12 @@ async function HomePageContent() {
 export default function HomePage() {
   return (
     <div className="pb-14">
+      {/* Server-rendered H1 for SEO crawlers — visually hidden */}
+      <h1 className="sr-only">
+        Arriendos en Bogotá sin intermediarios — Apartamentos, habitaciones y
+        casas con contacto directo por WhatsApp
+      </h1>
+
       <section>
         <Suspense fallback={<HomePageSkeleton />}>
           <HomePageContent />

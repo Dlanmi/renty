@@ -17,6 +17,7 @@ export default function Header() {
           <ThemeToggle />
           <Link
             href="/publicar"
+            aria-label="Publicar inmueble"
             className="focus-ring lift-hover inline-flex items-center gap-1.5 rounded-full border border-bg-border px-4 py-2 text-sm font-medium text-t-secondary transition-colors hover:bg-bg-elevated hover:text-t-primary"
           >
             <Icon name="add_home" size={18} />

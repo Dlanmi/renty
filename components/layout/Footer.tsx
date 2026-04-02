@@ -55,7 +55,7 @@ export default function Footer() {
             href={WHATSAPP_CONTACT_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex min-h-10 items-center gap-1.5 rounded-full bg-whatsapp px-4 text-sm font-semibold text-white transition-colors hover:bg-whatsapp-hover"
+            className="inline-flex min-h-11 items-center gap-1.5 rounded-full bg-whatsapp px-4 text-sm font-semibold text-white transition-colors hover:bg-whatsapp-hover focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-base"
           >
             <Icon name="chat" size={17} />
             Contáctanos

@@ -175,7 +175,7 @@ export default function MobileStickyContactBar({
               onClick={handleShare}
               aria-label="Compartir"
               {...PRESSABLE_MOTION_PROPS}
-              className="flex h-[52px] w-11 items-center justify-center rounded-2xl text-t-muted transition-colors hover:text-t-secondary active:text-t-primary"
+              className="flex h-[52px] w-11 items-center justify-center rounded-2xl text-t-muted transition-colors hover:text-t-secondary active:text-t-primary focus-visible:ring-2 focus-visible:ring-accent"
             >
               <Icon name="share" size={20} />
             </motion.button>

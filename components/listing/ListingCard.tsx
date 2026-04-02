@@ -135,7 +135,7 @@ export default function ListingCard({
 
           <div className="min-w-0 space-y-2 p-4">
             <div className="flex min-w-0 items-center gap-1 text-xs text-t-muted">
-              <Icon name="location_on" size={14} className="shrink-0" />
+              <Icon name="place" size={14} className="shrink-0" />
               <span className="min-w-0 truncate">{approx_location}</span>
             </div>
 

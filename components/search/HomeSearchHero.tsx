@@ -18,7 +18,7 @@ import {
   STAGGER_CONTAINER_VARIANTS,
   SURFACE_REVEAL_VARIANTS,
 } from "@/lib/motion/animations";
-import { AnimatePresence, motion } from "@/lib/motion/runtime";
+import { AnimatePresence, motion, useReducedMotion } from "@/lib/motion/runtime";
 import Icon from "@/components/ui/Icon";
 import {
   HOME_SEARCH_HERO_CARD_POSITION_CLASS,
@@ -105,6 +105,94 @@ function SearchSelectField({
   );
 }
 
+const CHAR_STAGGER_S = 0.045;
+const STAY_DURATION_MS = 5000;
+const EXIT_DURATION_S = 0.3;
+
+function RotatingNeighborhood({ names }: { names: string[] }) {
+  const [index, setIndex] = useState(0);
+  const [phase, setPhase] = useState<"typing" | "visible" | "exiting">(
+    "typing"
+  );
+  const prefersReducedMotion = useReducedMotion();
+
+  const current = names.length > 0 ? names[index % names.length] : "";
+  const typeDuration = current.length * CHAR_STAGGER_S * 1000 + 200;
+
+  useEffect(() => {
+    if (names.length <= 1 || prefersReducedMotion) return;
+
+    let timer: ReturnType<typeof setTimeout>;
+
+    if (phase === "typing") {
+      timer = setTimeout(() => setPhase("visible"), typeDuration);
+    } else if (phase === "visible") {
+      timer = setTimeout(() => setPhase("exiting"), STAY_DURATION_MS);
+    } else if (phase === "exiting") {
+      timer = setTimeout(() => {
+        setIndex((prev) => (prev + 1) % names.length);
+        setPhase("typing");
+      }, EXIT_DURATION_S * 1000);
+    }
+
+    return () => clearTimeout(timer);
+  }, [phase, names.length, typeDuration, prefersReducedMotion]);
+
+  if (names.length === 0) return null;
+
+  if (prefersReducedMotion) {
+    return <span className="text-accent">{current}</span>;
+  }
+
+  const chars = current.split("");
+
+  return (
+    <span className="inline" aria-hidden="true">
+      <AnimatePresence mode="wait">
+        <motion.span
+          key={current}
+          className="inline"
+          exit={{
+            opacity: 0,
+            y: -10,
+            filter: "blur(4px)",
+            transition: { duration: EXIT_DURATION_S, ease: [0.4, 0, 0.2, 1] },
+          }}
+        >
+          {chars.map((char, i) => (
+            <motion.span
+              key={`${current}-${i}`}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                delay: i * CHAR_STAGGER_S,
+                duration: 0.08,
+                ease: "easeOut",
+              }}
+              className="inline-block text-accent"
+            >
+              {char === " " ? "\u00A0" : char}
+            </motion.span>
+          ))}
+          {/* Cursor */}
+          <motion.span
+            initial={{ opacity: 0 }}
+            animate={{ opacity: [0, 1, 0] }}
+            transition={{
+              delay: chars.length * CHAR_STAGGER_S,
+              duration: 0.8,
+              repeat: Infinity,
+              ease: "linear",
+            }}
+            className="inline-block w-[2px] translate-y-[1px] self-stretch bg-accent align-baseline"
+            style={{ height: "0.85em", marginLeft: "2px" }}
+          />
+        </motion.span>
+      </AnimatePresence>
+    </span>
+  );
+}
+
 function SearchHeroCard({
   draftFilters,
   neighborhoodOptions,
@@ -120,6 +208,11 @@ function SearchHeroCard({
 }: HomeSearchHeroProps) {
   const [isLocationOpen, setIsLocationOpen] = useState(false);
   const locationRef = useRef<HTMLDivElement>(null);
+
+  const topNeighborhoodNames = useMemo(
+    () => neighborhoodOptions.slice(0, 6).map((n) => n.name),
+    [neighborhoodOptions]
+  );
 
   const normalizedQuery = normalizeSearchText(draftFilters.neighborhood);
 
@@ -181,7 +274,7 @@ function SearchHeroCard({
         initial="initial"
         animate="animate"
         variants={STAGGER_FAST_VARIANTS}
-        className="space-y-2.5"
+        className="space-y-2.5 text-center"
       >
         <motion.p
           variants={LIST_ITEM_REVEAL_VARIANTS}
@@ -189,13 +282,18 @@ function SearchHeroCard({
         >
           Bogotá, Colombia
         </motion.p>
-        <motion.h1
+        <motion.p
           id="home-hero-heading"
+          role="heading"
+          aria-level={2}
           variants={LIST_ITEM_REVEAL_VARIANTS}
-          className="text-[26px] font-extrabold leading-[1.1] tracking-tight text-t-primary sm:text-[32px] sm:leading-[1.06] lg:text-[34px]"
+          aria-label="Busca tu próximo hogar en Bogotá"
+          className="text-[26px] font-extrabold leading-[1.15] tracking-tight text-t-primary sm:text-[32px] sm:leading-[1.1] lg:text-[36px]"
         >
-          Encuentra tu próximo arriendo
-        </motion.h1>
+          Busca tu próximo hogar
+          <br />
+          en <RotatingNeighborhood names={topNeighborhoodNames} />
+        </motion.p>
         <motion.p
           variants={LIST_ITEM_REVEAL_VARIANTS}
           className="text-[14px] leading-relaxed text-t-secondary"
@@ -213,7 +311,7 @@ function SearchHeroCard({
         }}
       >
         <div ref={locationRef} className="relative">
-          <SearchField icon="location_on" label="Barrio o zona">
+          <SearchField icon="place" label="Barrio o zona">
             <input
               type="text"
               value={draftFilters.neighborhood}
@@ -272,7 +370,7 @@ function SearchHeroCard({
                         >
                           <span className="flex items-center gap-2 text-sm font-medium text-t-primary">
                             <Icon
-                              name="location_on"
+                              name="place"
                               size={16}
                               className="text-accent"
                             />

@@ -58,7 +58,7 @@ function HomeSearchHeroSkeleton() {
       </div>
 
       <div className="mx-auto max-w-7xl space-y-4 px-4 sm:px-6">
-        <div className="rounded-[28px] border border-bg-border bg-bg-surface px-5 py-5 shadow-card sm:px-6">
+        <div className="rounded-card-lg border border-bg-border bg-bg-surface px-5 py-5 shadow-card sm:px-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div className="space-y-2">
               <Skeleton className="h-3 w-24 rounded-full" />

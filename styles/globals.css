@@ -56,7 +56,7 @@
   /* Text hierarchy — improved contrast (WCAG AA) */
   --text-primary: #F0F2F8;
   --text-secondary: #C8D0E4; /* was #B0B8D1, lightened for 4.5:1 ratio on dark bg */
-  --text-muted: #8B94B2;    /* was #7E87A8, lightened slightly */
+  --text-muted: #9EAAC8;    /* WCAG AA compliant on dark surfaces */
 
   /* Accent — same emerald */
   --accent-500: #10B981;
@@ -155,8 +155,10 @@ body {
   scrollbar-color: var(--bg-border) var(--bg-base);
 }
 
-.lift-hover {
-  transition: transform 220ms ease, box-shadow 220ms ease;
+@media (prefers-reduced-motion: no-preference) {
+  .lift-hover {
+    transition: transform 220ms ease, box-shadow 220ms ease;
+  }
 }
 
 /* ── Skeleton ── */
